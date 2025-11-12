@@ -3,40 +3,44 @@ import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import adminLogin from './adminLogin.js';
 
-// Load environment variables
 dotenv.config();
-
-// Create Express app
 const app = express();
 
-// Middleware
+// CORS - Allow ALL origins
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Routes
+app.use('/api/admin', adminLogin);
+
+// Root route
+app.get('/', (req, res) => res.json({ message: 'Welcome to CommunityPulse API' }));
+
 // Database connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/communitypulse');
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
+    const connectionString = process.env.MONGODB_URI;
+    console.log(`🔗 Attempting to connect to: ${connectionString}`);
+    
+    mongoose.set('strictQuery', false);
+    const conn = await mongoose.connect(connectionString);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`Error: ${error.message}`);
-    process.exit(1);
+    console.error(`❌ MongoDB Connection Error: ${error.message}`);
+    console.log('⚠️  Server will continue without database');
   }
 };
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to CommunityPulse API' });
-});
+// Start server FIRST, then connect to DB
+const PORT = process.env.PORT || 5001;
 
-// Start server
-const PORT = process.env.PORT || 5000;
+app.listen(PORT, async () => {
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  
+  // Connect to DB after server starts
+  await connectDB();
 });
