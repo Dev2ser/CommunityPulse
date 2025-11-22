@@ -28,10 +28,10 @@ const connectDB = async () => {
     
     mongoose.set('strictQuery', false);
     const conn = await mongoose.connect(connectionString);
-    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
-    console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    console.log('⚠️  Server will continue without database');
+    console.error(` MongoDB Connection Error: ${error.message}`);
+    console.log(' Server will continue without database');
   }
 };
 
@@ -39,8 +39,6 @@ const connectDB = async () => {
 const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, async () => {
-
-  
   // Connect to DB after server starts
   await connectDB();
 });
