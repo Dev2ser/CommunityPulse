@@ -47,6 +47,11 @@ main {
   padding: 2rem;
   background-color: #f9f7f7;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+
 }
 
 
