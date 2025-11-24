@@ -1,0 +1,73 @@
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid #ddd;
+    width: 90%;
+    
+  }
+  
+  /* LEFT SECTION */
+  .topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .topbar-logo {
+    height: 40px;
+  }
+  
+  .topbar-title {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  
+  .topbar-subtitle {
+    font-size: 12px;
+    color: #777;
+    letter-spacing: 1px;
+  }
+  
+  /* CENTER SECTION */
+  .topbar-center {
+    font-size: 26px;
+    font-weight: 700;
+  }
+  
+  /* RIGHT SECTION */
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .topbar-usertext {
+    text-align: right;
+  }
+  
+  .topbar-username {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  .topbar-role {
+    font-size: 13px;
+    color: #777;
+  }
+  
+  .topbar-usericon {
+    height: 45px;
+    width: 45px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 1px solid black;
+  }
+
+  .topbar-usericon:hover
+  {
+    border: 1px solid #4ba3ff;
+  }
+  

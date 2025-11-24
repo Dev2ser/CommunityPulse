@@ -3,6 +3,7 @@ import './App.css';
 import LoginPage from './LoginPage';
 import Sidebar from './sidebar';
 import AdminSurveys from './AdminSurveys';
+import Topbar from './topbar';
 
 function App() {
   const [page, setPage] = useState('home'); // 'home', 'login', 'dashboard', 'adminSurveys'
@@ -26,9 +27,7 @@ function App() {
 
   return (
     <div className="App">
-      <button className="login" onClick={() => setPage('login')}>
-        Admin Login
-      </button>
+      <Topbar onNavigate={setPage} />
       <Sidebar onNavigate={setPage} />
       {page === 'dashboard' && <div>Dashboard content here</div>}
     </div>
