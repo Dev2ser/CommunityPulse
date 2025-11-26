@@ -1,0 +1,114 @@
+/* Brand Kit Integration */
+:root {
+  --tp-green: #86C779;
+  --tp-black: #262223;
+  --tp-white: #ffffff;
+  --tp-blue-grey: #8599B1;
+  --tp-turquoise: #2A6798;
+  --tp-navy: #20305B;
+}
+
+body {
+  font-family: 'Gotham Book', sans-serif;
+  background-color: var(--tp-white);
+  margin: 0;
+  padding: 0;
+}
+
+.survey-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem;
+}
+
+.survey-container {
+  background: var(--tp-white);
+  border: 2px solid var(--tp-green);
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.survey-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  color: var(--tp-navy);
+  margin-bottom: 1rem;
+}
+
+.survey-input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid var(--tp-blue-grey);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+}
+
+.question-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.question-actions button {
+  background: var(--tp-green);
+  color: var(--tp-black);
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.question-card {
+  border: 1px solid var(--tp-blue-grey);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f9f9f9;
+}
+
+.question-card h3 {
+  font-family: 'Gotham Bold', sans-serif;
+  color: var(--tp-navy);
+  margin-bottom: 0.5rem;
+}
+
+.options input {
+  display: block;
+  width: 100%;
+  margin: 0.3rem 0;
+  padding: 0.5rem;
+  border: 1px solid var(--tp-blue-grey);
+  border-radius: 4px;
+}
+
+.options button {
+  margin-top: 0.5rem;
+  background: var(--tp-turquoise);
+  color: var(--tp-white);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-btn {
+  margin-top: 2rem;
+  background: var(--tp-navy);
+  color: var(--tp-white);
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+}

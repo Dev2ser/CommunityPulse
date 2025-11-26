@@ -1,23 +1,11 @@
 import React from "react";
 import "./AdminSurveys.css";
 
-const AdminSurveys = () => {
+const AdminSurveys = ({ onNavigate }) => {
   const surveys = [
-    {
-      title: "Neighborhood Growth Feedback",
-      status: "Open",
-      respondents: 124,
-    },
-    {
-      title: "Community Event Planning",
-      status: "Closed",
-      respondents: 87,
-    },
-    {
-      title: "Housing Development Survey",
-      status: "Archived",
-      respondents: 56,
-    },
+    { title: "Neighborhood Growth Feedback", status: "Open", respondents: 124 },
+    { title: "Community Event Planning", status: "Closed", respondents: 87 },
+    { title: "Housing Development Survey", status: "Archived", respondents: 56 },
   ];
 
   return (
@@ -29,7 +17,12 @@ const AdminSurveys = () => {
 
       <main className="tp-container">
         <div className="actions-bar">
-          <button className="btn btn-green">+ Create New Survey</button>
+          <button
+            className="btn btn-green"
+            onClick={() => onNavigate("createSurvey")}
+          >
+            + Create New Survey
+          </button>
         </div>
 
         <table className="tp-table">
@@ -46,9 +39,7 @@ const AdminSurveys = () => {
               <tr key={index}>
                 <td>{survey.title}</td>
                 <td>
-                  <span
-                    className={`status ${survey.status.toLowerCase()}`}
-                  >
+                  <span className={`status ${survey.status.toLowerCase()}`}>
                     {survey.status}
                   </span>
                 </td>
