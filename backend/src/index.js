@@ -24,7 +24,7 @@ app.get('/', (req, res) => res.json({ message: 'Welcome to CommunityPulse API' }
 const connectDB = async () => {
   try {
     const connectionString = process.env.MONGODB_URI;
-    console.log(`🔗 Attempting to connect to: ${connectionString}`);
+    console.log(` Attempting to connect to: ${connectionString}`);
     
     mongoose.set('strictQuery', false);
     const conn = await mongoose.connect(connectionString);
