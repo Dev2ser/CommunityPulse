@@ -4,7 +4,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { connectToDb } from './db.js';
 import adminLogin from './adminLogin.js';
-
+import getAdminTable from './getAdminTable.js'
 dotenv.config();
 
 const app = express();
@@ -21,7 +21,11 @@ app.use(cors({
 }));
 
 // --- Routes ---
+
+//Admin Routes
 app.use('/api/admin', adminLogin);
+app.use ('/api/admin/getTable', getAdminTable);
+
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to CommunityPulse API' });
