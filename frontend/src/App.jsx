@@ -7,6 +7,7 @@ import Topbar from "./topbar";
 import AdminSurveys from "./AdminSurveys";
 import AdminSettings from "./AdminSettings";
 import CreateSurvey from "./assets/CreateSurvey";
+import Exports from "./Exports";
 
 function App() {
   const [page, setPage] = useState("home");
@@ -26,10 +27,10 @@ function App() {
         <Topbar onNavigate={setPage} />
 
         {page === "dashboard" && <div>Dashboard content here</div>}
-        {/* 👇 new line added here */}
         {page === "adminSurveys" && <AdminSurveys onNavigate={setPage} />}
         {page === "settings" && <AdminSettings />}
         {page === "createSurvey" && <CreateSurvey />}
+        {page === "exports" && <Exports />}
       </div>
     </div>
   );
