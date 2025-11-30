@@ -3,7 +3,13 @@ import "./AdminSettings.css";
 
 export default function AdminSettings() {
   const [admins, setAdmins] = useState([]);
+  const [showCreate, setShowCreate] = useState(false);
 
+  const [newUser, setNewUser] = useState({
+    username: "",
+    password: "",
+    role: ""
+  });
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -21,8 +27,28 @@ export default function AdminSettings() {
     fetchAdmins();
   }, []);
 
+  const handleCreateUser = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5001/api/admin/createAdmin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newUser),
+      });
+
+      if (!res.ok) throw new Error("Failed to create user");
+
+      alert("User created");
+      setShowCreate(false);
+      setNewUser({ username: "", password: "", role: "" });
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   return (
     <div className="admin-settings-container">
+
       {/* Top Controls */}
       <div className="admin-controls">
         <input type="text" placeholder="Search..." className="admin-search" />
@@ -52,9 +78,66 @@ export default function AdminSettings() {
 
       {/* Bottom Buttons */}
       <div className="admin-buttons">
-        <button className="admin-btn create">Create User</button>
+        <button className="admin-btn create" onClick={() => setShowCreate(true)}>
+          Create User
+        </button>
         <button className="admin-btn delete">Delete User</button>
       </div>
+
+      {showCreate && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+
+            <h2>Create User</h2>
+
+            <form onSubmit={handleCreateUser}>
+
+              <input
+                type="text"
+                placeholder="Username"
+                value={newUser.username}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, username: e.target.value })
+                }
+                required
+              />
+
+              <input
+                type="password"
+                placeholder="Password"
+                value={newUser.password}
+                onChange={(e) =>
+                  setNewUser({ ...newUser, password: e.target.value })
+                }
+                required
+              />
+
+             <select
+            value={newUser.role}
+            onChange={(e) => setNewUser({ ...newUser, role: e.target.value })}
+            required
+            className="role-dropdown"
+            >
+            <option value="">Select Role</option>
+            <option value="Admin">Admin</option>
+            <option value="Staff">Staff</option>
+            </select>
+
+
+              <div className="modal-buttons">
+                <button type="submit" className="save-btn">Create</button>
+                <button type="button" className="cancel-btn"
+                        onClick={() => setShowCreate(false)}>
+                  Cancel
+                </button>
+              </div>
+
+            </form>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
