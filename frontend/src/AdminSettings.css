@@ -150,7 +150,7 @@
   font-size: 22px;
 }
 
-/* Form Inputs */
+
 .modal-content input {
   width: 100%;
   padding: 10px;
@@ -159,26 +159,28 @@
   font-size: 15px;
 }
 
-/* Buttons */
+
 .modal-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
 }
 
-.save-btn {
-  background: #4caf50;
-  color: white;
+.create-btn,
+.cancel2-btn {
   padding: 10px 18px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-family: 'Gotham Bold', sans-serif;
+  font-size: 16px;
+  background-color: #86C779;
+  color:#262223;
+  transition: 0.2s;
 }
 
-.cancel-btn {
-  background: #ccc;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
+.save-btn:hover,
+.cancel-btn:hover {
+  background: var(--tp-navy);
+  color: var(--tp-white);
 }

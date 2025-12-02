@@ -125,8 +125,8 @@ export default function AdminSettings() {
 
 
               <div className="modal-buttons">
-                <button type="submit" className="save-btn">Create</button>
-                <button type="button" className="cancel-btn"
+                <button type="submit" className="create-btn">Create</button>
+                <button type="button" className="cancel2-btn"
                         onClick={() => setShowCreate(false)}>
                   Cancel
                 </button>

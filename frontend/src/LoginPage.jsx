@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
-import sidebarLogo from './assets/tippingPointLogo.png';
+import sidebarLogo from './assets/loginTippingPointLogo.png';
 
 function LoginPage({ onLogin, onBack }) {
   const [email, setEmail] = useState('admin@tippingpoint.com');
@@ -28,14 +28,14 @@ function LoginPage({ onLogin, onBack }) {
 
   return (
     <div className="login-page">
-      <div className="login-box">
+      <div className = "branding-loginform">
         <div className="branding">
           <img src={sidebarLogo} alt="Tipping Point Logo" className="logo" />
-          <h1>TIPPING POINT</h1>
-          <h2>— REAL ESTATE DEVELOPMENT —</h2>
-          <h3>COMMUNITY PULSE SURVEY PORTAL</h3>
+          <h3>COMMUNITY PULSE SURVEY <br /> PORTAL</h3>
           <p>Real estate development feedback platform</p>
         </div>
+      <div className="login-box">
+      
 
         <div className="login-form">
           <h4>ADMINISTRATOR LOGIN</h4>
@@ -73,6 +73,7 @@ function LoginPage({ onLogin, onBack }) {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 }
