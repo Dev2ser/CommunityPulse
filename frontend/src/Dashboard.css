@@ -119,6 +119,26 @@
   opacity: 0.8;
 }
 
+.error-banner {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.info-banner {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e0f2fe;
+  background: #eff6ff;
+  color: #075985;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
 .mini-bar-label {
   font-size: 0.85rem;
   color: #6b7280;

@@ -10,21 +10,22 @@ router.put("/updateAdmin/:id", async (req, res) => {
     const db = getDb();
     const { id } = req.params;
 
-    const { username, role } = req.body;
+    const { username, role, email } = req.body;
 
     if (!id) {
       return res.status(400).json({ message: "Admin ID is required" });
     }
 
-    if (!username && !role) {
+    if (!username && !role && !email) {
       return res
         .status(400)
-        .json({ message: "Nothing to update. Provide username or role." });
+        .json({ message: "Nothing to update. Provide username, email, or role." });
     }
 
     const updateFields = {};
     if (username) updateFields.username = username;
     if (role) updateFields.role = role;
+    if (email) updateFields.email = email;
 
     const result = await db
       .collection("Admin")

@@ -19,6 +19,7 @@ export default function AdminSettings() {
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState("");
+  const [editEmail, setEditEmail] = useState("");
 
   
   useEffect(() => {
@@ -34,10 +35,9 @@ export default function AdminSettings() {
         const normalized = data.map((a) => ({
           id: a._id,
           name: a.username,
-          email: `${a.username}@tippingpoint.com`, 
+          email: a.email || a.username || "",
           role: a.role,
           status: "active",
-          lastLogin: "just now",
         }));
 
         setAdmins(normalized);
@@ -51,7 +51,10 @@ export default function AdminSettings() {
 
   
   const addAdmin = async () => {
-    if (!newAdminName.trim() || !newAdminRole.trim()) return;
+    if (!newAdminName.trim() || !newAdminRole.trim() || !newAdminEmail.trim()) {
+      alert("Please provide name, email, and role.");
+      return;
+    }
 
     try {
       const res = await fetch(`${API_BASE}/api/admin/createAdmin`, {
@@ -61,6 +64,7 @@ export default function AdminSettings() {
           username: newAdminName.trim(),
           password: "psu12345", // temp default password
           role: newAdminRole.trim(),
+          email: newAdminEmail.trim(),
         }),
       });
 
@@ -79,10 +83,9 @@ export default function AdminSettings() {
       const normalized = tableData.map((a) => ({
         id: a._id,
         name: a.username,
-        email: `${a.username}@tippingpoint.com`,
+        email: a.email || a.username || "",
         role: a.role,
         status: "active",
-        lastLogin: "just now",
       }));
       setAdmins(normalized);
 
@@ -129,6 +132,7 @@ export default function AdminSettings() {
         body: JSON.stringify({
           username: editName,
           role: editRole,
+          email: editEmail,
         }),
       });
 
@@ -141,11 +145,12 @@ export default function AdminSettings() {
 
       setAdmins((prev) =>
         prev.map((a) =>
-          a.id === id ? { ...a, name: editName, role: editRole } : a
+          a.id === id ? { ...a, name: editName, role: editRole, email: editEmail } : a
         )
       );
 
       setEditingId(null);
+      setEditEmail("");
     } catch (err) {
       console.error("Failed to update admin", err);
       alert("Server error updating admin");
@@ -280,8 +285,7 @@ export default function AdminSettings() {
                         <th>Email</th>
                         <th>Role</th>
                         <th>Status</th>
-                        <th>Last Login</th>
-                        <th className="text-right">Actions</th>
+                        <th className="text-center">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -306,7 +310,18 @@ export default function AdminSettings() {
                             )}
                           </td>
 
-                          <td className="table-cell-email">{admin.email}</td>
+                          <td className="table-cell-email">
+                            {editingId === admin.id ? (
+                              <input
+                                value={editEmail}
+                                onChange={(e) => setEditEmail(e.target.value)}
+                                className="edit-input"
+                                type="email"
+                              />
+                            ) : (
+                              admin.email || "N/A"
+                            )}
+                          </td>
 
                           <td>
                             {editingId === admin.id ? (
@@ -325,10 +340,7 @@ export default function AdminSettings() {
                             )}
                           </td>
                           <td>{getStatusBadge(admin.status)}</td>
-                          <td className="table-cell-login">
-                            {admin.lastLogin}
-                          </td>
-                          <td className="table-actions">
+                          <td className="table-actions centered">
                             {editingId === admin.id ? (
                               <>
                                 <button
@@ -352,6 +364,7 @@ export default function AdminSettings() {
                                     setEditingId(admin.id);
                                     setEditName(admin.name);
                                     setEditRole(admin.role);
+                                    setEditEmail(admin.email);
                                   }}
                                 >
                                   Edit

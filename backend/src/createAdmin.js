@@ -5,9 +5,12 @@ const router = express.Router();
 
 router.post('/createAdmin', async (req, res) => {
   try {
-    const { username, password, role } = req.body;
+    const username = req.body.username?.trim();
+    const password = req.body.password;
+    const role = req.body.role?.trim();
+    const email = req.body.email?.trim();
 
-    if (!username || !password || !role) {
+    if (!username || !password || !role || !email) {
       return res.status(400).json({ message: "Missing fields" });
     }
 
@@ -17,16 +20,17 @@ router.post('/createAdmin', async (req, res) => {
     }
 
     // Check if user already exists
-    const existing = await db.collection('Admin').findOne({ username });
+    const existing = await db.collection('Admin').findOne({ $or: [{ username }, { email: email.toLowerCase() }] });
     if (existing) {
-      return res.status(400).json({ message: "Username already exists" });
+      return res.status(400).json({ message: "Username or email already exists" });
     }
 
     // Insert new admin
     await db.collection('Admin').insertOne({
       username,
       password,
-      role
+      role,
+      email: email.toLowerCase()
     });
 
     res.json({
