@@ -55,7 +55,7 @@ const surveys = [
   },
 ];
 
-export default function AdminSurveys() {
+export default function AdminSurveys({ onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
 
@@ -69,7 +69,10 @@ export default function AdminSurveys() {
     <div className="admin-surveys">
       <div className="header">
         <h2>Survey Management</h2>
-        <button className="create-button">+ Create New Survey</button>
+        <button
+          className="create-button"
+          onClick={() => onNavigate("createSurvey")}
+        />
       </div>
 
       <div className="controls">
@@ -112,9 +115,6 @@ export default function AdminSurveys() {
                 </button>
                 <button className="icon-button edit" title="Edit Survey">
                   <FontAwesomeIcon icon={faPen} />
-                </button>
-                <button className="icon-button copy" title="Copy Survey">
-                  <FontAwesomeIcon icon={faCopy} />
                 </button>
                 <button className="icon-button delete" title="Delete Survey">
                   <FontAwesomeIcon icon={faTrash} />

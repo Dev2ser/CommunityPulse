@@ -6,7 +6,7 @@ import Sidebar from "./sidebar";
 import Topbar from "./topbar";
 import AdminSurveys from "./AdminSurveys";
 import AdminSettings from "./AdminSettings";
-import CreateSurvey from "./assets/CreateSurvey";
+import CreateSurvey from "./CreateSurvey";
 import Exports from "./Exports";
 
 function App() {

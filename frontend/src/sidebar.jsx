@@ -10,7 +10,6 @@ export default function Sidebar({ onNavigate }) {
   const menuItems = [
     { name: 'Dashboard', icon: dashboardIcon, page: 'dashboard' },
     { name: 'Surveys', icon: surveysIcon, page: 'adminSurveys' },
-    { name: 'Results', icon: resultsIcon, page: 'results' },
     { name: 'Exports', icon: exportsIcon, page: 'exports' },
     { name: 'Admin Settings', icon: adminIcon, page: 'settings' },
   ];
