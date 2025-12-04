@@ -1,33 +1,51 @@
-import express from 'express';
-import { getDb } from './db.js';
+import express from "express";
+import { getDb } from "./db.js";
 
 const router = express.Router();
 
-router.post('/login', async (req, res) => {
+router.post("/login", async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const identifier = (req.body.email || req.body.username || "").trim();
+    const password = req.body.password;
+
+    if (!identifier || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
+
+    const email = identifier.toLowerCase();
 
     const db = getDb();
     if (!db) {
       return res.status(500).json({ message: "Database not initialized" });
     }
 
-    const admin = await db.collection('Admin').findOne({ username, password });
+    const admin = await db.collection("Admin").findOne({
+      $and: [
+        { password },
+        {
+          $or: [
+            { email },
+            { username: identifier },
+            { username: email }, // support username stored as email
+          ],
+        },
+      ],
+    });
 
     if (!admin) {
-      return res.status(400).json({ message: 'Invalid username or password' });
+      return res.status(400).json({ message: "Invalid username or password" });
     }
 
     res.json({
-      message: 'Login successful',
-      role: admin.role
+      message: "Login successful",
+      role: admin.role,
     });
-
   } catch (err) {
     console.error("Login Route Error:", err);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
 export default router;
-

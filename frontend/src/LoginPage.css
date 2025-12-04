@@ -12,16 +12,18 @@ html, body, #root {
 }
 
 
-.branding-loginform
-{
+.branding-loginform {
   display: flex;
   flex-direction: column;
- 
-
+  align-items: center;
+  gap: 1.5rem;
 }
-.branding
-{
+
+.branding {
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .login-page {
@@ -29,7 +31,8 @@ html, body, #root {
   justify-content: center;
   align-items: center;
   height: 100%;
- 
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
 .login-box {
@@ -38,7 +41,6 @@ html, body, #root {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   max-width: 400px;
   width: 100%;
-
 }
 
 .branding h1,
@@ -111,8 +113,9 @@ letter-spacing: 0.5px;
 
 .options {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 1rem;
   margin-top: 1rem;
 }
 
@@ -138,6 +141,11 @@ letter-spacing: 0.5px;
   cursor: pointer;
 }
 
+.login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 .back-btn {
   width: 100%;
   padding: 0.6rem;
@@ -148,4 +156,14 @@ letter-spacing: 0.5px;
   border-radius: 6px;
   font-size: 0.9rem;
   cursor: pointer;
+}
+
+.login-error {
+  background: #fff1f2;
+  color: #b91c1c;
+  border: 1px solid #fecdd3;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
 }

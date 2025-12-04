@@ -59,16 +59,50 @@
     color: #777;
   }
   
-  .topbar-usericon {
-    height: 45px;
-    width: 45px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 1px solid black;
-  }
+.topbar-usericon {
+  height: 45px;
+  width: 45px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 1px solid black;
+}
 
-  .topbar-usericon:hover
-  {
-    border: 1px solid #4ba3ff;
-  }
+.topbar-usericon:hover
+{
+  border: 1px solid #4ba3ff;
+}
+
+.topbar-avatar {
+  position: relative;
+}
+
+.topbar-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  padding: 0.35rem;
+  z-index: 10;
+  min-width: 140px;
+}
+
+.dropdown-item {
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 0.35rem;
+  font-weight: 600;
+  color: #262223;
+}
+
+.dropdown-item:hover {
+  background: rgba(134, 199, 121, 0.12);
+  color: #2a6798;
+}
   

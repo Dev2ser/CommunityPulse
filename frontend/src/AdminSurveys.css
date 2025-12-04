@@ -1,107 +1,169 @@
 :root {
-  --green: #86C779;
-  --gray: #7f8c8d;
+  --tp-green: #86c779;
+  --tp-green-dark: #75b668;
+  --tp-black: #262223;
+  --tp-white: #ffffff;
+  --tp-blue-grey: #8599b1;
+  --tp-turquoise: #2a6798;
+  --tp-border: #e5e7eb;
+  --tp-muted: #6b7280;
 }
 
 .admin-surveys {
   padding: 2rem;
-  font-family: 'Segoe UI', sans-serif;
-  background-color: #f9f9f9;
-  color: #000;
+  background-color: #f9fafb;
+  color: var(--tp-black);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
 }
 
 .header h2 {
-  font-size: 1.8rem;
-  color: #000;
+  font-size: 28px;
+  font-family: "Bebas Neue", sans-serif;
+  color: var(--tp-black);
+  margin: 0;
 }
 
 .create-button {
-  background-color: var(--green);
-  color: white;
-  border: none;
-  padding: 0.6rem 1rem;
-  font-size: 1rem;
-  border-radius: 4px;
+  background-color: var(--tp-green);
+  color: var(--tp-white);
+  border: 1px solid var(--tp-green);
+  padding: 0.65rem 1.2rem;
+  font-size: 0.95rem;
+  border-radius: 0.5rem;
   cursor: pointer;
+  transition: background-color 0.2s ease, filter 0.2s ease;
+}
+
+.create-button:hover {
+  background-color: var(--tp-green-dark);
 }
 
 .controls {
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
 }
 
 .controls input,
 .controls select {
-  padding: 0.5rem;
-  font-size: 1rem;
-  border: 1px solid #000;
-  border-radius: 4px;
-  background: #fff;
-  color: #000;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--tp-border);
+  border-radius: 0.5rem;
+  background: var(--tp-white);
+  color: var(--tp-black);
+  box-sizing: border-box;
 }
 
 .controls input::placeholder {
-  color: #555;
+  color: var(--tp-muted);
 }
 
 .controls input:focus,
 .controls select:focus {
   outline: none;
-  border-color: var(--green);
-  box-shadow: 0 0 0 2px rgba(134, 199, 121, 0.25);
+  border-color: var(--tp-green);
+  box-shadow: 0 0 0 3px rgba(134, 199, 121, 0.25);
 }
+
+.cards-wrapper {
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
 .survey-table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 0 5px rgba(0,0,0,0.05);
+  background-color: var(--tp-white);
 }
 
 .survey-table th,
 .survey-table td {
-  padding: 0.75rem;
+  padding: 0.9rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
-  color: #000;
+  border-bottom: 1px solid var(--tp-border);
+  color: var(--tp-black);
 }
 
 .survey-table th {
-  background-color: #f1f1f1;
-  color: #000;
+  background-color: #f8fafc;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.survey-table tr:hover td {
+  background-color: rgba(134, 199, 121, 0.05);
 }
 
 .status {
-  font-weight: bold;
-  text-transform: uppercase;
+  font-weight: 600;
+  text-transform: capitalize;
 }
 
-.status.active {
-  color: var(--green);
+.status.published {
+  color: var(--tp-green);
 }
 
-.status.draft,
-.status.archived {
-  color: var(--gray);
+.status.draft {
+  color: var(--tp-muted);
+}
+
+.info-banner {
+  padding: 0.85rem 1rem;
+  border: 1px solid #e0f2fe;
+  background: #eff6ff;
+  color: #075985;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.error-banner {
+  margin-top: 0.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #fecdd3;
+  background: #fff1f2;
+  color: #b91c1c;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.action-cell {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
 }
 
 .icon-button {
-  background: none;
-  border: none;
-  color: var(--gray);
-  font-size: 1.1rem;
+  background: var(--tp-white);
+  border: 1px solid var(--tp-border);
+  color: var(--tp-muted);
+  font-size: 1rem;
   cursor: pointer;
-  margin-right: 0.5rem;
-  transition: color 0.2s ease;
+  border-radius: 0.4rem;
+  padding: 0.45rem 0.55rem;
+  transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .icon-button:hover {
-  color: var(--green);
+  color: var(--tp-green);
+  border-color: rgba(134, 199, 121, 0.6);
+  background-color: rgba(134, 199, 121, 0.05);
+}
+
+.icon-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
