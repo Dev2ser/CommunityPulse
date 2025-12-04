@@ -24,7 +24,7 @@ function App() {
       <Sidebar onNavigate={setPage} />
 
       <div className="main-content">
-        <Topbar onNavigate={setPage} />
+        <Topbar currentPage={page} onNavigate={setPage} />
 
         {page === "dashboard" && <div>Dashboard content here</div>}
         {page === "adminSurveys" && <AdminSurveys onNavigate={setPage} />}

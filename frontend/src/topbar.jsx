@@ -2,7 +2,19 @@ import React from "react";
 import "./topbar.css";
 import userIcon from "./assets/user.png";
 
-export default function TopBar({ onNavigate }) {
+const pageTitles = {
+  home: "Dashboard",
+  dashboard: "Dashboard",
+  adminSurveys: "Surveys",
+  results: "Results",
+  exports: "Exports",
+  settings: "Admin Settings",
+  createSurvey: "Create Survey",
+};
+
+export default function TopBar({ currentPage, onNavigate }) {
+  const title = (pageTitles[currentPage] || "Dashboard").toUpperCase();
+
   return (
     <div className="topbar">
 
@@ -10,7 +22,7 @@ export default function TopBar({ onNavigate }) {
       <div className="topbar-left"></div>
 
       {/* CENTER */}
-      <div className="topbar-center">DASHBOARD</div>
+      <div className="topbar-center">{title}</div>
 
       {/* RIGHT */}
       <div className="topbar-right">
