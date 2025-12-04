@@ -6,6 +6,13 @@ import { connectToDb } from './db.js';
 import adminLogin from './adminLogin.js';
 import getAdminTable from './getAdminTable.js'
 import createAdmin from './createAdmin.js'
+import deleteAdmin from "./deleteAdmin.js";
+import updateAdmin from "./updateAdmin.js";
+import surveysRouter from "./surveys.js";
+import dashboardRouter from "./dashboard.js";
+
+
+
 dotenv.config();
 
 const app = express();
@@ -27,6 +34,10 @@ app.use(cors({
 app.use('/api/admin', adminLogin);
 app.use ('/api/admin/getTable', getAdminTable);
 app.use('/api/admin', createAdmin);
+app.use("/api/admin", deleteAdmin); 
+app.use("/api/admin", updateAdmin); 
+app.use("/api", surveysRouter);
+app.use("/api", dashboardRouter);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to CommunityPulse API' });
