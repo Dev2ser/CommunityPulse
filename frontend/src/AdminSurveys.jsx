@@ -55,7 +55,7 @@ const surveys = [
   },
 ];
 
-export default function AdminSurveys() {
+export default function AdminSurveys({ onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
 
@@ -69,7 +69,12 @@ export default function AdminSurveys() {
     <div className="admin-surveys">
       <div className="header">
         <h2>Survey Management</h2>
-        <button className="create-button">+ Create New Survey</button>
+        <button 
+          className="create-button" 
+          onClick={() => onNavigate("createSurvey")}
+        >
+          + Create New Survey
+        </button>
       </div>
 
       <div className="controls">
