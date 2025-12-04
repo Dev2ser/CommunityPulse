@@ -8,7 +8,7 @@ import AdminSurveys from "./AdminSurveys";
 import AdminSettings from "./AdminSettings";
 import CreateSurvey from "./assets/CreateSurvey";
 import Exports from "./Exports";
-
+import Dashboard from "./Dashboard";
 function App() {
   const [page, setPage] = useState("home");
 
@@ -26,7 +26,7 @@ function App() {
       <div className="main-content">
         <Topbar currentPage={page} onNavigate={setPage} />
 
-        {page === "dashboard" && <div>Dashboard content here</div>}
+        {page === "dashboard" && <Dashboard />}
         {page === "adminSurveys" && <AdminSurveys onNavigate={setPage} />}
         {page === "settings" && <AdminSettings />}
         {page === "createSurvey" && <CreateSurvey />}
