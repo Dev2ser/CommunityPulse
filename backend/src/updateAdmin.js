@@ -4,7 +4,6 @@ import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
-
 router.put("/updateAdmin/:id", async (req, res) => {
   try {
     const db = getDb();
@@ -19,7 +18,9 @@ router.put("/updateAdmin/:id", async (req, res) => {
     if (!username && !role && !email) {
       return res
         .status(400)
-        .json({ message: "Nothing to update. Provide username, email, or role." });
+        .json({
+          message: "Nothing to update. Provide username, email, or role.",
+        });
     }
 
     const updateFields = {};

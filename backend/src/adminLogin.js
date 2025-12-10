@@ -5,16 +5,16 @@ const router = express.Router();
 
 router.post("/login", async (req, res) => {
   try {
-    const identifier = (req.body.email || req.body.username || "")
-      .trim()
-      .toLowerCase();
-    const password = req.body.password?.trim();
+    const identifier = (req.body.email || req.body.username || "").trim();
+    const password = req.body.password;
 
-    if (!identifier || !password) {
+    if (!emailInput || !password) {
       return res
         .status(400)
         .json({ message: "Email/username and password are required" });
     }
+
+    const email = identifier.toLowerCase();
 
     const db = getDb();
     if (!db) {
@@ -22,18 +22,27 @@ router.post("/login", async (req, res) => {
     }
 
     const admin = await db.collection("Admin").findOne({
-      $or: [{ email: identifier }, { username: identifier }],
+      $and: [
+        { password },
+        {
+          $or: [
+            { email },
+            { username: identifier },
+            { username: email }, // support username stored as email
+          ],
+        },
+      ],
     });
 
-    if (!admin || admin.password !== password) {
-      return res
-        .status(400)
-        .json({ message: "Invalid username or password" });
+    if (!admin) {
+      return res.status(400).json({ message: "Invalid username or password" });
     }
 
     res.json({
       message: "Login successful",
       role: admin.role,
+      username: admin.username,
+      email: admin.email || admin.username,
     });
   } catch (err) {
     console.error("Login Route Error:", err);
