@@ -1,9 +1,9 @@
-import './sidebar.css';
-import dashboardIcon from './assets/dashboardIcon.svg';
-import surveysIcon from './assets/surveysIcon.png';
-import exportsIcon from './assets/exportsIcon.png';
-import adminIcon from './assets/settingsIcon.png';
-import sidebarLogo from './assets/tippingPointLogo.png';
+import '../Styles/sidebar.css';
+import dashboardIcon from '../assets/dashboardIcon.svg';
+import surveysIcon from '../assets/surveysIcon.png';
+import exportsIcon from '../assets/exportsIcon.png';
+import adminIcon from '../assets/settingsIcon.png';
+import sidebarLogo from '../assets/tippingPointLogo.png';
 
 export default function Sidebar({ onNavigate }) {
   const menuItems = [

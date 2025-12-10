@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './CreateSurvey.css';
+import '../Styles/CreateSurvey.css';
 
 function CreateSurvey() {
   const [questions, setQuestions] = useState([]);

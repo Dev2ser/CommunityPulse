@@ -1,20 +1,20 @@
 import express from "express";
 import { getDb } from "./db.js";
 
-const router = express.Router();
+const router = express.Router(); 
 
 router.post("/login", async (req, res) => {
   try {
-    const identifier = (req.body.email || req.body.username || "").trim();
-    const password = req.body.password;
+    const identifier = (req.body.email || req.body.username || "")
+      .trim()
+      .toLowerCase();
+    const password = req.body.password?.trim();
 
     if (!identifier || !password) {
       return res
         .status(400)
-        .json({ message: "Email and password are required" });
+        .json({ message: "Email/username and password are required" });
     }
-
-    const email = identifier.toLowerCase();
 
     const db = getDb();
     if (!db) {
@@ -22,20 +22,13 @@ router.post("/login", async (req, res) => {
     }
 
     const admin = await db.collection("Admin").findOne({
-      $and: [
-        { password },
-        {
-          $or: [
-            { email },
-            { username: identifier },
-            { username: email }, // support username stored as email
-          ],
-        },
-      ],
+      $or: [{ email: identifier }, { username: identifier }],
     });
 
-    if (!admin) {
-      return res.status(400).json({ message: "Invalid username or password" });
+    if (!admin || admin.password !== password) {
+      return res
+        .status(400)
+        .json({ message: "Invalid username or password" });
     }
 
     res.json({

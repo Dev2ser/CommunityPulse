@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Exports.css";
+import "../Styles/Exports.css";
 
 const mockReports = [
   {

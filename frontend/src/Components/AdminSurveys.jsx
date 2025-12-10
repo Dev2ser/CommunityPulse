@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import './AdminSurveys.css';
+import "../Styles/AdminSurveys.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faCopy, faTrash } from '@fortawesome/free-solid-svg-icons';
 
@@ -55,13 +55,14 @@ const surveys = [
   },
 ];
 
-export default function AdminSurveys() {
+export default function AdminSurveys({onNavigate}) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState('');
+  const API_BASE =  import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
 
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -106,7 +107,12 @@ export default function AdminSurveys() {
     <div className="admin-surveys">
       <div className="header">
         <h2>Survey Management</h2>
-        <button className="create-button">+ Create New Survey</button>
+        <button 
+      className="create-button"
+     onClick={() => onNavigate("createSurvey")}
+      >
+    + Create New Survey
+    </button>
       </div>
 
       <div className="controls">

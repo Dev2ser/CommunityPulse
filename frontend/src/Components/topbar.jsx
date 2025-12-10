@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import "./topbar.css";
-import userIcon from "./assets/user.png";
+import "../Styles/topbar.css";
+import userIcon from "../assets/user.png";
 
 const pageTitles = {
   home: "Dashboard",

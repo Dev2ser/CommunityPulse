@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import "./AdminSettings.css";
+import "../Styles/AdminSettings.css";
 
 const API_BASE = "http://localhost:5001"; 
 

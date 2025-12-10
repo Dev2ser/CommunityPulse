@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import "./LoginPage.css";
-import sidebarLogo from "./assets/loginTippingPointLogo.png";
+import "../Styles/LoginPage.css";
+import sidebarLogo from "../assets/loginTippingPointLogo.png";
 
 function LoginPage({ onLogin, onBack }) {
   const API_BASE =

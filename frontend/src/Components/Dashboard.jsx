@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import "./Dashboard.css";
+import "../Styles/Dashboard.css";
 
 const weekdayOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 

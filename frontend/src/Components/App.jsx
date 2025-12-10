@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./App.css";
+import "../Styles/App.css";
 import LoginPage from "./LoginPage";
 import Sidebar from "./sidebar";
 import Topbar from "./topbar";
