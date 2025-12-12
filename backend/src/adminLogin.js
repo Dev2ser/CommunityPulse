@@ -8,7 +8,7 @@ router.post("/login", async (req, res) => {
     const identifier = (req.body.email || req.body.username || "").trim();
     const password = req.body.password;
 
-    if (!emailInput || !password) {
+    if (!identifier || !password) {
       return res
         .status(400)
         .json({ message: "Email/username and password are required" });
@@ -28,7 +28,7 @@ router.post("/login", async (req, res) => {
           $or: [
             { email },
             { username: identifier },
-            { username: email }, // support username stored as email
+            { username: email },
           ],
         },
       ],
