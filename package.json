@@ -6,6 +6,7 @@
   },
   "dependencies": {
     "@fortawesome/react-fontawesome": "github:fortawesome/react-fontawesome",
+    "bcrypt": "^6.0.0",
     "react-fontawesome": "^1.7.1"
   }
 }
