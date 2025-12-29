@@ -1,70 +1,21 @@
-import { useEffect, useState } from "react";
-import "../Styles/App.css";
-import LoginPage from "./LoginPage";
-import Sidebar from "./sidebar";
-import Topbar from "./topbar";
-import AdminSurveys from "./AdminSurveys";
-import AdminSettings from "./AdminSettings";
-import CreateSurvey from "./CreateSurvey";
-import Exports from "./Exports";
-import Dashboard from "./Dashboard";
-function App() {
-  const [page, setPage] = useState(() => {
-    const stored = localStorage.getItem("currentpage");
-    return stored || "dashboard";
-  });
-  const [isAuthed, setIsAuthed] = useState(() => {
-    const stored = localStorage.getItem("authed");
-    return stored === "true";
-  });
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import ResidentApp from "./ResidentApp";
+import AdminApp from "./AdminApp";
 
-  useEffect(() => {
-    localStorage.setItem("currentpage", page);
-  }, [page]);
-
-  useEffect(() => {
-    localStorage.setItem("authed", isAuthed ? "true" : "false");
-  }, [isAuthed]);
-
-  const handleLogin = () => {
-    setIsAuthed(true);
-    setPage("dashboard");
-  };
-
-  const handleLogout = () => {
-    setIsAuthed(false);
-    setPage("login");
-  };
-
-  const handleNavigate = (nextPage) => {
-    if (!isAuthed) {
-      setPage("login");
-      return;
-    }
-    setPage(nextPage);
-  };
-
-  if (!isAuthed) {
-    return <LoginPage onLogin={handleLogin} />;
-  }
-
+function MainApp() {
   return (
-    <div className="app-layout">
-      <Sidebar onNavigate={handleNavigate} />
+    <Router>
+      <Routes>
 
-      <div className="main-content">
-        <Topbar currentPage={page} onNavigate={handleNavigate} onLogout={handleLogout} />
+        {/* Resident */}
+        <Route path="/*" element={<ResidentApp />} />
 
-        {page === "dashboard" && <Dashboard />}
-        {page === "adminSurveys" && (
-          <AdminSurveys onNavigate={handleNavigate} />
-        )}
-        {page === "settings" && <AdminSettings />}
-        {page === "createSurvey" && <CreateSurvey />}
-        {page === "exports" && <Exports />}
-      </div>
-    </div>
+        {/* Admin */}
+        <Route path="/admin/*" element={<AdminApp />} />
+
+      </Routes>
+    </Router>
   );
 }
 
-export default App;
+export default MainApp;
