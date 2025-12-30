@@ -1,5 +1,5 @@
 import React from "react";
-import "./SurveyChat.css";
+import "../Styles/SurveyChat.css";
 
 const SurveyChat = () => {
   return (

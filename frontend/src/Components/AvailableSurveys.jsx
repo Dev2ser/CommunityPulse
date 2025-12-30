@@ -1,7 +1,10 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import "../Styles/AvailableSurveys.css";
 
 function AvailableSurveys() {
+  const navigate = useNavigate();
+
   const surveys = [
     { title: "WHEELING GATEWAY CENTER", location: "Wheeling WV" },
     { title: "ROBINSON FANS", location: "Lakeland FL" },
@@ -11,6 +14,12 @@ function AvailableSurveys() {
     { title: "CLAY SCHOOL", location: "Wheeling WV" },
     { title: "BRITE", location: "Warren OH" }
   ];
+
+  const openSurvey = (surveyTitle) => {
+    // Navigate to the SurveyChat page
+    // Optionally pass survey info via state
+    navigate("/survey-chat", { state: { surveyTitle } });
+  };
 
   return (
     <div className="surveys-page">
@@ -26,7 +35,11 @@ function AvailableSurveys() {
 
       <div className="surveys-list">
         {surveys.map((s, i) => (
-          <button key={i} className="survey-card">
+          <button
+            key={i}
+            className="survey-card"
+            onClick={() => openSurvey(s.title)}
+          >
             <div className="survey-text">
               <div className="survey-title">{s.title}</div>
               <div className="survey-location">{s.location}</div>
@@ -40,4 +53,5 @@ function AvailableSurveys() {
 }
 
 export default AvailableSurveys;
+
 

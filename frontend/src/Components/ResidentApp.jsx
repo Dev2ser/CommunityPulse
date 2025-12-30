@@ -1,17 +1,21 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import WelcomePage from "./WelcomePage";
-
-function ResidentApp() {
-  return (
-    <Routes>
-      <Route path="/" element={<WelcomePage />} />
-    </Routes>
-  );
-}
+import AvailableSurvey from "./AvailableSurveys"; 
+import SurveyChat from "./SurveyChat";
 
 function WelcomeWrapper() {
   const navigate = useNavigate();
   return <WelcomePage onStart={() => navigate("/surveys")} />;
+}
+
+function ResidentApp() {
+  return (
+    <Routes>
+      <Route path="/" element={<WelcomeWrapper />} />
+      <Route path="/surveys" element={<AvailableSurvey />} />
+      <Route path="/survey-chat" element={<SurveyChat />} />
+    </Routes>
+  );
 }
 
 export default ResidentApp;
