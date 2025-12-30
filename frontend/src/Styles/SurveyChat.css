@@ -1,0 +1,257 @@
+:root {
+  --bg-page: #f3f5f9;
+  --bg-card: #ffffff;
+  --bg-bubble: #e1f5e4;
+  --primary: #1e9150;
+  --primary-dark: #16723f;
+  --border-soft: #d7dde7;
+  --text-main: #1f2933;
+  --text-muted: #6b7280;
+  --radius-large: 18px;
+  --radius-medium: 12px;
+  --radius-full: 999px;
+  --shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.12);
+  --font-main: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+    "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+}
+
+/* Page layout */
+
+.survey-page {
+  min-height: 100vh;
+  padding: 32px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at top left, #e0f2f1 0, #f3f5f9 45%, #e5ecff 100%);
+}
+
+.survey-container {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-card);
+  border-radius: 28px;
+  padding: 24px 24px 20px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Header */
+
+.survey-header {
+  text-align: left;
+}
+
+.survey-title {
+  margin: 0;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-main);
+}
+
+.survey-subtitle {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Progress */
+
+.survey-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.survey-progress-top-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.survey-progress-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.survey-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.survey-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border-radius: var(--radius-full);
+}
+
+/* Chat card */
+
+.survey-chat-card {
+  background: #f9fafb;
+  border-radius: 22px;
+  padding: 16px 16px 14px;
+  border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.survey-chat-bubble {
+  background: var(--bg-bubble);
+  border-radius: 18px;
+  padding: 14px 16px;
+  max-width: 100%;
+}
+
+.survey-chat-text {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+/* Options */
+
+.survey-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.survey-option-button {
+  border-radius: 999px;
+  border: 1px solid var(--primary);
+  background: #ffffff;
+  padding: 6px 14px;
+  font-size: 13px;
+  color: var(--primary-dark);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.survey-option-button:hover {
+  background: rgba(34, 197, 94, 0.08);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.16);
+}
+
+/* Input section */
+
+.survey-input-section {
+  margin-top: 4px;
+}
+
+.survey-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: var(--radius-large);
+  border: 1px solid var(--border-soft);
+  padding: 8px 10px 8px 14px;
+  background: #f9fafb;
+}
+
+.survey-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-main);
+}
+
+.survey-input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Icons row */
+
+.survey-input-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.survey-icon-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.survey-icon-button .icon {
+  font-size: 14px;
+}
+
+.icon-label {
+  line-height: 1;
+}
+
+/* Send button */
+
+.survey-send-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  border: none;
+  background: var(--primary);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.survey-send-button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+  .survey-container {
+    padding: 20px 16px 16px;
+    border-radius: 22px;
+  }
+
+  .survey-chat-text {
+    font-size: 13px;
+  }
+
+  .survey-option-button {
+    font-size: 12px;
+  }
+
+  .survey-icon-button {
+    padding-inline: 6px;
+    font-size: 10px;
+  }
+}

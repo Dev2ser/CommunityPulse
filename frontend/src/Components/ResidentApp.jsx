@@ -1,12 +1,10 @@
 import { Routes, Route, useNavigate } from "react-router-dom";
 import WelcomePage from "./WelcomePage";
-import AvailableSurveys from "./AvailableSurveys";
 
 function ResidentApp() {
   return (
     <Routes>
-      <Route path="/" element={<WelcomeWrapper />} />
-      <Route path="/surveys" element={<AvailableSurveys />} />
+      <Route path="/" element={<WelcomePage />} />
     </Routes>
   );
 }
