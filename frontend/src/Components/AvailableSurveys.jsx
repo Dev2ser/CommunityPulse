@@ -1,25 +1,47 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/AvailableSurveys.css";
 
+
 function AvailableSurveys() {
   const navigate = useNavigate();
+  const [surveys, setSurveys] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const surveys = [
-    { title: "WHEELING GATEWAY CENTER", location: "Wheeling WV" },
-    { title: "ROBINSON FANS", location: "Lakeland FL" },
-    { title: "RENEWALL", location: "Huntington WV" },
-    { title: "INNOVATION DISTRICT", location: "Myrtle Beach SC" },
-    { title: "MEMPHIS AND PEARL", location: "Cleveland OH" },
-    { title: "CLAY SCHOOL", location: "Wheeling WV" },
-    { title: "BRITE", location: "Warren OH" }
-  ];
 
-  const openSurvey = (surveyTitle) => {
-    // Navigate to the SurveyChat page
-    // Optionally pass survey info via state
-    navigate("/survey-chat", { state: { surveyTitle } });
+  // Fetch surveys from backend
+  useEffect(() => {
+    async function fetchSurveys() {
+      try {
+        const res = await fetch("http://localhost:5001/api/surveys");
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.message || "Failed to fetch surveys");
+        }
+
+        setSurveys(data.surveys || []);
+      } catch (err) {
+        console.error(err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchSurveys();
+  }, []);
+
+  const openSurvey = (survey) => {
+    console.log("Selected survey object:", survey); 
+    // Navigate to SurveyChat and pass the full survey object
+    navigate("/survey-chat", { state: { survey } });
   };
+
+  if (loading) return <p className="loading">Loading surveys...</p>;
+  if (error) return <p className="error">Error: {error}</p>;
+  if (surveys.length === 0) return <p>No surveys found.</p>;
 
   return (
     <div className="surveys-page">
@@ -34,15 +56,15 @@ function AvailableSurveys() {
       </header>
 
       <div className="surveys-list">
-        {surveys.map((s, i) => (
+        {surveys.map((s) => (
           <button
-            key={i}
+            key={s._id}
             className="survey-card"
-            onClick={() => openSurvey(s.title)}
+            onClick={() => openSurvey(s)}
           >
             <div className="survey-text">
               <div className="survey-title">{s.title}</div>
-              <div className="survey-location">{s.location}</div>
+              <div className="survey-location">{s.targetNeighborhood || "All"}</div>
             </div>
             <div className="survey-arrow">›</div>
           </button>
@@ -53,5 +75,6 @@ function AvailableSurveys() {
 }
 
 export default AvailableSurveys;
+
 
 

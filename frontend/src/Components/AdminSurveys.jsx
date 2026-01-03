@@ -143,11 +143,11 @@ export default function AdminSurveys({onNavigate}) {
         <tbody>
           {filteredSurveys.map((survey, index) => (
             <tr key={index}>
-              <td>{survey.name}</td>
+              <td>{survey.title}</td>
               <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
-              <td>{survey.created}</td>
+              <td>{survey.createdAt}</td>
               <td>{survey.responses}</td>
-              <td>{survey.updated}</td>
+              <td>{survey.updatedAt}</td>
               <td>
                 <button className="icon-button view" title="View Survey">
                   <FontAwesomeIcon icon={faEye} />
