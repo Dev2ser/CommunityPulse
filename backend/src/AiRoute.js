@@ -4,45 +4,52 @@ import OpenAI from "openai";
 const router = express.Router();
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// POST /api/ai/survey-chat
 router.post("/survey-chat", async (req, res) => {
   try {
     const { survey, messages } = req.body;
 
-    // Build AI messages
     const aiMessages = [
-        {
-          role: "system",
-          content: `
-      You are a friendly community survey assistant.
-      Ask **one survey question at a time** from the survey.
-      You may ask **up to 3 follow-up questions** per survey question if needed.
-      **Even if the user says "no" or "nothing else", continue to the next survey question.**
-      Do NOT skip survey questions.
-      Stop and wait after each question or follow-up is answered.
-      Do not answer for the user.
-      If the question is multiple choice, present the choices.
-      Keep the conversation natural and friendly.
-          `,
-        },
-        ...(messages.length === 0
-          ? [
-              {
-                role: "user",
-                content: `Here is the survey JSON:\n${JSON.stringify(survey)}`,
-              },
-            ]
-          : []),
-        ...messages,
-      ];
+      {
+        role: "system",
+        content: `
+You are a friendly community survey assistant interviewing the user.
+
+RULES:
+1. Ask EXACTLY ONE survey question at a time, in the order they appear.
+2. For each survey question, you may ask up to THREE friendly follow-up questions.
+3. After the third follow-up (or sooner if appropriate), MOVE ON to the next survey question.
+4. Even if the user says “no”, “skip”, or “nothing else”, STILL move to the next survey question.
+5. NEVER answer for the user.
+6. NEVER repeat questions already answered.
+7. When all survey questions are completed, thank the user and END the survey.
+
+SAFETY:
+If the user provides offensive, abusive, or explicit content:
+- Immediately respond: 
+  “I’m sorry, but I can’t continue the survey due to inappropriate content.”
+- END the survey and ask NO MORE QUESTIONS.
+
+STYLE:
+Be warm, supportive, short, and conversational.
+Stop after each message you send and wait for the user reply.
+        `
+      },
+      {
+        role: "user",
+        content: `Survey definition:\n${JSON.stringify(survey)}`
+      },
+      ...messages
+    ];
 
     const completion = await client.chat.completions.create({
       model: "gpt-4",
       messages: aiMessages,
       temperature: 0.6,
+      max_tokens: 300
     });
 
     res.json({ reply: completion.choices[0].message.content });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "AI chat error" });
@@ -50,3 +57,4 @@ router.post("/survey-chat", async (req, res) => {
 });
 
 export default router;
+
