@@ -1,28 +1,74 @@
 import "../Styles/SurveyChat.css";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 
 const SurveyChat = () => {
   const { state } = useLocation();
   const survey = state?.survey;
 
-  const [messages, setMessages] = useState([]); // Chat history
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // VOICE
+  const [listening, setListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const chatEndRef = useRef(null);
 
   useEffect(() => {
     if (survey) console.log("Loaded survey:", survey);
   }, [survey]);
 
-  // Send message to AI
+  // Auto-scroll
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, loading]);
+
+  // VOICE SETUP
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      console.warn("Speech recognition not supported");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    recognition.onstart = () => setListening(true);
+
+    recognition.onend = () => setListening(false);
+
+    recognition.onerror = () => setListening(false);
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setInput((prev) => (prev ? prev + " " + transcript : transcript));
+    };
+
+    recognitionRef.current = recognition;
+  }, []);
+
+  const startVoiceInput = () => {
+    if (!recognitionRef.current) {
+      alert("Voice input not supported in this browser.");
+      return;
+    }
+
+    recognitionRef.current.start();
+  };
+
   const sendToAI = async (userMessage) => {
     if (!survey) return;
 
-    // Add user message to chat
     const newMessages = userMessage
       ? [...messages, { role: "user", content: userMessage }]
-      : [...messages]; // if no user message, just send context
+      : [...messages];
 
     if (userMessage) setMessages(newMessages);
 
@@ -33,7 +79,7 @@ const SurveyChat = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          survey,        // full survey object
+          survey,
           messages: newMessages,
         }),
       });
@@ -42,12 +88,10 @@ const SurveyChat = () => {
 
       if (!res.ok) {
         console.error("AI error:", data.message);
-        setLoading(false);
         return;
       }
 
-      // Add AI reply to chat
-      setMessages((prev) => [
+      setMessages([
         ...newMessages,
         { role: "assistant", content: data.reply },
       ]);
@@ -58,16 +102,15 @@ const SurveyChat = () => {
     }
   };
 
-  // Send user input
   const handleSend = () => {
     if (!input.trim()) return;
     sendToAI(input);
     setInput("");
   };
 
-  // Initial AI greeting
+  // Initial greeting
   useEffect(() => {
-    if (survey) sendToAI(""); // send empty user message to trigger AI greeting
+    if (survey) sendToAI("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [survey]);
 
@@ -90,7 +133,7 @@ const SurveyChat = () => {
           </div>
         </section>
 
-        {/* Chat card */}
+        {/* Chat */}
         <section className="survey-chat-card">
           {messages.length === 0 && !loading && (
             <div className="survey-chat-bubble assistant">
@@ -117,15 +160,19 @@ const SurveyChat = () => {
               <p className="survey-chat-text">Typing...</p>
             </div>
           )}
+
+          <div ref={chatEndRef} />
         </section>
 
-        {/* Input row */}
+        {/* Input */}
         <section className="survey-input-section">
           <div className="survey-input-wrapper">
             <input
               type="text"
               className="survey-input"
-              placeholder="Type your response..."
+              placeholder={
+                listening ? "Listening..." : "Type your response..."
+              }
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
@@ -136,14 +183,24 @@ const SurveyChat = () => {
                 <span className="icon">📊</span>
                 <span className="icon-label">Visual Input</span>
               </button>
+
               <button className="survey-icon-button" type="button">
                 <span className="icon">📍</span>
                 <span className="icon-label">Location</span>
               </button>
-              <button className="survey-icon-button" type="button">
-                <span className="icon">✏️</span>
-                <span className="icon-label">Voice</span>
+
+              {/* 🎤 VOICE BUTTON */}
+              <button
+                className="survey-icon-button"
+                type="button"
+                onClick={startVoiceInput}
+              >
+                <span className="icon">{listening ? "🎙️" : "🎤"}</span>
+                <span className="icon-label">
+                  {listening ? "Listening..." : "Voice"}
+                </span>
               </button>
+
               <button className="survey-icon-button" type="button">
                 <span className="icon">📷</span>
                 <span className="icon-label">Photo</span>
