@@ -79,6 +79,29 @@ router.get("/surveys", async (_req, res) => {
   }
 });
 
+// List of published surveys
+router.get("/publishedSurveys", async (_req, res) => {
+  try {
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ message: "Database not initialized" });
+    }
+
+    // Only get surveys where status is "published"
+    const surveys = await db
+      .collection("Surveys")
+      .find({ status: "published" })  
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ surveys });
+  } catch (err) {
+    console.error("List surveys error:", err);
+    res.status(500).json({ message: "Server error listing surveys" });
+  }
+});
+
+
 // Delete a survey
 router.delete("/surveys/:id", async (req, res) => {
   try {

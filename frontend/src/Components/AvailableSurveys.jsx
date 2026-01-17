@@ -14,7 +14,7 @@ function AvailableSurveys() {
   useEffect(() => {
     async function fetchSurveys() {
       try {
-        const res = await fetch("http://localhost:5001/api/surveys");
+        const res = await fetch("http://localhost:5001/api/publishedSurveys");
         const data = await res.json();
 
         if (!res.ok) {
