@@ -27,7 +27,7 @@ font-family: Montserrat;
 font-size: 12px;
 font-style: normal;
 font-weight: 400;
-line-height: 16px; /* 133.333% */
+line-height: 16px; 
 letter-spacing: 2.4px;
 text-transform: uppercase;
   }
@@ -45,7 +45,7 @@ text-transform: uppercase;
     margin-top: 28px;
   }
   
-  /* Description Line */
+
   .description {
     color: #8599B1;
     text-align: center;
@@ -67,7 +67,8 @@ text-transform: uppercase;
     align-items: center;  
     border-radius: 20px;
     background: #86C779;
-    border: 2px solid #4c8e5e;  
+    border: 2px solid #4c8e5e; 
+    color: white; 
     font-family: Montserrat;
     font-size: 15px;
     font-weight: 500;

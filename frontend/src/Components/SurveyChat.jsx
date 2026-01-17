@@ -14,6 +14,12 @@ const SurveyChat = () => {
   const [listening, setListening] = useState(false);
   const recognitionRef = useRef(null);
 
+  // Survey progress
+  const [progress, setProgress] = useState({ current: 0, total: 1 });
+
+  // Survey complete flag
+  const [surveyComplete, setSurveyComplete] = useState(false);
+
   const chatEndRef = useRef(null);
 
   useEffect(() => {
@@ -41,9 +47,7 @@ const SurveyChat = () => {
     recognition.lang = "en-US";
 
     recognition.onstart = () => setListening(true);
-
     recognition.onend = () => setListening(false);
-
     recognition.onerror = () => setListening(false);
 
     recognition.onresult = (event) => {
@@ -59,7 +63,6 @@ const SurveyChat = () => {
       alert("Voice input not supported in this browser.");
       return;
     }
-
     recognitionRef.current.start();
   };
 
@@ -91,10 +94,28 @@ const SurveyChat = () => {
         return;
       }
 
-      setMessages([
-        ...newMessages,
-        { role: "assistant", content: data.reply },
-      ]);
+      // --- Update progress from AI metadata ---
+      if (data.progress) {
+        console.log(
+          `Survey progress: Question ${data.progress.current} of ${data.progress.total}`
+        );
+        setProgress({
+          current: data.progress.current,
+          total: data.progress.total,
+        });
+      } else {
+        console.warn("No progress data returned from AI");
+      }
+
+      // --- Update survey complete flag ---
+      if (data.surveyComplete) {
+        setSurveyComplete(true);
+      }
+
+      // --- Add AI message only if survey not complete ---
+      if (!data.surveyComplete) {
+        setMessages([...newMessages, { role: "assistant", content: data.reply }]);
+      }
     } catch (err) {
       console.error("Network error:", err);
     } finally {
@@ -108,11 +129,36 @@ const SurveyChat = () => {
     setInput("");
   };
 
-  // Initial greeting
+  // Initial greeting / start survey
   useEffect(() => {
     if (survey) sendToAI("");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [survey]);
+
+  // Calculate progress percentage safely
+  const progressPercent =
+    progress.total > 0
+      ? Math.round((progress.current / progress.total) * 100)
+      : 0;
+
+  // --- Render ---
+  if (surveyComplete) {
+    // Show thank-you screen instead of chat
+    return (
+      <div className="survey-page">
+        <div className="survey-container">
+          <header className="survey-header">
+            <h1 className="survey-title">COMMUNITY PULSE ASSISTANT</h1>
+            <p className="survey-subtitle">Powered by Tipping Point</p>
+          </header>
+          <section className="survey-complete-card">
+            <h2>🎉 Thank you for completing the survey!</h2>
+            <p>We really appreciate your feedback and ideas.</p>
+          </section>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="survey-page">
@@ -126,10 +172,15 @@ const SurveyChat = () => {
         {/* Progress */}
         <section className="survey-progress-section">
           <div className="survey-progress-top-row">
-            <span className="survey-progress-label">15% Complete</span>
+            <span className="survey-progress-label">
+              {progressPercent}% Complete
+            </span>
           </div>
           <div className="survey-progress-bar">
-            <div className="survey-progress-fill" style={{ width: "15%" }} />
+            <div
+              className="survey-progress-fill"
+              style={{ width: `${progressPercent}%` }}
+            />
           </div>
         </section>
 
@@ -170,12 +221,11 @@ const SurveyChat = () => {
             <input
               type="text"
               className="survey-input"
-              placeholder={
-                listening ? "Listening..." : "Type your response..."
-              }
+              placeholder={listening ? "Listening..." : "Type your response..."}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={loading} // optional: prevent typing while AI responds
             />
 
             <div className="survey-input-icons">
