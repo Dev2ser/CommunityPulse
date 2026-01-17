@@ -15,6 +15,8 @@ function AdminApp() {
     return stored || "dashboard";
   });
 
+  const [pageProps, setPageProps] = useState({}); // <-- store props for navigation
+
   const [isAuthed, setIsAuthed] = useState(() => {
     const stored = localStorage.getItem("authed");
     return stored === "true";
@@ -33,9 +35,10 @@ function AdminApp() {
     setPage("login");
   };
 
-  const handleNavigate = (nextPage) => {
+  const handleNavigate = (nextPage, props = {}) => {
     if (!isAuthed) return setPage("login");
     setPage(nextPage);
+    setPageProps(props); // <-- store extra props
   };
 
   if (!isAuthed) return <LoginPage onLogin={handleLogin} />;
@@ -54,7 +57,14 @@ function AdminApp() {
         {page === "dashboard" && <Dashboard />}
         {page === "adminSurveys" && <AdminSurveys onNavigate={handleNavigate} />}
         {page === "settings" && <AdminSettings />}
-        {page === "createSurvey" && <CreateSurvey />}
+        {page === "createSurvey" && (
+          <CreateSurvey
+            onNavigate={handleNavigate}
+            mode={pageProps.mode || "create"}
+            surveyToEdit={pageProps.survey || null}
+            onSaved={() => setPage("adminSurveys")}
+          />
+        )}
         {page === "exports" && <Exports />}
       </div>
     </div>

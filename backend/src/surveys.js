@@ -130,4 +130,65 @@ router.delete("/surveys/:id", async (req, res) => {
   }
 });
 
+// Update a survey 
+router.put("/surveys/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid survey id" });
+    }
+
+    const { title, questions = [] } = req.body;
+
+    if (!title || !Array.isArray(questions)) {
+      return res
+        .status(400)
+        .json({ message: "Title and questions are required." });
+    }
+
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ message: "Database not initialized" });
+    }
+
+    // Fetch the current survey
+    const existingSurvey = await db
+      .collection("Surveys")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!existingSurvey) {
+      return res.status(404).json({ message: "Survey not found" });
+    }
+
+    // Clean questions
+    const cleanedQuestions = questions.map((q) => ({
+      text: q.text || "",
+      type: q.type || "text",
+      allowImage: q.type === "text" ? !!q.allowImage : false,
+      options:
+        q.type === "multiple"
+          ? (q.options || []).filter((opt) => opt && opt.trim().length > 0)
+          : [],
+    }));
+
+  
+    const result = await db.collection("Surveys").updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          title,
+          questions: cleanedQuestions,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    res.json({ message: "Survey updated successfully" });
+  } catch (err) {
+    console.error("Update survey error:", err);
+    res.status(500).json({ message: "Server error updating survey" });
+  }
+});
+
+
 export default router;

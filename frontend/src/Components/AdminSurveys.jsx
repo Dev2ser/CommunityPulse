@@ -152,9 +152,13 @@ export default function AdminSurveys({onNavigate}) {
                 <button className="icon-button view" title="View Survey">
                   <FontAwesomeIcon icon={faEye} />
                 </button>
-                <button className="icon-button edit" title="Edit Survey">
-                  <FontAwesomeIcon icon={faPen} />
-                </button>
+                <button
+            className="icon-button edit"
+            title="Edit Survey"
+           onClick={() => onNavigate("createSurvey", { mode: "edit", survey: survey })}
+          >
+          <FontAwesomeIcon icon={faPen} />
+          </button>
                 <button className="icon-button copy" title="Copy Survey">
                   <FontAwesomeIcon icon={faCopy} />
                 </button>
