@@ -20,11 +20,11 @@ const SurveyChat = () => {
   // Survey complete flag
   const [surveyComplete, setSurveyComplete] = useState(false);
 
-  const chatEndRef = useRef(null);
+  // Current question type & options
+  const [currentQuestionType, setCurrentQuestionType] = useState("text");
+  const [currentOptions, setCurrentOptions] = useState([]);
 
-  useEffect(() => {
-    if (survey) console.log("Loaded survey:", survey);
-  }, [survey]);
+  const chatEndRef = useRef(null);
 
   // Auto-scroll
   useEffect(() => {
@@ -96,23 +96,20 @@ const SurveyChat = () => {
 
       // --- Update progress from AI metadata ---
       if (data.progress) {
-        console.log(
-          `Survey progress: Question ${data.progress.current} of ${data.progress.total}`
-        );
         setProgress({
           current: data.progress.current,
           total: data.progress.total,
         });
-      } else {
-        console.warn("No progress data returned from AI");
       }
 
       // --- Update survey complete flag ---
-      if (data.surveyComplete) {
-        setSurveyComplete(true);
-      }
+      if (data.surveyComplete) setSurveyComplete(true);
 
-      // --- Add AI message only if survey not complete ---
+      // --- Update current question type & options for multiple-choice ---
+      setCurrentQuestionType(data.questionType || "text");
+      setCurrentOptions(data.options || []);
+
+      // --- Add AI message to chat ---
       if (!data.surveyComplete) {
         setMessages([...newMessages, { role: "assistant", content: data.reply }]);
       }
@@ -143,7 +140,6 @@ const SurveyChat = () => {
 
   // --- Render ---
   if (surveyComplete) {
-    // Show thank-you screen instead of chat
     return (
       <div className="survey-page">
         <div className="survey-container">
@@ -215,55 +211,72 @@ const SurveyChat = () => {
           <div ref={chatEndRef} />
         </section>
 
-        {/* Input */}
+        {/* Input / Options */}
         <section className="survey-input-section">
           <div className="survey-input-wrapper">
-            <input
-              type="text"
-              className="survey-input"
-              placeholder={listening ? "Listening..." : "Type your response..."}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              disabled={loading} // optional: prevent typing while AI responds
-            />
+            {currentQuestionType === "multiple" && currentOptions.length > 0 ? (
+              // --- Multiple-choice buttons ---
+              <div className="survey-options-container">
+                {currentOptions.map((opt, idx) => (
+                  <button
+                    key={idx}
+                    className="survey-option-bubble"
+                    onClick={() => sendToAI(opt)}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              // --- Text input + icons + send button ---
+              <>
+                <input
+                  type="text"
+                  className="survey-input"
+                  placeholder={listening ? "Listening..." : "Type your response..."}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
+                  disabled={loading}
+                />
 
-            <div className="survey-input-icons">
-              <button className="survey-icon-button" type="button">
-                <span className="icon">📊</span>
-                <span className="icon-label">Visual Input</span>
-              </button>
+                <div className="survey-input-icons">
+                  <button className="survey-icon-button" type="button">
+                    <span className="icon">📊</span>
+                    <span className="icon-label">Visual Input</span>
+                  </button>
 
-              <button className="survey-icon-button" type="button">
-                <span className="icon">📍</span>
-                <span className="icon-label">Location</span>
-              </button>
+                  <button className="survey-icon-button" type="button">
+                    <span className="icon">📍</span>
+                    <span className="icon-label">Location</span>
+                  </button>
 
-              {/* 🎤 VOICE BUTTON */}
-              <button
-                className="survey-icon-button"
-                type="button"
-                onClick={startVoiceInput}
-              >
-                <span className="icon">{listening ? "🎙️" : "🎤"}</span>
-                <span className="icon-label">
-                  {listening ? "Listening..." : "Voice"}
-                </span>
-              </button>
+                  <button
+                    className="survey-icon-button"
+                    type="button"
+                    onClick={startVoiceInput}
+                  >
+                    <span className="icon">{listening ? "🎙️" : "🎤"}</span>
+                    <span className="icon-label">
+                      {listening ? "Listening..." : "Voice"}
+                    </span>
+                  </button>
 
-              <button className="survey-icon-button" type="button">
-                <span className="icon">📷</span>
-                <span className="icon-label">Photo</span>
-              </button>
-            </div>
+                  <button className="survey-icon-button" type="button">
+                    <span className="icon">📷</span>
+                    <span className="icon-label">Photo</span>
+                  </button>
+                </div>
 
-            <button
-              className="survey-send-button"
-              type="button"
-              onClick={handleSend}
-            >
-              ✈️
-            </button>
+                <button
+                  className="survey-send-button"
+                  type="button"
+                  onClick={handleSend}
+                >
+                  ✈️
+                </button>
+              </>
+            )}
           </div>
         </section>
       </div>

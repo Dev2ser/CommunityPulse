@@ -196,6 +196,30 @@ body {
   color: var(--text-muted);
 }
 
+.survey-options-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.survey-option-bubble {
+  align-self: center;
+  padding: 10px 15px;
+  background-color: #27ae60;
+ 
+  color: #fff;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.survey-option-bubble:hover {
+  background-color:rgb(88, 136, 16)
+}
+
+
 /* Icons row */
 
 .survey-input-icons {
