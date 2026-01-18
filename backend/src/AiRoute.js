@@ -3,6 +3,7 @@ import { getDb } from "./db.js";
 import OpenAI from "openai";
 
 const router = express.Router();
+
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -17,53 +18,99 @@ router.post("/survey-chat", async (req, res) => {
       return res.status(400).json({ message: "Invalid request payload" });
     }
 
-    // --- Build prompt for Responses API ---
+    // --- STRICT DETERMINISTIC PROMPT ---
     const prompt = `
 You are a friendly community survey assistant interviewing the user.
-Greet the user and and mention the town were conducting the survey on.
 
-RULES:
+Your job is to ask survey questions in a strict, controlled sequence.
+You MUST follow all rules exactly. If you break a rule, your response is INVALID.
 
-1. Ask EXACTLY ONE survey question at a time, in order.
-2. You may ask up to THREE follow-up questions.
-3. After follow-ups, move to the next survey question.
-4. Even if the user says "skip" or "no", still move on.
-5. NEVER answer for the user.
-6. NEVER repeat answered questions.
-7. If the question type is "multiple", output a JSON block immediately after the question containing:
-   {
-     "questionType": "multiple",
-     "options": ["Option1", "Option2", ...]
-   }
-   This should appear **right after the question text**. The frontend will parse this JSON to show clickable options.
+====================
+ABSOLUTE RULES
+====================
 
-8. Always start predefined questions with:
-   "Question X of Y:"
-   
-9. ONLY if all predefined questions and follow ups are completed explicity say "thank you for completing the survey" as a flag for the frontend.
+1. Ask EXACTLY ONE predefined survey question at a time, in the order provided.
+2. Predefined survey questions increment progress.
+3. Follow-up questions DO NOT increment progress.
+4. You may ask up to THREE follow-up questions per predefined survey question.
+5. After follow-ups (or sooner if appropriate), MOVE ON to the NEXT predefined question.
+6. Even if the user says "skip", "no", repeats themselves, or gives no new information,
+   you MUST continue until all predefined survey questions are asked.
+7. NEVER answer for the user.
+8. NEVER repeat a predefined survey question once it has been answered.
+9. NEVER end the survey early.
+10. NEVER thank the user for completing the survey unless explicitly instructed below.
 
-INTERNAL METADATA (VERY IMPORTANT):
-At the VERY TOP of your response, include exactly one line:
+====================
+MULTIPLE CHOICE RULE
+====================
+
+If the current predefined survey question has type "multiple",
+IMMEDIATELY after the question text output a JSON block exactly like this:
+
+{
+  "questionType": "multiple",
+  "options": ["Option 1", "Option 2", "Option 3"]
+}
+
+This JSON must appear directly after the question text with no explanation.
+
+====================
+QUESTION FORMAT
+====================
+
+Predefined survey questions MUST start with:
+
+Question X of Y:
+
+Follow-up questions MUST NOT use the "Question X of Y" format.
+
+====================
+SURVEY COMPLETION (VERY IMPORTANT)
+====================
+
+ONLY when ALL predefined survey questions AND their follow-ups are complete,
+output this token on its OWN LINE:
+
+[[SURVEY_COMPLETE]]
+
+After that token, you may add ONE polite thank-you sentence.
+DO NOT output this token under ANY other circumstance.
+
+====================
+PROGRESS METADATA (MANDATORY)
+====================
+
+At the VERY TOP of every response, include EXACTLY ONE line:
+
 [PROGRESS question=X total=Y]
 
-This line is for internal use only. Do not explain it.
+This line MUST appear first.
+If it is missing, the response is INVALID.
+
+====================
+CONTEXT
+====================
+
+You are conducting this survey for the town specified in the survey metadata.
+Mention the town naturally in your greeting.
 
 Survey definition:
 ${JSON.stringify(survey, null, 2)}
 
 Conversation so far:
 ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
-    `.trim();
+`.trim();
 
-    // --- Call Responses API ---
+    // --- Call OpenAI Responses API ---
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,
       temperature: 0.3,
-      max_output_tokens: 300
+      max_output_tokens: 350
     });
 
-    // --- Extract text safely ---
+    // --- Extract output text safely ---
     const rawReply =
       response.output_text ||
       response.output?.[0]?.content
@@ -72,69 +119,74 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
         ?.join("") ||
       "";
 
-    if (!rawReply) throw new Error("Empty AI response");
+    if (!rawReply) {
+      throw new Error("Empty AI response");
+    }
 
-    // --- Parse progress metadata ---
+    // --- Parse PROGRESS metadata ---
     const progressMatch = rawReply.match(/\[PROGRESS question=(\d+) total=(\d+)\]/);
-    const progress = progressMatch
-      ? {
-          current: Number(progressMatch[1]),
-          total: Number(progressMatch[2])
-        }
-      : null;
-
-    // --- Remove metadata from message ---
-    const cleanReply = rawReply.replace(/\[PROGRESS question=\d+ total=\d+\]\n?/, "");
-
-    if (progress) {
-      console.log(`Survey progress: Question ${progress.current} of ${progress.total}`);
-    } else {
-      console.warn("Survey progress metadata missing");
+    if (!progressMatch) {
+      throw new Error("Progress metadata missing from AI response");
     }
 
+    const progress = {
+      current: Number(progressMatch[1]),
+      total: Number(progressMatch[2])
+    };
 
-    let surveyComplete = false;
+    // --- Remove progress line ---
+    let cleanReply = rawReply.replace(
+      /\[PROGRESS question=\d+ total=\d+\]\n?/,
+      ""
+    );
 
-    // 1If AI explicitly says survey is done
-    if (cleanReply.toLowerCase().includes("thank you for completing the survey")) {
-      surveyComplete = true;
+    // --- Detect survey completion (HARD TOKEN ONLY) ---
+    const surveyComplete = cleanReply.includes("[[SURVEY_COMPLETE]]");
+
+    // --- Remove completion token from display text ---
+    cleanReply = cleanReply.replace("[[SURVEY_COMPLETE]]", "").trim();
+
+    // --- Extract multiple-choice JSON if present ---
+    let aiData = null;
+    const jsonMatch = cleanReply.match(/\{[\s\S]*?\}/);
+
+    if (jsonMatch) {
+      try {
+        aiData = JSON.parse(jsonMatch[0]);
+      } catch {
+        console.warn("Failed to parse AI options JSON");
+      }
     }
-    
 
-    // --- Save to DB only when survey is complete ---
+    // --- Remove JSON block from visible text ---
+    const visibleReply = cleanReply.replace(/\{[\s\S]*?\}/, "").trim();
+
+    // --- Save to DB ONLY when survey is complete ---
     if (surveyComplete) {
       await db.collection("SurveyResponse").insertOne({
-        surveyId: survey._id || "unknown",
-        messages: messages.concat({ role: "assistant", content: cleanReply }),
+        surveyName: survey.title || "unknown",
+        messages: messages.concat({
+          role: "assistant",
+          content: visibleReply
+        }),
         progress,
         createdAt: new Date()
       });
+
       console.log("Survey response saved");
     }
 
-   let aiData = null;
-const jsonMatch = cleanReply.match(/\{[\s\S]*\}/); 
-if (jsonMatch) {
-  try {
-    aiData = JSON.parse(jsonMatch[0]);
-  } catch (err) {
-    console.warn("Failed to parse AI JSON block for options");
-  }
-}
-
-// --- Send to frontend ---
-res.json({
-  reply: cleanReply.replace(/\{[\s\S]*\}/, "").trim(), // remove JSON from displayed text
-  progress,
-  surveyComplete,
-  questionType: aiData?.questionType || "text",
-  options: aiData?.options || null
-});
+    // --- Send response to frontend ---
+    res.json({
+      reply: visibleReply,
+      progress,
+      surveyComplete,
+      questionType: aiData?.questionType || "text",
+      options: aiData?.options || null
+    });
 
   } catch (err) {
     console.error("Survey chat error:", err);
-    console.error("OpenAI error details:", err?.response?.data);
-
     res.status(500).json({ message: "AI chat error" });
   }
 });
