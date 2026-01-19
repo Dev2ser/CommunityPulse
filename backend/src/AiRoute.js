@@ -3,7 +3,6 @@ import { getDb } from "./db.js";
 import OpenAI from "openai";
 
 const router = express.Router();
-
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
@@ -18,99 +17,83 @@ router.post("/survey-chat", async (req, res) => {
       return res.status(400).json({ message: "Invalid request payload" });
     }
 
-    // --- STRICT DETERMINISTIC PROMPT ---
+    // --- Build prompt for Responses API ---
     const prompt = `
 You are a friendly community survey assistant interviewing the user.
+Greet the user and mention the town we're conducting the survey in.
 
-Your job is to ask survey questions in a strict, controlled sequence.
-You MUST follow all rules exactly. If you break a rule, your response is INVALID.
+RULES:
 
-====================
-ABSOLUTE RULES
-====================
+1. Ask EXACTLY ONE survey question at a time, in order.
+2. You may ask up to THREE follow-up questions.
+   Follow-up questions MUST be asked immediately after the user's answer and BEFORE moving to the next predefined question.
+3. After follow-ups, move to the next survey question.
+4. Even if the user says "skip" or "no", still move on.
+5. NEVER answer for the user.
+6. NEVER repeat answered questions.
+7. If the question type is "multiple", output a JSON block immediately after the question containing:
+   {
+     "questionType": "multiple",
+     "options": ["Option1", "Option2", ...]
+   }
+   This should appear right after the question text.
 
-1. Ask EXACTLY ONE predefined survey question at a time, in the order provided.
-2. Predefined survey questions increment progress.
-3. Follow-up questions DO NOT increment progress.
-4. You may ask up to THREE follow-up questions per predefined survey question.
-5. After follow-ups (or sooner if appropriate), MOVE ON to the NEXT predefined question.
-6. Even if the user says "skip", "no", repeats themselves, or gives no new information,
-   you MUST continue until all predefined survey questions are asked.
-7. NEVER answer for the user.
-8. NEVER repeat a predefined survey question once it has been answered.
-9. NEVER end the survey early.
-10. NEVER thank the user for completing the survey unless explicitly instructed below.
+8. Always start predefined questions with:
+   "Question X of Y:"
+   
+9. ONLY if all predefined questions and follow ups are completed explicitly say:
+   "thank you for completing the survey"
 
-====================
-MULTIPLE CHOICE RULE
-====================
-
-If the current predefined survey question has type "multiple",
-IMMEDIATELY after the question text output a JSON block exactly like this:
-
-{
-  "questionType": "multiple",
-  "options": ["Option 1", "Option 2", "Option 3"]
-}
-
-This JSON must appear directly after the question text with no explanation.
-
-====================
-QUESTION FORMAT
-====================
-
-Predefined survey questions MUST start with:
-
-Question X of Y:
-
-Follow-up questions MUST NOT use the "Question X of Y" format.
-
-====================
-SURVEY COMPLETION (VERY IMPORTANT)
-====================
-
-ONLY when ALL predefined survey questions AND their follow-ups are complete,
-output this token on its OWN LINE:
-
-[[SURVEY_COMPLETE]]
-
-After that token, you may add ONE polite thank-you sentence.
-DO NOT output this token under ANY other circumstance.
-
-====================
-PROGRESS METADATA (MANDATORY)
-====================
-
-At the VERY TOP of every response, include EXACTLY ONE line:
-
+INTERNAL METADATA (VERY IMPORTANT):
+At the VERY TOP of your response, include exactly one line:
 [PROGRESS question=X total=Y]
 
-This line MUST appear first.
-If it is missing, the response is INVALID.
+10. WHEN the survey is fully completed, ALSO append a FINAL JSON block containing the full structured survey result in the following format:
+{
+  "surveyResult": {
+    "surveyTitle": "...",
+    "responses": [
+      {
+        "question": "...",
++       "questionType": "text | multiple",
+        "answer": "...",
++       "followUps": [
++         "follow-up question 1",
++         "follow-up question 2"
++       ],
++       "followUpAnswers": [
++         "answer to follow-up 1",
++         "answer to follow-up 2"
++       ]
+      }
+    ]
+  }
+}
 
-====================
-CONTEXT
-====================
-
-You are conducting this survey for the town specified in the survey metadata.
-Mention the town naturally in your greeting.
+Rules for this JSON:
+- Include ALL predefined survey questions.
+- If a question had no follow-up questions, use empty arrays.
+- followUps and followUpAnswers MUST be the same length.
+- Preserve the order in which follow-ups were asked.
+- If a user skipped a follow-up, store its answer as null.
+- This JSON must appear AFTER the thank-you message.
 
 Survey definition:
 ${JSON.stringify(survey, null, 2)}
 
 Conversation so far:
 ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
-`.trim();
+    `.trim();
 
-    // --- Call OpenAI Responses API ---
+    // --- Call Responses API ---
     const response = await client.responses.create({
       model: "gpt-4.1-mini",
       input: prompt,
       temperature: 0.3,
-      max_output_tokens: 350
+      max_output_tokens: 1000
     });
 
-    // --- Extract output text safely ---
+    // --- Extract text safely ---
     const rawReply =
       response.output_text ||
       response.output?.[0]?.content
@@ -119,66 +102,61 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
         ?.join("") ||
       "";
 
-    if (!rawReply) {
-      throw new Error("Empty AI response");
-    }
+    if (!rawReply) throw new Error("Empty AI response");
 
-    // --- Parse PROGRESS metadata ---
+    // --- Parse progress metadata ---
     const progressMatch = rawReply.match(/\[PROGRESS question=(\d+) total=(\d+)\]/);
-    if (!progressMatch) {
-      throw new Error("Progress metadata missing from AI response");
-    }
+    const progress = progressMatch
+      ? {
+          current: Number(progressMatch[1]),
+          total: Number(progressMatch[2])
+        }
+      : null;
 
-    const progress = {
-      current: Number(progressMatch[1]),
-      total: Number(progressMatch[2])
-    };
+    // --- Remove metadata from message ---
+    const cleanReply = rawReply.replace(/\[PROGRESS question=\d+ total=\d+\]\n?/, "");
 
-    // --- Remove progress line ---
-    let cleanReply = rawReply.replace(
-      /\[PROGRESS question=\d+ total=\d+\]\n?/,
-      ""
+    // --- Extract FINAL survey result JSON ---
+    let finalSurveyResult = null;
+    const finalSurveyMatch = cleanReply.match(
+      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*?\}\s*\}/
     );
 
-    // --- Detect survey completion (HARD TOKEN ONLY) ---
-    const surveyComplete = cleanReply.includes("[[SURVEY_COMPLETE]]");
-
-    // --- Remove completion token from display text ---
-    cleanReply = cleanReply.replace("[[SURVEY_COMPLETE]]", "").trim();
-
-    // --- Extract multiple-choice JSON if present ---
-    let aiData = null;
-    const jsonMatch = cleanReply.match(/\{[\s\S]*?\}/);
-
-    if (jsonMatch) {
+    if (finalSurveyMatch) {
       try {
-        aiData = JSON.parse(jsonMatch[0]);
+        finalSurveyResult = JSON.parse(finalSurveyMatch[0]).surveyResult;
       } catch {
-        console.warn("Failed to parse AI options JSON");
+        console.warn("Failed to parse final survey result JSON");
       }
     }
 
-    // --- Remove JSON block from visible text ---
-    const visibleReply = cleanReply.replace(/\{[\s\S]*?\}/, "").trim();
+    // --- Completion check ---
+    const surveyComplete =
+      cleanReply.toLowerCase().includes("thank you for completing the survey") &&
+      finalSurveyResult !== null;
 
-    // --- Save to DB ONLY when survey is complete ---
+    // --- Store structured survey result ---
     if (surveyComplete) {
       await db.collection("SurveyResponse").insertOne({
-        surveyName: survey.title || "unknown",
-        messages: messages.concat({
-          role: "assistant",
-          content: visibleReply
-        }),
+        surveyTitle: finalSurveyResult.surveyTitle || survey.title || "unknown",
+        responses: finalSurveyResult.responses,
         progress,
         createdAt: new Date()
       });
-
-      console.log("Survey response saved");
     }
 
-    // --- Send response to frontend ---
+    // --- Parse multiple-choice JSON ---
+    let aiData = null;
+    const jsonMatch = cleanReply.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        aiData = JSON.parse(jsonMatch[0]);
+      } catch {}
+    }
+
+    // --- Send to frontend ---
     res.json({
-      reply: visibleReply,
+      reply: cleanReply.replace(/\{[\s\S]*\}/g, "").trim(),
       progress,
       surveyComplete,
       questionType: aiData?.questionType || "text",
