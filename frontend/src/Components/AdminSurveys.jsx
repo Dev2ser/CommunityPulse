@@ -1,69 +1,17 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import "../Styles/AdminSurveys.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPen, faCopy, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPen, faCopy, faTrash, faBoxArchive, faUpload } from '@fortawesome/free-solid-svg-icons';
 
-const surveys = [
-  {
-    name: 'Wheeling Gateway Center - Wheeling, WV',
-    status: 'Active',
-    created: '2025-01-10',
-    responses: 189,
-    updated: '5 hours ago',
-  },
-  {
-    name: 'Robinson Fans - Lakeland, FL',
-    status: 'Draft',
-    created: '2025-01-20',
-    responses: 0,
-    updated: '1 hour ago',
-  },
-  {
-    name: 'RenewAll - Huntington, WV',
-    status: 'Active',
-    created: '2024-12-28',
-    responses: 412,
-    updated: '3 days ago',
-  },
-  {
-    name: 'Innovation District - Myrtle Beach, SC',
-    status: 'Archived',
-    created: '2024-10-01',
-    responses: 567,
-    updated: '2 months ago',
-  },
-  {
-    name: 'Memphis and Pearl - Cleveland, OH',
-    status: 'Draft',
-    created: '2025-01-18',
-    responses: 0,
-    updated: '3 days ago',
-  },
-  {
-    name: 'Clay School - Wheeling, WV',
-    status: 'Active',
-    created: '2025-01-05',
-    responses: 298,
-    updated: '1 day ago',
-  },
-  {
-    name: 'Brite - Warren, OH',
-    status: 'Active',
-    created: '2024-12-20',
-    responses: 345,
-    updated: '4 days ago',
-  },
-];
-
-export default function AdminSurveys({onNavigate}) {
+export default function AdminSurveys({ onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [deletingId, setDeletingId] = useState('');
-  const API_BASE =  import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
+  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
 
+  // Fetch surveys from backend
   useEffect(() => {
     const fetchSurveys = async () => {
       setLoading(true);
@@ -86,6 +34,7 @@ export default function AdminSurveys({onNavigate}) {
     fetchSurveys();
   }, [API_BASE]);
 
+  // Filtered and sorted surveys
   const filteredSurveys = useMemo(() => {
     return surveys
       .filter((survey) => {
@@ -96,6 +45,7 @@ export default function AdminSurveys({onNavigate}) {
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }, [surveys, searchTerm, filter]);
 
+  // Format dates
   const formatDate = (value) => {
     if (!value) return '-';
     const d = new Date(value);
@@ -103,16 +53,65 @@ export default function AdminSurveys({onNavigate}) {
     return d.toLocaleDateString();
   };
 
+  const handleArchiveSurvey = async (survey) => {
+    try {
+      console.log("Archiving survey:", survey);
+  
+      const res = await fetch(`${API_BASE}/surveys/${survey._id}/archive`, {
+        method: "POST",
+      });
+  
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to archive survey");
+      }
+  
+      // Update local state after successful archive
+      setSurveys((prev) =>
+        prev.map((s) =>
+          s._id === survey._id ? { ...s, status: "archived" } : s
+        )
+      );
+    } catch (err) {
+      console.error("Failed to archive survey:", err);
+    }
+  };
+  
+ 
+  const handlePublishSurvey = async (survey) => {
+    try {
+      console.log("Publishing survey:", survey);
+  
+      const res = await fetch(`${API_BASE}/surveys/${survey._id}/publish`, {
+        method: "POST",
+      });
+  
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to publish survey");
+      }
+  
+      // Update local state after successful publish
+      setSurveys((prev) =>
+        prev.map((s) =>
+          s._id === survey._id ? { ...s, status: "published" } : s
+        )
+      );
+    } catch (err) {
+      console.error("Failed to publish survey:", err);
+    }
+  }
+
   return (
     <div className="admin-surveys">
       <div className="header">
         <h2>Survey Management</h2>
         <button 
-      className="create-button"
-     onClick={() => onNavigate("createSurvey")}
-      >
-    + Create New Survey
-    </button>
+          className="create-button"
+          onClick={() => onNavigate("createSurvey")}
+        >
+          + Create New Survey
+        </button>
       </div>
 
       <div className="controls">
@@ -125,9 +124,13 @@ export default function AdminSurveys({onNavigate}) {
         <select value={filter} onChange={(e) => setFilter(e.target.value)}>
           <option value="All">All Statuses</option>
           <option value="draft">Draft</option>
-          <option value="published">Published</option>
+          <option value="active">Published</option>
+          <option value="archived">Archived</option>
         </select>
       </div>
+
+      {loading && <p>Loading surveys...</p>}
+      {error && <p className="error">{error}</p>}
 
       <table className="survey-table">
         <thead>
@@ -141,30 +144,58 @@ export default function AdminSurveys({onNavigate}) {
           </tr>
         </thead>
         <tbody>
-          {filteredSurveys.map((survey, index) => (
-            <tr key={index}>
-              <td>{survey.title}</td>
+          {filteredSurveys.map((survey) => (
+            <tr key={survey.id || survey.name}>
+              <td>{survey.title || survey.name}</td>
               <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
-              <td>{survey.createdAt}</td>
+              <td>{formatDate(survey.createdAt || survey.created)}</td>
               <td>{survey.responses}</td>
-              <td>{survey.updatedAt}</td>
+              <td>{formatDate(survey.updatedAt || survey.updated)}</td>
               <td>
+                {/* View */}
                 <button className="icon-button view" title="View Survey">
                   <FontAwesomeIcon icon={faEye} />
                 </button>
+
+                {/* Edit */}
                 <button
-            className="icon-button edit"
-            title="Edit Survey"
-           onClick={() => onNavigate("createSurvey", { mode: "edit", survey: survey })}
-          >
-          <FontAwesomeIcon icon={faPen} />
-          </button>
+                  className="icon-button edit"
+                  title="Edit Survey"
+                  onClick={() => onNavigate("createSurvey", { mode: "edit", survey })}
+                >
+                  <FontAwesomeIcon icon={faPen} />
+                </button>
+
+                {/* Copy */}
                 <button className="icon-button copy" title="Copy Survey">
                   <FontAwesomeIcon icon={faCopy} />
                 </button>
+
+                {/* Delete */}
                 <button className="icon-button delete" title="Delete Survey">
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
+
+                {/* Conditional Publish / Archive */}
+                {survey.status.toLowerCase() === "published" && (
+                  <button
+                    className="icon-button archive"
+                    title="Archive Survey"
+                    onClick={() => handleArchiveSurvey(survey)}
+                  >
+                    <FontAwesomeIcon icon={faBoxArchive} />
+                  </button>
+                )}
+
+                {["draft", "archived"].includes(survey.status.toLowerCase()) && (
+                  <button
+                    className="icon-button publish"
+                    title="Publish Survey"
+                    onClick={() => handlePublishSurvey(survey)}
+                  >
+                    <FontAwesomeIcon icon={faUpload} />
+                  </button>
+                )}
               </td>
             </tr>
           ))}

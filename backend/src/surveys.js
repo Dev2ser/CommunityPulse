@@ -101,6 +101,63 @@ router.get("/publishedSurveys", async (_req, res) => {
   }
 });
 
+//Publish Survey
+router.post("/surveys/:id/publish", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid survey id" });
+    }
+
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ message: "Database not initialized" });
+    }
+
+    const result = await db
+      .collection("Surveys")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { status: "published" } });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Survey not found" });
+    }
+
+    res.json({ message: "Survey published" });
+  } catch (err) {
+    console.error("Publish survey error:", err);
+    res.status(500).json({ message: "Server error publishing survey" });
+  }
+});
+
+//Archive Survey
+router.post("/surveys/:id/archive", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(400).json({ message: "Invalid survey id" });
+    }
+
+    const db = getDb();
+    if (!db) {
+      return res.status(500).json({ message: "Database not initialized" });
+    }
+
+    const result = await db
+      .collection("Surveys")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { status: "archived" } });
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ message: "Survey not found" });
+    }
+
+    res.json({ message: "Survey archived" });
+  } catch (err) {
+    console.error("Archive survey error:", err);
+    res.status(500).json({ message: "Server error archiving survey" });
+  }
+});
+
+
 
 // Delete a survey
 router.delete("/surveys/:id", async (req, res) => {
