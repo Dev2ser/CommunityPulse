@@ -7,6 +7,7 @@ export default function AdminSurveys({ onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
   const [surveys, setSurveys] = useState([]);
+  const [surveyToDelete, setSurveyToDelete] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
@@ -33,6 +34,36 @@ export default function AdminSurveys({ onNavigate }) {
 
     fetchSurveys();
   }, [API_BASE]);
+
+  //delete survey handler
+  const handleDeleteSurvey = async () => {
+    try {
+      console.log(surveyToDelete);
+      const res = await fetch(
+        `${API_BASE}/surveys/${surveyToDelete._id}`,
+        {
+          method: "DELETE",
+        }
+      );
+  
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to delete survey");
+      }
+  
+      // Remove from UI
+      setSurveys((prev) =>
+        prev.filter((s) => s._id !== surveyToDelete._id)
+      );
+  
+      setSurveyToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete survey:", err);
+      alert(err.message);
+    }
+  };
+  
+  
 
   // Filtered and sorted surveys
   const filteredSurveys = useMemo(() => {
@@ -145,7 +176,7 @@ export default function AdminSurveys({ onNavigate }) {
         </thead>
         <tbody>
           {filteredSurveys.map((survey) => (
-            <tr key={survey.id || survey.name}>
+            <tr key={survey._id}>
               <td>{survey.title || survey.name}</td>
               <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
               <td>{formatDate(survey.createdAt || survey.created)}</td>
@@ -172,7 +203,7 @@ export default function AdminSurveys({ onNavigate }) {
                 </button>
 
                 {/* Delete */}
-                <button className="icon-button delete" title="Delete Survey">
+                <button className="icon-button delete" title="Delete Survey" onClick={() => setSurveyToDelete(survey)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </button>
 
@@ -201,6 +232,34 @@ export default function AdminSurveys({ onNavigate }) {
           ))}
         </tbody>
       </table>
+
+      {surveyToDelete && (
+  <div className="modal-overlay">
+    <div className="modal">
+      <h3>Delete Survey</h3>
+      <p>
+        Are you sure you want to delete{" "}
+        <strong>{surveyToDelete.title || surveyToDelete.name}</strong>?
+      </p>
+
+      <div className="modal-actions">
+        <button
+          className="btn cancel"
+          onClick={() => setSurveyToDelete(null)}
+        >
+          Cancel
+        </button>
+        <button
+          className="btn danger"
+          onClick={handleDeleteSurvey}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }

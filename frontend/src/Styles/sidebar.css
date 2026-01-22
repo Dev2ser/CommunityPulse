@@ -1,9 +1,9 @@
 /* Right-side sidebar */
 .sidebar {
-    width: 220px;
+    width: 250px;
     height: 100vh;
     background-color: white;
-    color: black;
+    color: #000000;
     border-left: 1px solid #e5e5e5;
     padding: 2rem 1rem;
     top: 0;
