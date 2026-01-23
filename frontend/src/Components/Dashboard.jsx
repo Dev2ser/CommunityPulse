@@ -55,9 +55,9 @@ export default function Dashboard() {
   }, [data.weekly]);
 
   const stats = [
-    { title: "Total Surveys", value: data.totalSurveys || 0, trend: "" },
-    { title: "Active Surveys", value: data.publishedSurveys || 0, trend: "" },
-    { title: "Total Responses", value: 0, trend: "" },
+    { label: "Total Surveys", value: data.totalSurveys || 0, trend: "" },
+    { label: "Active Surveys", value: data.publishedSurveys || 0, trend: "" },
+    { label: "Total Responses", value: 0, trend: "" },
   ];
 
   const quickStats = [
@@ -88,7 +88,7 @@ export default function Dashboard() {
         <div className="stats-grid">
           {stats.map((item) => (
             <div key={item.title} className="stat-card">
-              <div className="stat-label">{item.title}</div>
+              <div className="stat-label">{item.label}</div>
               <div className="stat-value">{item.value}</div>
               {item.trend && <div className="stat-trend">{item.trend}</div>}
             </div>
@@ -145,7 +145,7 @@ export default function Dashboard() {
                   <span className="activity-icon-dot" />
                 </div>
                 <div className="activity-content">
-                  <p className="activity-action">{item.title || "Untitled survey"}</p>
+                  <p className="activity-action">{item.surveyTitle || "Untitled survey"}</p>
                   <p className="activity-survey">Status: {item.status || "draft"}</p>
                 </div>
                 <div className="activity-time">{formatDate(item.createdAt)}</div>

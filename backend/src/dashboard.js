@@ -40,7 +40,7 @@ router.get("/dashboard", async (_req, res) => {
 
     const recentActivity = surveys.slice(0, 5).map((s) => ({
       id: s._id,
-      title: s.title || "Untitled survey",
+      surveyTitle: s.surveyTitle || "Untitled survey",
       status: s.status || "draft",
       createdAt: s.createdAt,
       updatedAt: s.updatedAt,

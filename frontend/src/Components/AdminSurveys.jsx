@@ -69,7 +69,7 @@ export default function AdminSurveys({ onNavigate }) {
   const filteredSurveys = useMemo(() => {
     return surveys
       .filter((survey) => {
-        const titleMatch = survey.title?.toLowerCase().includes(searchTerm.toLowerCase());
+        const titleMatch = survey.surveyTitle?.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesFilter = filter === 'All' || survey.status?.toLowerCase() === filter.toLowerCase();
         return titleMatch && matchesFilter;
       })
@@ -177,7 +177,7 @@ export default function AdminSurveys({ onNavigate }) {
         <tbody>
           {filteredSurveys.map((survey) => (
             <tr key={survey._id}>
-              <td>{survey.title || survey.name}</td>
+              <td>{survey.surveyTitle|| survey.name}</td>
               <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
               <td>{formatDate(survey.createdAt || survey.created)}</td>
               <td>{survey.responses}</td>
@@ -239,7 +239,7 @@ export default function AdminSurveys({ onNavigate }) {
       <h3>Delete Survey</h3>
       <p>
         Are you sure you want to delete{" "}
-        <strong>{surveyToDelete.title || surveyToDelete.name}</strong>?
+        <strong>{surveyToDelete.title || surveyToDelete.surveyTitle}</strong>?
       </p>
 
       <div className="modal-actions">

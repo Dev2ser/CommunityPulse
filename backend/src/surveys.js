@@ -8,23 +8,21 @@ const router = express.Router();
 router.post("/surveys", async (req, res) => {
   try {
     const {
-      title,
+      surveyTitle,
       description = "",
       targetNeighborhood = "all",
       status = "draft",
       questions = [],
     } = req.body;
 
-    if (!title || !Array.isArray(questions)) {
+    if (!surveyTitle || !Array.isArray(questions)) {
       return res
         .status(400)
-        .json({ message: "Title and questions are required." });
+        .json({ message: "Survey title and questions are required." });
     }
 
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
     const cleanedQuestions = questions.map((q) => ({
       text: q.text || "",
@@ -37,7 +35,7 @@ router.post("/surveys", async (req, res) => {
     }));
 
     const doc = {
-      title,
+      surveyTitle,
       description,
       targetNeighborhood,
       status,
@@ -62,9 +60,7 @@ router.post("/surveys", async (req, res) => {
 router.get("/surveys", async (_req, res) => {
   try {
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
     const surveys = await db
       .collection("Surveys")
@@ -83,44 +79,35 @@ router.get("/surveys", async (_req, res) => {
 router.get("/publishedSurveys", async (_req, res) => {
   try {
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
-    // Only get surveys where status is "published"
     const surveys = await db
       .collection("Surveys")
-      .find({ status: "published" })  
+      .find({ status: "published" })
       .sort({ createdAt: -1 })
       .toArray();
 
     res.json({ surveys });
   } catch (err) {
-    console.error("List surveys error:", err);
-    res.status(500).json({ message: "Server error listing surveys" });
+    console.error("List published surveys error:", err);
+    res.status(500).json({ message: "Server error listing published surveys" });
   }
 });
 
-//Publish Survey
+// Publish Survey
 router.post("/surveys/:id/publish", async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id || !ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid survey id" });
-    }
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
 
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
     const result = await db
       .collection("Surveys")
       .updateOne({ _id: new ObjectId(id) }, { $set: { status: "published" } });
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "Survey not found" });
-    }
+    if (result.matchedCount === 0) return res.status(404).json({ message: "Survey not found" });
 
     res.json({ message: "Survey published" });
   } catch (err) {
@@ -129,26 +116,20 @@ router.post("/surveys/:id/publish", async (req, res) => {
   }
 });
 
-//Archive Survey
+// Archive Survey
 router.post("/surveys/:id/archive", async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id || !ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid survey id" });
-    }
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
 
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
     const result = await db
       .collection("Surveys")
       .updateOne({ _id: new ObjectId(id) }, { $set: { status: "archived" } });
 
-    if (result.matchedCount === 0) {
-      return res.status(404).json({ message: "Survey not found" });
-    }
+    if (result.matchedCount === 0) return res.status(404).json({ message: "Survey not found" });
 
     res.json({ message: "Survey archived" });
   } catch (err) {
@@ -157,28 +138,20 @@ router.post("/surveys/:id/archive", async (req, res) => {
   }
 });
 
-
-
 // Delete a survey
 router.delete("/surveys/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id || !ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid survey id" });
-    }
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
 
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
     const result = await db
       .collection("Surveys")
       .deleteOne({ _id: new ObjectId(id) });
 
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ message: "Survey not found" });
-    }
+    if (result.deletedCount === 0) return res.status(404).json({ message: "Survey not found" });
 
     res.json({ message: "Survey deleted" });
   } catch (err) {
@@ -187,37 +160,27 @@ router.delete("/surveys/:id", async (req, res) => {
   }
 });
 
-// Update a survey 
+// Update a survey
 router.put("/surveys/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id || !ObjectId.isValid(id)) {
-      return res.status(400).json({ message: "Invalid survey id" });
-    }
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
 
-    const { title, questions = [] } = req.body;
+    const { surveyTitle, questions = [] } = req.body;
 
-    if (!title || !Array.isArray(questions)) {
-      return res
-        .status(400)
-        .json({ message: "Title and questions are required." });
+    if (!surveyTitle || !Array.isArray(questions)) {
+      return res.status(400).json({ message: "Survey title and questions are required." });
     }
 
     const db = getDb();
-    if (!db) {
-      return res.status(500).json({ message: "Database not initialized" });
-    }
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
 
-    // Fetch the current survey
     const existingSurvey = await db
       .collection("Surveys")
       .findOne({ _id: new ObjectId(id) });
 
-    if (!existingSurvey) {
-      return res.status(404).json({ message: "Survey not found" });
-    }
+    if (!existingSurvey) return res.status(404).json({ message: "Survey not found" });
 
-    // Clean questions
     const cleanedQuestions = questions.map((q) => ({
       text: q.text || "",
       type: q.type || "text",
@@ -228,12 +191,11 @@ router.put("/surveys/:id", async (req, res) => {
           : [],
     }));
 
-  
-    const result = await db.collection("Surveys").updateOne(
+    await db.collection("Surveys").updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
-          title,
+          surveyTitle,
           questions: cleanedQuestions,
           updatedAt: new Date(),
         },
@@ -246,6 +208,5 @@ router.put("/surveys/:id", async (req, res) => {
     res.status(500).json({ message: "Server error updating survey" });
   }
 });
-
 
 export default router;

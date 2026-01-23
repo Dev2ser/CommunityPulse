@@ -1,43 +1,105 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Styles/Exports.css";
-
-const mockReports = [
-  {
-    id: 1,
-    title: "Student Satisfaction Survey",
-    status: "In Progress",
-    summary: "Analyzing feedback from 200 students on campus facilities.",
-    date: "Nov 20, 2025",
-    fullReport:
-      "Full analysis and interpretation of student satisfaction survey results...",
-  },
-  {
-    id: 2,
-    title: "Community Engagement Survey",
-    status: "Completed",
-    summary: "Survey of 150 participants on local event participation.",
-    date: "Nov 10, 2025",
-    fullReport:
-      "Detailed breakdown of engagement levels, demographics, and recommendations...",
-  },
-];
+import loginTippingPointLogo from "../assets/loginTippingPointLogo.png";
 
 export default function Exports() {
-  const [selectedReport, setSelectedReport] = useState(null);
+  const [surveys, setSurveys] = useState([]);
+  const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [surveyData, setSurveyData] = useState(null); 
+  const [loadingResponses, setLoadingResponses] = useState(false);
+  const [loadingSurveys, setLoadingSurveys] = useState(true);
 
-  const handleViewReport = (report) => {
-    setSelectedReport(report);
-    setShowModal(true);
+  // Fetch all surveys
+  useEffect(() => {
+    const fetchSurveys = async () => {
+      try {
+        setLoadingSurveys(true);
+        const res = await fetch("http://localhost:5001/api/surveys");
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to fetch surveys");
+        setSurveys(data.surveys || []);
+      } catch (err) {
+        console.error(err);
+        alert("Error fetching surveys: " + err.message);
+      } finally {
+        setLoadingSurveys(false);
+      }
+    };
+
+    fetchSurveys();
+  }, []);
+
+  // Fetch survey responses + analytics
+  const fetchSurveyData = async (surveyTitle) => {
+    try {
+      setLoadingResponses(true);
+
+      if (!surveyTitle) throw new Error("Survey title is missing");
+      console.log(surveyTitle);
+
+      const res = await fetch(
+        `http://localhost:5001/api/survey/responses/${encodeURIComponent(surveyTitle)}`
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Analytics failed");
+
+      setSurveyData(data); // contains responses, topWords, sentiment
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching survey data: " + err.message);
+    } finally {
+      setLoadingResponses(false);
+    }
   };
 
+  const fetchSurveyAnalytics = async (surveyTitle) => {
+    try {
+      setLoadingResponses(true);
+
+      if (!surveyTitle) throw new Error("Survey title is missing");
+      console.log(surveyTitle);
+
+      const res = await fetch(
+        `http://localhost:5001/api/survey/analytics/${encodeURIComponent(surveyTitle)}`
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Analytics failed");
+
+      setSurveyData(data); // contains responses, topWords, sentiment
+    } catch (err) {
+      console.error(err);
+      alert("Error fetching survey data: " + err.message);
+    } finally {
+      setLoadingResponses(false);
+    }
+  };
+
+  // Handle Generate Report
+  const handleGenerateSurvey = async (survey) => {
+    setSelectedSurvey(survey);
+    setSurveyData(null);
+ 
+    await fetchSurveyData(survey.surveyTitle);
+    alert("report generated!");
+  };
+
+  const handleViewSurveyAnalytics = async (survey) => {
+    setSelectedSurvey(survey);
+    setSurveyData(null);
+    await fetchSurveyAnalytics(survey.surveyTitle);
+    setShowModal(true)
+  };
+
+  // Close modal
   const handleCloseModal = () => {
-    setSelectedReport(null);
+    setSelectedSurvey(null);
+    setSurveyData(null);
     setShowModal(false);
-  };
-
-  const handleExport = (format, report) => {
-    alert(`Exporting "${report.title}" as ${format.toUpperCase()}`);
   };
 
   return (
@@ -47,48 +109,90 @@ export default function Exports() {
           <h1 className="exports-title">Survey Reports</h1>
           <p className="exports-subtitle">Generate and review your exports</p>
         </div>
-        <button className="exports-primary-btn">+ New Export</button>
       </div>
 
-      <div className="exports-grid single-column">
-        <div className="export-list-card">
-          <h2 className="export-list-title">Reports</h2>
-          <div className="reports-list">
-            {mockReports.map((report) => (
-              <div key={report.id} className="report-card">
-                <div className="report-header">
-                  <div>
-                    <h3>{report.title}</h3>
-                    <p className="report-date">Date: {report.date}</p>
-                  </div>
-                  <span className={`status ${report.status.toLowerCase()}`}>
-                    {report.status}
-                  </span>
-                </div>
-                <p className="report-summary">{report.summary}</p>
-                <div className="report-actions">
-                  <button className="btn secondary" onClick={() => handleViewReport(report)}>
-                    View Report
-                  </button>
-                  <div className="dropdown">
-                    <button className="btn primary">Export ▼</button>
-                    <div className="dropdown-content">
-                      <span onClick={() => handleExport("pdf", report)}>Export as PDF</span>
-                      <span onClick={() => handleExport("csv", report)}>Export as CSV</span>
+      {loadingSurveys ? (
+        <p>Loading surveys...</p>
+      ) : (
+        <div className="exports-grid single-column">
+          <div className="export-list-card">
+            <h2 className="export-list-title">Reports</h2>
+            <div className="reports-list">
+              {surveys.length === 0 && <p>No surveys found.</p>}
+
+              {surveys.map((survey) => (
+                <div key={survey._id} className="report-card">
+                  <div className="report-header">
+                    <div>
+                      <h3>{survey.surveyTitle}</h3>
+                      <p className="report-date">
+                        Date: {new Date(survey.createdAt).toLocaleDateString()}
+                      </p>
                     </div>
+                    <span className="status">{survey.status || "Unknown"}</span>
+                  </div>
+
+                  <div className="report-actions">
+                    <button
+                    className = "btn secondary"
+                    onClick={() => handleGenerateSurvey(survey)}
+                    >
+                      Generate Report
+                    </button>
+                    <button
+                      className="btn secondary"
+                      onClick={() => handleViewSurveyAnalytics(survey)}
+                    >
+                      View Report
+                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {showModal && selectedReport && (
+      {/* Modal for responses + analytics */}
+      {showModal && selectedSurvey && (
         <div className="modal-overlay" onClick={handleCloseModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedReport.title}</h2>
-            <p>{selectedReport.fullReport}</p>
+            <div className="top-row">
+            <h2 className="modal-title">{selectedSurvey.surveyTitle}</h2>
+            <img 
+  src={loginTippingPointLogo}
+  alt="Tipping Point Logo"
+  className="tippingpoint-logo"
+/>
+          </div>
+            {loadingResponses ? (
+              <p>Loading responses...</p>
+            ) : surveyData ? (
+              <div className="responses-analytics">
+               
+                <h3>Analytics</h3>
+                <p>
+                  <strong>Sentiment:</strong> {surveyData.sentiment}
+                </p>
+                <p>
+                  <strong>Top Words:</strong>{" "}
+                  {surveyData.topWords?.map((w) => w.word).join(", ")}
+                </p>
+                <h3>Suggestions</h3>
+                {surveyData.suggestions.length ? (
+                <ul>
+                  {surveyData.suggestions.map((s, i) => (
+               <li key={i}>{s}</li>
+                ))}
+              </ul>
+              ) : (
+          <p>No suggestions available.</p>
+            )}
+              </div>
+            ) : (
+              <p>No responses yet.</p>
+            )}
+
             <button className="btn danger" onClick={handleCloseModal}>
               Close
             </button>
