@@ -98,3 +98,37 @@ Respond in a bullet-point list.
     return [];
   }
 }
+
+export async function getCategories(topWords) {
+  if (!topWords?.length) return [];
+
+  const prompt = `
+You are analyzing survey feedback for a housing project.
+The top words from survey responses are: ${topWords.map(w => w.word).join(", ")}.
+
+Group these words into meaningful categories (like Parking, Green Spaces, Noise, Safety, Amenities),
+and for each category, list example words from the top words. Return JSON array like this:
+the icon is for the corresponding category
+[
+  { "name": "CategoryName", "mentions": <total mentions>, "words": ["word1","word2"], "icon": "🏠" }
+]
+`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4.1-mini",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0
+    });
+
+    const text = completion.choices[0].message.content;
+
+    // Parse JSON safely
+    const categories = JSON.parse(text);
+    return categories;
+  } catch (err) {
+    console.error("AI categories error:", err);
+    return [];
+  }
+}
+

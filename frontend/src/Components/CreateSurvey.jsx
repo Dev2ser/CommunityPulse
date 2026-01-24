@@ -9,7 +9,7 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
   // Prefill form when editing
   useEffect(() => {
     if (surveyToEdit) {
-      setTitle(surveyToEdit.title || "");
+      setTitle(surveyToEdit.surveyTitle || "");
       setTargetNeighborhood(surveyToEdit.targetNeighborhood || "");
       setQuestions(
         surveyToEdit.questions?.map((q) => ({

@@ -9,6 +9,7 @@ export default function Exports() {
   const [surveyData, setSurveyData] = useState(null); 
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
+  const [reportMode, setReportMode] = useState('');
 
   // Fetch all surveys
   useEffect(() => {
@@ -45,8 +46,8 @@ export default function Exports() {
       const data = await res.json();
 
       if (!res.ok) throw new Error(data.message || "Analytics failed");
-
-      setSurveyData(data); // contains responses, topWords, sentiment
+      console.log(data);
+      setSurveyData(data); // contains responses, topWords, sentiment, categories
     } catch (err) {
       console.error(err);
       alert("Error fetching survey data: " + err.message);
@@ -89,6 +90,7 @@ export default function Exports() {
   };
 
   const handleViewSurveyAnalytics = async (survey) => {
+    setReportMode("View Report");
     setSelectedSurvey(survey);
     setSurveyData(null);
     await fetchSurveyAnalytics(survey.surveyTitle);
@@ -133,12 +135,14 @@ export default function Exports() {
                   </div>
 
                   <div className="report-actions">
+                  {["Admin", "Super Admin"].includes(localStorage.getItem("userRole")) && (
                     <button
                     className = "btn secondary"
                     onClick={() => handleGenerateSurvey(survey)}
                     >
                       Generate Report
                     </button>
+                  )}
                     <button
                       className="btn secondary"
                       onClick={() => handleViewSurveyAnalytics(survey)}
@@ -160,42 +164,64 @@ export default function Exports() {
             <div className="top-row">
             <h2 className="modal-title">{selectedSurvey.surveyTitle}</h2>
             <img 
-  src={loginTippingPointLogo}
-  alt="Tipping Point Logo"
-  className="tippingpoint-logo"
-/>
+          src={loginTippingPointLogo}
+          alt="Tipping Point Logo"
+        className="tippingpoint-logo"
+          />
           </div>
             {loadingResponses ? (
               <p>Loading responses...</p>
             ) : surveyData ? (
               <div className="responses-analytics">
-               
-                <h3>Analytics</h3>
-                <p>
-                  <strong>Sentiment:</strong> {surveyData.sentiment}
-                </p>
-                <p>
-                  <strong>Top Words:</strong>{" "}
-                  {surveyData.topWords?.map((w) => w.word).join(", ")}
-                </p>
-                <h3>Suggestions</h3>
-                {surveyData.suggestions.length ? (
-                <ul>
-                  {surveyData.suggestions.map((s, i) => (
-               <li key={i}>{s}</li>
-                ))}
-              </ul>
-              ) : (
-          <p>No suggestions available.</p>
-            )}
+              <div className="section-title">Analytics</div>
+              <div className="horizontal-line"></div>
+              <div className="card sentiment-card">
+            <span>Overall Sentiment:</span>  
+                <span className={`sentiment-badge ${surveyData.sentiment.toLowerCase()}`}>
+                  {surveyData.sentiment}
+                </span>
               </div>
+            
+              <div className="card">
+                <strong>Top Words</strong>
+                <p>{surveyData.topWords?.map((w) => w.word).join(", ")}</p>
+              </div>
+            
+              <h3 className="section-title">Categories</h3>
+              <div className="category-list">
+          {surveyData.categories?.map((c, i) => (
+           <div className="category-card" key={i}>
+            <div className="category-icon">{c.icon || "📊"}</div>
+
+              <div className="category-content">
+               <div className="category-name">{c.name}</div>
+               <div className="category-words">{c.words.join(", ")}</div>
+               </div>
+            </div>
+            ))}
+            </div>
+              <h3 className="section-title">Suggestions</h3>
+              {surveyData.suggestions.length ? (
+                <div className="suggestions-list">
+                  {surveyData.suggestions.map((s, i) => (
+                    <div className="suggestion-card" key={i}>
+                      {s}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p>No suggestions available.</p>
+              )}
+            </div>
             ) : (
               <p>No responses yet.</p>
             )}
-
+            <div className = "bottom-row">
+            
             <button className="btn danger" onClick={handleCloseModal}>
               Close
             </button>
+            </div>
           </div>
         </div>
       )}

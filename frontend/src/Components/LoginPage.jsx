@@ -34,7 +34,10 @@ function LoginPage({ onLogin, onBack }) {
       });
 
       const data = await res.json();
+     
       if (!res.ok) throw new Error(data.message || "Login failed");
+
+      localStorage.setItem("userRole", data.role);
 
       onLogin();
     } catch (err) {
