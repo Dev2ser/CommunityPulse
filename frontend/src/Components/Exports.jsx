@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/Exports.css";
 import loginTippingPointLogo from "../assets/loginTippingPointLogo.png";
-
+import Spinner from "./Spinner.jsx";
 export default function Exports() {
   const [surveys, setSurveys] = useState([]);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
@@ -139,15 +139,17 @@ export default function Exports() {
                     <button
                     className = "btn secondary"
                     onClick={() => handleGenerateSurvey(survey)}
+                    disabled={loadingResponses}
                     >
-                      Generate Report
+                      {loadingResponses ? <Spinner /> : "Generate Report"}
                     </button>
                   )}
                     <button
                       className="btn secondary"
                       onClick={() => handleViewSurveyAnalytics(survey)}
+                      disabled={loadingResponses}
                     >
-                      View Report
+                     {loadingResponses ? <Spinner /> : "View Report"}
                     </button>
                   </div>
                 </div>
@@ -169,9 +171,12 @@ export default function Exports() {
         className="tippingpoint-logo"
           />
           </div>
-            {loadingResponses ? (
-              <p>Loading responses...</p>
-            ) : surveyData ? (
+          {loadingResponses ? (
+              <div style={{ textAlign: "center", padding: "40px" }}>
+            <Spinner />
+          <p>Generating report...</p>
+          </div>
+              ) : surveyData ? (
               <div className="responses-analytics">
               <div className="section-title">Analytics</div>
               <div className="horizontal-line"></div>
