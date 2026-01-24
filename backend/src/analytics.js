@@ -103,14 +103,13 @@ export async function getCategories(topWords) {
   if (!topWords?.length) return [];
 
   const prompt = `
-You are analyzing survey feedback for a housing project.
-The top words from survey responses are: ${topWords.map(w => w.word).join(", ")}.
+Return ONLY valid JSON. No explanation, no markdown, no text.
 
-Group these words into meaningful categories (like Parking, Green Spaces, Noise, Safety, Amenities),
-and for each category, list example words from the top words. Return JSON array like this:
-the icon is for the corresponding category
+The top words are: ${topWords.map(w => w.word).join(", ")}.
+
+Group into categories and return exactly this format:
 [
-  { "name": "CategoryName", "mentions": <total mentions>, "words": ["word1","word2"], "icon": "🏠" }
+  { "name": "CategoryName", "mentions": 0, "words": ["word1"], "icon": "🏠" }
 ]
 `;
 
