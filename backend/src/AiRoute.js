@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import express from "express";
 import { getDb } from "./db.js";
 import OpenAI from "openai";
