@@ -1,0 +1,103 @@
+.results-page {
+  padding: 2rem;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f0f0f0;
+  color: #262223;
+}
+
+.results-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.results-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.results-subtitle {
+  font-size: 1rem;
+  color: #8599b1;
+}
+
+.results-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  flex: 1 1 200px;
+}
+
+.metric-card h2 {
+  font-size: 1.75rem;
+  color: #2A6798;
+  margin-bottom: 0.25rem;
+}
+
+.metric-card p {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.metric-note {
+  font-size: 0.875rem;
+  color: #86C779;
+}
+
+.export-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.export-btn {
+  background-color: #2A6798;
+  color: #f0f0f0;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.export-btn:hover {
+  background-color: #2A6798;
+}
+
+.results-graph-section,
+.results-themes-section {
+  margin-top: 2rem;
+}
+
+.section-heading {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.themes-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
+.theme-tag {
+  background-color: #f0f0f0;
+  color: #20305B;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
