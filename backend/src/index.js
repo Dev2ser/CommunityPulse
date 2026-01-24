@@ -11,7 +11,7 @@ import updateAdmin from "./updateAdmin.js";
 import surveysRouter from "./surveys.js";
 import dashboardRouter from "./dashboard.js";
 import AiRoute from "./AiRoute.js";
-
+import surveyResponse from "./surveyResponse.js"
 
 dotenv.config();
 
@@ -38,6 +38,9 @@ app.use("/api/admin", deleteAdmin);
 app.use("/api/admin", updateAdmin); 
 app.use("/api", surveysRouter);
 app.use("/api", dashboardRouter);
+
+//Survey Response routes
+app.use("/api", surveyResponse);
 
 //AI routes
 app.use("/api/ai", AiRoute);

@@ -63,7 +63,7 @@ function AvailableSurveys() {
             onClick={() => openSurvey(s)}
           >
             <div className="survey-text">
-              <div className="survey-title">{s.title}</div>
+              <div className="survey-title">{s.surveyTitle}</div>
               <div className="survey-location">{s.targetNeighborhood || "All"}</div>
             </div>
             <div className="survey-arrow">›</div>
