@@ -10,6 +10,7 @@
     "openai": "^6.15.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-fontawesome": "^1.7.1",
+    "recharts": "^3.7.0",
     "sentiment": "^5.0.2",
     "stopword": "^3.1.5"
   }
