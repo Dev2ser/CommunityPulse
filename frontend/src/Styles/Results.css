@@ -1,8 +1,8 @@
 .results-page {
   padding: 2rem;
   font-family: "Segoe UI", sans-serif;
-  background-color: #f0f0f0;
-  color: #262223;
+  background-color: #f9fafb;
+  color: #1f2937;
 }
 
 .results-header {
@@ -18,7 +18,7 @@
 
 .results-subtitle {
   font-size: 1rem;
-  color: #8599b1;
+  color: #6b7280;
 }
 
 .results-metrics {
@@ -30,7 +30,7 @@
 }
 
 .metric-card {
-  background-color: #f0f0f0;
+  background-color: #ffffff;
   border-radius: 8px;
   padding: 1rem 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -40,7 +40,7 @@
 
 .metric-card h2 {
   font-size: 1.75rem;
-  color: #2A6798;
+  color: #4f46e5;
   margin-bottom: 0.25rem;
 }
 
@@ -51,7 +51,7 @@
 
 .metric-note {
   font-size: 0.875rem;
-  color: #86C779;
+  color: #10b981;
 }
 
 .export-buttons {
@@ -61,8 +61,8 @@
 }
 
 .export-btn {
-  background-color: #2A6798;
-  color: #f0f0f0;
+  background-color: #4f46e5;
+  color: white;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
@@ -71,7 +71,7 @@
 }
 
 .export-btn:hover {
-  background-color: #2A6798;
+  background-color: #4338ca;
 }
 
 .results-graph-section,
@@ -94,10 +94,13 @@
 }
 
 .theme-tag {
-  background-color: #f0f0f0;
-  color: #20305B;
+  background-color: #e5e7eb;
+  color: #374151;
   padding: 0.5rem 1rem;
   border-radius: 999px;
   font-size: 0.875rem;
   font-weight: 500;
+}
+.theme-tag:hover {
+  background-color: #d1d5db;
 }
