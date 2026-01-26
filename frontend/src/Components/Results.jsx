@@ -7,6 +7,7 @@ const Results = () => {
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [categoryCount, setCategoryCount] = useState(0);
   const [totalResponses, setTotalResponses] = useState(0);
+  const [currenQuestion, setCurrentQuestion] = useState(null);
   const [themes, setThemes] = useState([]);
   const [barData, setBarData] = useState([]);
 
@@ -95,6 +96,7 @@ const Results = () => {
           `http://localhost:5001/api/survey/multipleCounts/${encodeURIComponent(selectedSurvey.surveyTitle)}`
         );
         const data = await response.json();
+        console.log(data);
         
         // Transform multipleCounts into an array for BarGraph
         const graphData = [];
@@ -109,6 +111,7 @@ const Results = () => {
         });
 
         setBarData(graphData);
+        setCurrentQuestion(data.questions ? data.questions[0] : null);
       } catch (err) {
         console.error("Error fetching multiple-choice counts:", err);
         setBarData([]);
@@ -170,6 +173,7 @@ const Results = () => {
       {/* Bar Graph Section */}
       <section className="results-graph-section">
         <h3 className="section-heading">Multiple Choice Responses</h3>
+        <div className = "question-label">{currenQuestion}</div>
         {barData.length > 0 ? (
           <BarGraph data={barData} />
         ) : (

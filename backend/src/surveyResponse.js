@@ -150,7 +150,6 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
       return res.status(400).json({ message: "Survey title is required" });
     }
 
-    // Fetch all responses for this survey
     const surveyResponses = await db
       .collection("SurveyResponse")
       .find({ surveyTitle })
@@ -160,8 +159,8 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
       return res.status(404).json({ message: "No responses found for this survey" });
     }
 
-    // Prepare a map to store counts per multiple-choice question
     const multipleCounts = {};
+    const questions = []; // 👈 new
 
     surveyResponses.forEach((responseDoc) => {
       const responses = responseDoc.responses || [];
@@ -170,6 +169,7 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
         if (q.questionType === "multiple" && q.answer) {
           if (!multipleCounts[q.question]) {
             multipleCounts[q.question] = {};
+            questions.push(q.question); 
           }
 
           multipleCounts[q.question][q.answer] =
@@ -178,12 +178,17 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
       });
     });
 
-    res.json({ surveyTitle, multipleCounts });
+    res.json({ 
+      surveyTitle, 
+      questions,        
+      multipleCounts 
+    });
   } catch (err) {
     console.error("Multiple choice counts error:", err);
     res.status(500).json({ message: "Failed to get multiple-choice counts" });
   }
 });
+
 
 //response count per survey
 router.get("/survey/responseCount/:surveyTitle", async (req, res) => {
