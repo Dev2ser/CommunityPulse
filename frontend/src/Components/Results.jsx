@@ -121,23 +121,27 @@ const Results = () => {
   return (
     <div className="results-page">
       <header className="results-header">
-        <h1 className="results-title">
-          <select
-            value={selectedSurvey?._id || ""}
-            onChange={(e) =>
-              setSelectedSurvey(
-                surveys.find((s) => s._id === e.target.value)
-              )
-            }
-            className="title-dropdown"
-          >
-            {surveys.map((survey) => (
-              <option key={survey._id} value={survey._id}>
-                {survey.surveyTitle}
-              </option>
-            ))}
-          </select>
-        </h1>
+      <h1 className="results-title">
+  <div className="dropdown-wrapper">
+    <select
+      value={selectedSurvey?._id || ""}
+      onChange={(e) =>
+        setSelectedSurvey(
+          surveys.find((s) => s._id === e.target.value)
+        )
+      }
+      className="title-dropdown"
+    >
+      {surveys.map((survey) => (
+        <option key={survey._id} value={survey._id}>
+          {survey.surveyTitle}
+        </option>
+      ))}
+    </select>
+    <span className="dropdown-arrow">▼</span>
+  </div>
+</h1>
+
         <p className="results-subtitle">Tipping Point – Real Estate Development</p>
       </header>
 
