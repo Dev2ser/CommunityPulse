@@ -94,6 +94,27 @@ router.get("/publishedSurveys", async (_req, res) => {
   }
 });
 
+//List of published and archived surveys
+
+router.get("/publishedAndArchivedSurveys", async (_req, res) => {
+  try {
+    const db = getDb();
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
+
+    const surveys = await db
+      .collection("Surveys")
+      .find({ status: { $in: ["published", "archived"] } })
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.json({ surveys });
+  } catch (err) {
+    console.error("List published surveys error:", err);
+    res.status(500).json({ message: "Server error listing published surveys" });
+  }
+});
+
+
 // Publish Survey
 router.post("/surveys/:id/publish", async (req, res) => {
   try {

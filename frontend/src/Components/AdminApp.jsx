@@ -8,7 +8,7 @@ import AdminSettings from "./AdminSettings";
 import CreateSurvey from "./CreateSurvey";
 import Exports from "./Exports";
 import Dashboard from "./Dashboard";
-
+import Results from "./Results";
 function AdminApp() {
   const [page, setPage] = useState(() => {
     const stored = localStorage.getItem("currentpage");
@@ -38,6 +38,7 @@ function AdminApp() {
   const handleNavigate = (nextPage, props = {}) => {
     if (!isAuthed) return setPage("login");
     setPage(nextPage);
+    console.log("THE PAGE IS " + page);
     setPageProps(props); // <-- store extra props
   };
 
@@ -65,6 +66,7 @@ function AdminApp() {
             onSaved={() => setPage("adminSurveys")}
           />
         )}
+        {page === "results" && <Results onNavigate={handleNavigate}/>}
         {page === "exports" && <Exports />}
       </div>
     </div>

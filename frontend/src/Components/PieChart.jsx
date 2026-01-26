@@ -15,7 +15,7 @@ const PieChartComponent = ({ data, title }) => {
     <div style={{ width: "100%", height: 350 }}>
       {title && <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>{title}</h3>}
 
-      <ResponsiveContainer>
+     
         <PieChart>
           <Pie
             data={data}
@@ -37,7 +37,7 @@ const PieChartComponent = ({ data, title }) => {
           <Tooltip />
           <Legend verticalAlign="bottom" height={36} />
         </PieChart>
-      </ResponsiveContainer>
+
     </div>
   );
 };

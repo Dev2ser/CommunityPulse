@@ -79,5 +79,135 @@ router.get("/survey/analytics/:surveyTitle", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch analytics" });
   }
 });
+router.get("/survey/categories/count/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    if (!surveyTitle) {
+      return res.status(400).json({ message: "Survey title is required" });
+    }
+
+    // Find the analytics document
+    const analytics = await db.collection("SurveyAnalytics").findOne({ surveyTitle });
+
+    if (!analytics) {
+      return res.status(404).json({ message: "Analytics not found for this survey" });
+    }
+
+    // Count the categories
+    const categoryCount = Array.isArray(analytics.categories) ? analytics.categories.length : 0;
+
+    res.json({
+      surveyTitle,
+      categoryCount
+    });
+  } catch (err) {
+    console.error("Get category count error:", err);
+    res.status(500).json({ message: "Failed to get category count" });
+  }
+});
+
+router.get("/survey/themes/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    if (!surveyTitle) {
+      return res.status(400).json({ message: "Survey title is required" });
+    }
+
+    // Find the analytics document for this survey
+    const analytics = await db.collection("SurveyAnalytics").findOne({ surveyTitle });
+
+    if (!analytics || !Array.isArray(analytics.topWords)) {
+      return res.status(404).json({ message: "No themes found for this survey" });
+    }
+
+    // Sort topWords by count descending and grab top 10
+    const themes = analytics.topWords
+      .filter(wordObj => wordObj.word) // remove empty objects
+      .sort((a, b) => b.count - a.count) // sort descending
+      .slice(0, 10) // top 10
+      .map((wordObj) => ({
+        word: wordObj.word,
+        count: wordObj.count || 0
+      }));
+
+    res.json({ surveyTitle, themes });
+  } catch (err) {
+    console.error("Get themes error:", err);
+    res.status(500).json({ message: "Failed to get themes" });
+  }
+});
+
+router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    if (!surveyTitle) {
+      return res.status(400).json({ message: "Survey title is required" });
+    }
+
+    // Fetch all responses for this survey
+    const surveyResponses = await db
+      .collection("SurveyResponse")
+      .find({ surveyTitle })
+      .toArray();
+
+    if (!surveyResponses.length) {
+      return res.status(404).json({ message: "No responses found for this survey" });
+    }
+
+    // Prepare a map to store counts per multiple-choice question
+    const multipleCounts = {};
+
+    surveyResponses.forEach((responseDoc) => {
+      const responses = responseDoc.responses || [];
+
+      responses.forEach((q) => {
+        if (q.questionType === "multiple" && q.answer) {
+          if (!multipleCounts[q.question]) {
+            multipleCounts[q.question] = {};
+          }
+
+          multipleCounts[q.question][q.answer] =
+            (multipleCounts[q.question][q.answer] || 0) + 1;
+        }
+      });
+    });
+
+    res.json({ surveyTitle, multipleCounts });
+  } catch (err) {
+    console.error("Multiple choice counts error:", err);
+    res.status(500).json({ message: "Failed to get multiple-choice counts" });
+  }
+});
+
+//response count per survey
+router.get("/survey/responseCount/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    if (!surveyTitle) {
+      return res.status(400).json({ message: "Survey title is required" });
+    }
+
+    // Count documents in SurveyResponse for this survey
+    const count = await db
+      .collection("SurveyResponse")
+      .countDocuments({ surveyTitle });
+
+    res.json({ surveyTitle, totalResponses: count });
+  } catch (err) {
+    console.error("Response count error:", err);
+    res.status(500).json({ message: "Failed to get response count" });
+  }
+});
 
 export default router;
+
+
+

@@ -16,6 +16,19 @@
   margin-bottom: 0.5rem;
 }
 
+.title-dropdown
+{
+  font-size: 2rem;
+  font-weight: bold;      
+  color: #111;         
+  background: transparent;         
+  appearance: none;          
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  cursor: pointer;     
+  text-align: center;      
+}
+
 .results-subtitle {
   font-size: 1rem;
   color: #8599b1;
@@ -98,6 +111,6 @@
   color: #20305B;
   padding: 0.5rem 1rem;
   border-radius: 999px;
-  font-size: 0.875rem;
+  font-size: 1.2rem;
   font-weight: 500;
 }
