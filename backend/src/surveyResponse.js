@@ -160,7 +160,7 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
     }
 
     const multipleCounts = {};
-    const questions = []; // 👈 new
+    const questions = [];
 
     surveyResponses.forEach((responseDoc) => {
       const responses = responseDoc.responses || [];
@@ -188,7 +188,36 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
     res.status(500).json({ message: "Failed to get multiple-choice counts" });
   }
 });
+// response count for all surveys
+router.get("/survey/responseCountAll", async (req, res) => {
+  try {
+    const db = getDb();
 
+    const counts = await db
+      .collection("SurveyResponse")
+      .aggregate([
+        {
+          $group: {
+            _id: "$surveyTitle",
+            totalResponses: { $sum: 1 }
+          }
+        },
+        {
+          $project: {
+            _id: 0,
+            surveyTitle: "$_id",
+            totalResponses: 1
+          }
+        }
+      ])
+      .toArray();
+
+    res.json({ surveys: counts });
+  } catch (err) {
+    console.error("Response count all error:", err);
+    res.status(500).json({ message: "Failed to get response counts" });
+  }
+});
 
 //response count per survey
 router.get("/survey/responseCount/:surveyTitle", async (req, res) => {

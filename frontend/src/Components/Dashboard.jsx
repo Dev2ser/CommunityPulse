@@ -7,6 +7,7 @@ export default function Dashboard() {
   const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [totalResponses, setTotalResponses] = useState(0);
   const [data, setData] = useState({
     totalSurveys: 0,
     publishedSurveys: 0,
@@ -45,6 +46,27 @@ export default function Dashboard() {
     fetchData();
   }, [API_BASE]);
 
+  useEffect(() => {
+    const getTotalResponseCount = async () => {
+      try {
+        const response = await fetch("http://localhost:5001/api/survey/responseCountAll");
+        const data = await response.json();
+  
+        console.log("Total response count data:", data);
+        const total = (data.surveys || []).reduce(
+          (sum, s) => sum + (s.totalResponses || 0),
+          0
+        );
+  
+        setTotalResponses(total);
+      } catch (err) {
+        console.error("Error fetching total responses:", err);
+      }
+    };
+  
+    getTotalResponseCount();
+  }, []);
+  
   const weeklyBars = useMemo(() => {
     const map = new Map();
     (data.weekly || []).forEach((w) => map.set(w.day, w.count));
@@ -57,7 +79,7 @@ export default function Dashboard() {
   const stats = [
     { label: "Total Surveys", value: data.totalSurveys || 0, trend: "" },
     { label: "Active Surveys", value: data.publishedSurveys || 0, trend: "" },
-    { label: "Total Responses", value: 0, trend: "" },
+    { label: "Total Responses", value: totalResponses, trend: "" },
   ];
 
   const quickStats = [
