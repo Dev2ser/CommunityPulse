@@ -72,7 +72,7 @@
     
   }
   
-  .sidebar ul li:hover {
+  .sidebar ul li {
     display: flex;
     width: 215px;
     height: 48px;
@@ -80,12 +80,12 @@
     align-items: center;
     gap: 12px;
     border-radius: 8px;
-    background: #86C779;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10);
   }
   
+  .sidebar ul li:hover,
   .sidebar ul li.active {
-    
     background: #86C779;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.10), 0 4px 6px -4px rgba(0, 0, 0, 0.10);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.10),
+                0 4px 6px -4px rgba(0, 0, 0, 0.10);
   }
+  
