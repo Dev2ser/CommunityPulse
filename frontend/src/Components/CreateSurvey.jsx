@@ -5,6 +5,7 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
   const [questions, setQuestions] = useState([]);
   const [title, setTitle] = useState("");
   const [targetNeighborhood, setTargetNeighborhood] = useState("");
+    
 
   // Prefill form when editing
   useEffect(() => {
@@ -43,6 +44,16 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
   const removeOption = (qIndex, optIndex) => {
     const newOptions = questions[qIndex].options.filter((_, i) => i !== optIndex);
     updateQuestion(qIndex, { options: newOptions });
+  };
+
+    //change question order 
+  const moveQuestion = (index, direction) => {
+    const newQuestions = [...questions];
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= newQuestions.length) return;
+    [newQuestions[index], newQuestions[newIndex]] =
+      [newQuestions[newIndex], newQuestions[index]];
+    setQuestions(newQuestions);
   };
 
   // Submit handler for create or update
@@ -154,6 +165,8 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
             <div key={i} className="question-card">
               <div className="question-header">
                 <div>Question {i + 1} ({q.type})</div>
+                <button class = "move" onClick={() => moveQuestion(i, -1)}>↑</button>
+                <button class = "move" onClick={() => moveQuestion(i, 1)}>↓</button>
                 <button className="delete-question-btn" onClick={() => removeQuestion(i)}>
                   Delete
                 </button>
@@ -213,6 +226,7 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
 
         <button className="submit-btn" onClick={handleSubmit}>
           {mode === "edit" ? "Update Survey" : "Save Survey"}
+          {mode === "view" ? "Go Back" : ""}
         </button>
       </div>
     </div>

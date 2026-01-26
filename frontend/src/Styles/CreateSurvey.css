@@ -85,6 +85,16 @@ body {
   padding: 5px 10px;
 }
 
+.move
+{
+  background-color: #1890ff;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .delete-question-btn {
   background-color: #ff4d4f;
   color: white;
