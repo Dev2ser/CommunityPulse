@@ -70,14 +70,16 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
 
     // Only send fields allowed to update
     const surveyData = {
-      title,
+      surveyTitle: title,
+      targetNeighborhood,
       questions: questions.map((q) => ({
         text: q.text || "",
-        type: q.type === "multiple" ? "multiple" : "text",
-        allowImage: false,
+        type: q.type, // keep 'text', 'multiple', 'image', 'voice' as is
+        allowImage: q.type === "image",
         options: q.type === "multiple" ? q.options.filter(Boolean) : [],
       })),
     };
+    
 
     try {
       const url =
@@ -128,6 +130,7 @@ function CreateSurvey({ mode = "create", surveyToEdit = null, onSaved, onNavigat
           placeholder="Survey Title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
+          disabled={mode === "edit"}
         />
 
         <input
