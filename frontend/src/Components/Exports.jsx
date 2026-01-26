@@ -72,6 +72,7 @@ export default function Exports() {
       if (!res.ok) throw new Error(data.message || "Analytics failed");
 
       setSurveyData(data); // contains responses, topWords, sentiment
+      console.log(data);
     } catch (err) {
       console.error(err);
       alert("Error fetching survey data: " + err.message);
@@ -181,10 +182,10 @@ export default function Exports() {
               <div className="section-title">Analytics</div>
               <div className="horizontal-line"></div>
               <div className="card sentiment-card">
-            <span>Overall Sentiment:</span>  
-                <span className={`sentiment-badge ${surveyData.sentiment.toLowerCase()}`}>
-                  {surveyData.sentiment}
-                </span>
+              <span>Overall Sentiment:</span>  
+            <span className={`sentiment-badge ${surveyData.sentimentLabel  || "Neutral"}`}>
+            {surveyData.sentimentLabel || "No data"}
+            </span>
               </div>
             
               <div className="card">

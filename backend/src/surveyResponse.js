@@ -25,7 +25,7 @@ router.get("/survey/responses/:surveyTitle", async (req, res) => {
     const responses = surveys.flatMap(s => extractResponses(s) || []);
     const topWords = responses.length ? getTopWords(responses) : [];
     const categories = topWords.length ? await getCategories(topWords) : [];
-    const sentiment = responses.length ? getSentiment(responses) : "No data";
+    const sentiment = responses.length ? getSentiment(responses) : { score: 0, label: "No data" };
     const suggestions = topWords.length ? await getSuggestions(topWords) : [];
     
     await db.collection("SurveyAnalytics").updateOne(
@@ -33,7 +33,8 @@ router.get("/survey/responses/:surveyTitle", async (req, res) => {
       {
         $set: {
           totalResponses: responses.length,
-          sentiment,
+          sentimentScore: sentiment.score,  
+          sentimentLabel: sentiment.label, 
           topWords,
           suggestions,
           categories,

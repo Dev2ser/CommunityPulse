@@ -55,18 +55,25 @@ export function getTopWords(responses, limit = 20) {
     .map(([word, count]) => ({ word, count }));
 }
 
-// Sentiment using NLP library 
 export function getSentiment(responses) {
   const validResponses = responses.filter(r => typeof r === "string" && r.trim());
   if (!validResponses.length) return "No data";
 
+  // Sum all sentiment scores
   const scores = validResponses.map(r => sentiment.analyze(r).score);
-  const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+  const sum = scores.reduce((acc, s) => acc + s, 0); 
+  const avg = (sum / scores.length) * 10; 
 
-  if (avg > 0.5) return "Positive";
-  if (avg < -0.5) return "Negative";
-  return "Neutral";
+  let label = "Neutral";
+  if (avg> 0) label = "Positive";
+  else if (avg < 0) label = "Negative";
+
+  return {
+    score: avg.toFixed(2),
+    label,
+  };
 }
+
 
 //Generate AI suggestions based on top words 
 export async function getSuggestions(topWords) {
