@@ -29,13 +29,17 @@ export default function TopBar({ currentPage, onNavigate, onLogout }) {
   }, []);
 
   return (
+    <header>
     <div className="topbar">
 
       {/* LEFT PLACEHOLDER - keeps center text truly centered */}
       <div className="topbar-left"></div>
 
       {/* CENTER */}
-      <div className="topbar-center">{title}</div>
+      <div className="topbar-center">
+        <h1 className="topbar-title">
+        {title}
+        </h1></div>
 
       {/* RIGHT */}
       <div className="topbar-right">
@@ -71,5 +75,6 @@ export default function TopBar({ currentPage, onNavigate, onLogout }) {
       </div>
 
     </div>
+    </header>
   );
 }
