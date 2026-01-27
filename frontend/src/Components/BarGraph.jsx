@@ -14,7 +14,6 @@ const BarGraph = ({ data, title }) => {
   return (
     <div style={{ width: "100%", height: 350 }}>
       {title && <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>{title}</h3>}
-
       <ResponsiveContainer>
         <BarChart data={data} margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
