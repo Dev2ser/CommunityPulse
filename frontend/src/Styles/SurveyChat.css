@@ -39,7 +39,7 @@ body {
 
 .survey-container {
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   background: var(--bg-card);
   border-radius: 28px;
   padding: 24px 24px 20px;
@@ -47,6 +47,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
+ 
 }
 
 /* Header */
