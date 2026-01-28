@@ -355,6 +355,10 @@
   background: rgba(134, 199, 121, 0.05);
 }
 
+.error-text
+{
+  color: #b91c1c;
+}
 .error-banner {
   margin-top: 1rem;
   padding: 0.9rem 1rem;

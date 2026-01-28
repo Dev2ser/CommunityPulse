@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../Styles/CreateSurvey.css";
 
 function CreateSurvey() {
@@ -11,6 +11,32 @@ function CreateSurvey() {
   const [saveError, setSaveError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [questions, setQuestions] = useState([]);
+  const [existingTitles, setExistingTitles] = useState([]);
+
+  useEffect(() => {
+    const fetchUsedSurveyTitles = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/surveys`);
+        const data = await response.json();
+  
+        const titles = (data.surveys || []).map(s =>
+          s.surveyTitle.trim().toLowerCase()
+        );
+  
+        setExistingTitles(titles);
+      } catch (err) {
+        console.error("Error fetching surveys:", err);
+      }
+    };
+  
+    fetchUsedSurveyTitles();
+  }, [API_BASE]);
+
+  const normalizedTitle = surveyTitle.trim().toLowerCase();
+  const isDuplicate =
+    normalizedTitle.length > 0 &&
+    existingTitles.includes(normalizedTitle);
+  
 
   const addQuestion = (type = "text") => {
     const id = Date.now();
@@ -58,7 +84,10 @@ function CreateSurvey() {
 
   const submitSurvey = async () => {
     setSaveError("");
-
+    if (isDuplicate) {
+      setSaveError("Survey title already exists.");
+      return;
+    }
     if (!surveyTitle.trim()) {
       setSaveError("Survey title is required.");
       return;
@@ -67,6 +96,7 @@ function CreateSurvey() {
     if (!questions.length) {
       setSaveError("Add at least one question.");
       return;
+    
     }
 
     const payload = {
@@ -148,12 +178,13 @@ function CreateSurvey() {
               <div className="form-group">
                 <label htmlFor="title">Survey Title</label>
                 <input
-                  id="title"
-                  className="text-input"
-                  placeholder="Enter survey title..."
-                  value={surveyTitle}
-                  onChange={(e) => setSurveyTitle(e.target.value)}
+                className={`text-input ${isDuplicate ? "error" : ""}`}
+                value={surveyTitle}
+                onChange={(e) => setSurveyTitle(e.target.value)}
                 />
+              {isDuplicate && (
+              <span className="error-text">Survey title already exists</span>
+                )}
               </div>
 
               <div className="form-group">
