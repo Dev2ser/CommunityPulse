@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../Styles/CreateSurvey.css";
 
 function CreateSurvey() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { mode = "create", survey = null } = location.state || {};
+
   const API_BASE =
     import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
   const [surveyTitle, setSurveyTitle] = useState("");
@@ -133,12 +138,8 @@ function CreateSurvey() {
       alert("Survey saved!");
       console.log("Survey saved:", data);
 
-      // Reset form after successful save
-      setSurveyTitle("");
-      setSurveyDescription("");
-      setTargetNeighborhood("all");
-      setStatus("draft");
-      setQuestions([]);
+      // Navigate back to surveys page after successful save
+      navigate("/adminsurveys");
     } catch (err) {
       console.error(err);
       setSaveError(err.message || "Unable to save survey");
@@ -155,7 +156,7 @@ function CreateSurvey() {
           <p>Design your community feedback survey</p>
         </div>
         <div className="create-survey-actions">
-          <button className="btn btn-cancel" type="button">
+          <button className="btn btn-cancel" type="button" onClick={() => navigate("/adminsurveys")}>
             Cancel
           </button>
           <button

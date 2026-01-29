@@ -1,25 +1,26 @@
   import '../Styles/sidebar.css';
   import React from "react";
+  import { useNavigate, useLocation } from "react-router-dom";
   import dashboardIcon from '../assets/dashboardIcon.svg';
   import surveysIcon from '../assets/surveysIcon.png';
   import exportsIcon from '../assets/exportsIcon.png';
   import adminIcon from '../assets/settingsIcon.png';
   import sidebarLogo from '../assets/tippingPointLogo.png';
 
-  export default function Sidebar({ onNavigate }) {
-    const menuItems = [
-      { name: 'Dashboard', icon: dashboardIcon, page: 'dashboard' },
-      { name: 'Surveys', icon: surveysIcon, page: 'adminSurveys' },
-      {name: 'Results', icon: adminIcon, page: 'results'},
-      { name: 'Exports', icon: exportsIcon, page: 'exports' },
-      { name: 'Admin Settings', icon: adminIcon, page: 'settings' }
-      
-    ];
-    const [currentPage, setCurrentPage] = React.useState('dashboard');
+  export default function Sidebar() {
+    const navigate = useNavigate();
+    const location = useLocation();
 
-    function handleNavigation(page) {
-      setCurrentPage(page);
-      onNavigate(page);
+    const menuItems = [
+      { name: 'Dashboard', icon: dashboardIcon, path: '/admindashboard' },
+      { name: 'Surveys', icon: surveysIcon, path: '/adminsurveys' },
+      { name: 'Results', icon: adminIcon, path: '/results' },
+      { name: 'Exports', icon: exportsIcon, path: '/exports' },
+      { name: 'Admin Settings', icon: adminIcon, path: '/adminsettings' }
+    ];
+
+    function handleNavigation(path) {
+      navigate(path);
     }
 
     return (
@@ -34,8 +35,8 @@
           {menuItems.map((item) => (
             <li
               key={item.name}
-              onClick={() => handleNavigation(item.page)}
-              className={`sidebar-item ${currentPage === item.page ? 'active' : ''}`}
+              onClick={() => handleNavigation(item.path)}
+              className={`sidebar-item ${location.pathname === item.path ? 'active' : ''}`}
             >
               <img src={item.icon} alt={`${item.name} icon`} className="sidebar-icon" />
               {item.name}

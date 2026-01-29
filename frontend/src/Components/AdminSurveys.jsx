@@ -1,9 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import "../Styles/AdminSurveys.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faCopy, faTrash, faBoxArchive, faUpload } from '@fortawesome/free-solid-svg-icons';
 
-export default function AdminSurveys({ onNavigate }) {
+export default function AdminSurveys() {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('All');
   const [surveys, setSurveys] = useState([]);
@@ -139,7 +141,7 @@ export default function AdminSurveys({ onNavigate }) {
         <h2>Survey Management</h2>
         <button 
           className="create-button"
-          onClick={() => onNavigate("createSurvey")}
+          onClick={() => navigate("/createsurvey")}
         >
           + Create New Survey
         </button>
@@ -192,7 +194,7 @@ export default function AdminSurveys({ onNavigate }) {
                 <button
                   className="icon-button edit"
                   title="Edit Survey"
-                  onClick={() => onNavigate("createSurvey", { mode: "edit", survey })}
+                  onClick={() => navigate("/createsurvey", { state: { mode: "edit", survey } })}
                 >
                   <FontAwesomeIcon icon={faPen} />
                 </button>

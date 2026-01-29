@@ -1,22 +1,23 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import "../Styles/topbar.css";
 import userIcon from "../assets/user.png";
 
 const pageTitles = {
-  home: "Dashboard",
-  dashboard: "Dashboard",
-  adminSurveys: "Surveys",
-  results: "Results",
-  exports: "Exports",
-  settings: "Admin Settings",
-  createSurvey: "Create Survey",
+  "/admindashboard": "Dashboard",
+  "/adminsurveys": "Surveys",
+  "/results": "Results",
+  "/exports": "Exports",
+  "/adminsettings": "Admin Settings",
+  "/createsurvey": "Create Survey",
 };
 
-export default function TopBar({ currentPage, onNavigate, onLogout }) {
+export default function TopBar({ onLogout }) {
+  const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const title = (pageTitles[currentPage] || "Dashboard").toUpperCase();
+  const title = (pageTitles[location.pathname] || "Dashboard").toUpperCase();
 
   useEffect(() => {
     const handler = (e) => {
@@ -62,8 +63,6 @@ export default function TopBar({ currentPage, onNavigate, onLogout }) {
                   setMenuOpen(false);
                   if (onLogout) {
                     onLogout();
-                  } else {
-                    onNavigate("login");
                   }
                 }}
               >

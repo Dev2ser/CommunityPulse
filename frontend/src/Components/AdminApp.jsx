@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../Styles/App.css";
 import LoginPage from "./LoginPage";
 import Sidebar from "./sidebar";
@@ -9,65 +10,66 @@ import CreateSurvey from "./CreateSurvey";
 import Exports from "./Exports";
 import Dashboard from "./Dashboard";
 import Results from "./Results";
-function AdminApp() {
-  const [page, setPage] = useState(() => {
-    const stored = localStorage.getItem("currentpage");
-    return stored || "dashboard";
-  });
 
-  const [pageProps, setPageProps] = useState({}); // <-- store props for navigation
+function AdminApp() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const [isAuthed, setIsAuthed] = useState(() => {
     const stored = localStorage.getItem("authed");
     return stored === "true";
   });
 
-  useEffect(() => localStorage.setItem("currentpage", page), [page]);
   useEffect(() => localStorage.setItem("authed", isAuthed), [isAuthed]);
+
+  // Check auth and redirect to login if not authenticated
+  useEffect(() => {
+    if (!isAuthed && location.pathname !== "/adminlogin") {
+      navigate("/adminlogin");
+    }
+  }, [isAuthed, location.pathname, navigate]);
 
   const handleLogin = () => {
     setIsAuthed(true);
-    setPage("dashboard");
+    navigate("/admindashboard");
   };
 
   const handleLogout = () => {
     setIsAuthed(false);
-    setPage("login");
+    localStorage.removeItem("authed");
+    navigate("/adminlogin");
   };
 
-  const handleNavigate = (nextPage, props = {}) => {
-    if (!isAuthed) return setPage("login");
-    setPage(nextPage);
-    console.log("THE PAGE IS " + page);
-    setPageProps(props); // <-- store extra props
-  };
+  if (!isAuthed) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
-  if (!isAuthed) return <LoginPage onLogin={handleLogin} />;
+  // Render the appropriate component based on current path
+  const renderContent = () => {
+    switch (location.pathname) {
+      case "/admindashboard":
+        return <Dashboard />;
+      case "/adminsurveys":
+        return <AdminSurveys />;
+      case "/adminsettings":
+        return <AdminSettings />;
+      case "/createsurvey":
+        return <CreateSurvey />;
+      case "/results":
+        return <Results />;
+      case "/exports":
+        return <Exports />;
+      default:
+        return <Dashboard />;
+    }
+  };
 
   return (
     <div className="app-layout">
-      <Sidebar onNavigate={handleNavigate} />
-
+      <Sidebar />
       <div className="main-content">
-        <Topbar
-          currentPage={page}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
-        />
-
-        {page === "dashboard" && <Dashboard />}
-        {page === "adminSurveys" && <AdminSurveys onNavigate={handleNavigate} />}
-        {page === "settings" && <AdminSettings />}
-        {page === "createSurvey" && (
-          <CreateSurvey
-            onNavigate={handleNavigate}
-            mode={pageProps.mode || "create"}
-            surveyToEdit={pageProps.survey || null}
-            onSaved={() => setPage("adminSurveys")}
-          />
-        )}
-        {page === "results" && <Results onNavigate={handleNavigate}/>}
-        {page === "exports" && <Exports />}
+        <Topbar onLogout={handleLogout} />
+        {renderContent()}
       </div>
     </div>
   );
