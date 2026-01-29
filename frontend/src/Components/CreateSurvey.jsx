@@ -23,25 +23,23 @@ function CreateSurvey() {
       try {
         const response = await fetch(`${API_BASE}/surveys`);
         const data = await response.json();
-  
-        const titles = (data.surveys || []).map(s =>
-          s.surveyTitle.trim().toLowerCase()
+
+        const titles = (data.surveys || []).map((s) =>
+          s.surveyTitle.trim().toLowerCase(),
         );
-  
+
         setExistingTitles(titles);
       } catch (err) {
         console.error("Error fetching surveys:", err);
       }
     };
-  
+
     fetchUsedSurveyTitles();
   }, [API_BASE]);
 
   const normalizedTitle = surveyTitle.trim().toLowerCase();
   const isDuplicate =
-    normalizedTitle.length > 0 &&
-    existingTitles.includes(normalizedTitle);
-  
+    normalizedTitle.length > 0 && existingTitles.includes(normalizedTitle);
 
   const addQuestion = (type = "text") => {
     const id = Date.now();
@@ -101,7 +99,6 @@ function CreateSurvey() {
     if (!questions.length) {
       setSaveError("Add at least one question.");
       return;
-    
     }
 
     const payload = {
@@ -156,7 +153,11 @@ function CreateSurvey() {
           <p>Design your community feedback survey</p>
         </div>
         <div className="create-survey-actions">
-          <button className="btn btn-cancel" type="button" onClick={() => navigate("/adminsurveys")}>
+          <button
+            className="btn btn-cancel"
+            type="button"
+            onClick={() => navigate("/adminsurveys")}
+          >
             Cancel
           </button>
           <button
@@ -179,12 +180,14 @@ function CreateSurvey() {
               <div className="form-group">
                 <label htmlFor="title">Survey Title</label>
                 <input
-                className={`text-input ${isDuplicate ? "error" : ""}`}
-                value={surveyTitle}
-                onChange={(e) => setSurveyTitle(e.target.value)}
+                  className={`text-input ${isDuplicate ? "error" : ""}`}
+                  value={surveyTitle}
+                  onChange={(e) => setSurveyTitle(e.target.value)}
                 />
-              {isDuplicate && (
-              <span className="error-text">Survey title already exists</span>
+                {isDuplicate && (
+                  <span className="error-text">
+                    Survey title already exists
+                  </span>
                 )}
               </div>
 

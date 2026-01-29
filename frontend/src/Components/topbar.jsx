@@ -31,49 +31,46 @@ export default function TopBar({ onLogout }) {
 
   return (
     <header>
-    <div className="topbar">
+      <div className="topbar">
+        {/* LEFT PLACEHOLDER - keeps center text truly centered */}
+        <div className="topbar-left"></div>
 
-      {/* LEFT PLACEHOLDER - keeps center text truly centered */}
-      <div className="topbar-left"></div>
-
-      {/* CENTER */}
-      <div className="topbar-center">
-        <h1 className="topbar-title">
-        {title}
-        </h1></div>
-
-      {/* RIGHT */}
-      <div className="topbar-right">
-        <div className="topbar-usertext">
-          <div className="topbar-username">Admin User</div>
-          <div className="topbar-role">Administrator</div>
+        {/* CENTER */}
+        <div className="topbar-center">
+          <h1 className="topbar-title">{title}</h1>
         </div>
-        <div className="topbar-avatar" ref={menuRef}>
-          <img
-            src={userIcon}
-            alt="user icon"
-            className="topbar-usericon"
-            onClick={() => setMenuOpen((v) => !v)}
-          />
-          {menuOpen && (
-            <div className="topbar-dropdown">
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  setMenuOpen(false);
-                  if (onLogout) {
-                    onLogout();
-                  }
-                }}
-              >
-                Logout
-              </button>
-            </div>
-          )}
+
+        {/* RIGHT */}
+        <div className="topbar-right">
+          <div className="topbar-usertext">
+            <div className="topbar-username">Admin User</div>
+            <div className="topbar-role">Administrator</div>
+          </div>
+          <div className="topbar-avatar" ref={menuRef}>
+            <img
+              src={userIcon}
+              alt="user icon"
+              className="topbar-usericon"
+              onClick={() => setMenuOpen((v) => !v)}
+            />
+            {menuOpen && (
+              <div className="topbar-dropdown">
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    if (onLogout) {
+                      onLogout();
+                    }
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-    </div>
     </header>
   );
 }
