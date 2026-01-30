@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import "../Styles/Exports.css";
 import loginTippingPointLogo from "../assets/loginTippingPointLogo.png";
 import Spinner from "./Spinner.jsx";
+import html2pdf from "html2pdf.js";
 export default function Exports() {
   const [surveys, setSurveys] = useState([]);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
@@ -10,6 +11,21 @@ export default function Exports() {
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
   const [reportMode, setReportMode] = useState('');
+  const reportRef = useRef();
+
+  const handleExportPDF = () => {
+    if (!reportRef.current) return;
+
+    const options = {
+      margin: 0.5,
+      filename: `${selectedSurvey?.surveyTitle || "survey-report"}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+    };
+
+    html2pdf().set(options).from(reportRef.current).save();
+  };
 
   // Fetch all surveys
   useEffect(() => {
@@ -152,6 +168,7 @@ export default function Exports() {
                     >
                      {loadingResponses ? <Spinner /> : "View Report"}
                     </button>
+                    
                   </div>
                 </div>
               ))}
@@ -178,7 +195,7 @@ export default function Exports() {
           <p>Generating report...</p>
           </div>
               ) : surveyData ? (
-              <div className="responses-analytics">
+              <div className="responses-analytics" ref={reportRef}>
               <div className="section-title">Analytics</div>
               <div className="horizontal-line"></div>
               <div className="card sentiment-card">
@@ -223,7 +240,7 @@ export default function Exports() {
               <p>No responses yet.</p>
             )}
             <div className = "bottom-row">
-            
+            <button className = "btn export" onClick = {handleExportPDF}>Export as PDF</button>
             <button className="btn danger" onClick={handleCloseModal}>
               Close
             </button>
