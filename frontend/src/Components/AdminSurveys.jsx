@@ -8,6 +8,7 @@ export default function AdminSurveys({ onNavigate }) {
   const [filter, setFilter] = useState('All');
   const [surveys, setSurveys] = useState([]);
   const [surveyToDelete, setSurveyToDelete] = useState(null);
+  const[surveyResponseCount, setSurveyResponseCount]=useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
@@ -34,6 +35,48 @@ export default function AdminSurveys({ onNavigate }) {
 
     fetchSurveys();
   }, [API_BASE]);
+
+  useEffect(() => {
+    const fetchAllResponseCounts = async () => {
+      try {
+        const results = await Promise.all(
+          surveys.map(async (survey) => {
+            const res = await fetch(
+              `${API_BASE}/survey/responseCount/${encodeURIComponent(
+                survey.surveyTitle
+              )}`
+            );
+  
+            if (!res.ok) {
+              throw new Error("Failed to fetch response count");
+            }
+  
+            const data = await res.json();
+            return {
+              id: survey._id,
+              count: data.totalResponses || 0,
+            };
+          })
+        );
+  
+        const countsMap = {};
+        results.forEach(({ id, count }) => {
+          countsMap[id] = count;
+        });
+  
+        setSurveyResponseCount(countsMap);
+      } catch (err) {
+        console.error("Failed to fetch response counts:", err);
+      }
+    };
+  
+    if (surveys.length > 0) {
+      fetchAllResponseCounts();
+    }
+  }, [API_BASE, surveys]);
+  
+  
+
 
   //delete survey handler
   const handleDeleteSurvey = async () => {
@@ -180,7 +223,7 @@ export default function AdminSurveys({ onNavigate }) {
               <td>{survey.surveyTitle|| survey.name}</td>
               <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
               <td>{formatDate(survey.createdAt || survey.created)}</td>
-              <td>{survey.responses}</td>
+              <td>{surveyResponseCount[survey._id] ?? 0}</td>
               <td>{formatDate(survey.updatedAt || survey.updated)}</td>
               <td>
                 {/* View */}

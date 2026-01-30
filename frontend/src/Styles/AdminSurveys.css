@@ -111,6 +111,7 @@
 .status {
   font-weight: 600;
   text-transform: capitalize;
+  
 }
 
 .status.published {
@@ -128,6 +129,7 @@
   color: #075985;
   border-radius: 0.5rem;
   font-size: 0.95rem;
+ 
 }
 
 .error-banner {
