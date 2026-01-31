@@ -8,17 +8,34 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const COLORS = ["#262223", "#8599b1", "#d1d5db", "#86c779", "#f0f0f0"];
+const COLORS = [
+  "#4f46e5", // indigo
+  "#22c55e", // green
+  "#eab308", // yellow
+  "#ef4444", // red
+  "#06b6d4", // cyan
+  "#a855f7", // purple
+  "#f97316", // orange
+];
 
 const PieChartComponent = ({ data, title }) => {
+  const chartData = data.map(item => ({
+    name: item.option,
+    value: item.count,
+  }));
+
   return (
     <div style={{ width: "100%", height: 350 }}>
-      {title && <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>{title}</h3>}
+      {title && (
+        <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
+          {title}
+        </h3>
+      )}
 
-     
+      <ResponsiveContainer>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             dataKey="value"
             nameKey="name"
             cx="50%"
@@ -26,7 +43,7 @@ const PieChartComponent = ({ data, title }) => {
             outerRadius={110}
             label
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={COLORS[index % COLORS.length]}
@@ -35,9 +52,9 @@ const PieChartComponent = ({ data, title }) => {
           </Pie>
 
           <Tooltip />
-          <Legend verticalAlign="bottom" height={36} />
+          <Legend />
         </PieChart>
-
+      </ResponsiveContainer>
     </div>
   );
 };

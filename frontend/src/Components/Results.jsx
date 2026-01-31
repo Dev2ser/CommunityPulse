@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/Results.css";
 import BarGraph from "./BarGraph";
+import PieChartComponent from "./PieChart";
 
 const Results = () => {
   const [surveys, setSurveys] = useState([]);
@@ -12,6 +13,7 @@ const Results = () => {
   const [themes, setThemes] = useState([]);
   const [barData, setBarData] = useState([]);
   const [currentBarIndex, setCurrentBarIndex] = useState(0);
+  const [chartType, setChartType] = useState("bar");
 
   // Fetch published + archived surveys on mount
   useEffect(() => {
@@ -22,11 +24,14 @@ const Results = () => {
         );
         const data = await response.json();
         setSurveys(data.surveys);
-        if (data.surveys.length > 0) setSelectedSurvey(data.surveys[0]);
+        if (data.surveys.length > 0) {
+          setSelectedSurvey(data.surveys[0]);
+        }
       } catch (err) {
         console.error("Error fetching surveys:", err);
       }
     };
+
     fetchSurveys();
   }, []);
 
@@ -132,17 +137,20 @@ const Results = () => {
         );
         const data = await response.json();
 
-        // Transform multipleCounts into array of questions
-        const graphData = Object.keys(data.multipleCounts || {}).map((question) => ({
-          question,
-          options: Object.entries(data.multipleCounts[question]).map(([answer, count]) => ({
-            option: answer,
-            count,
-          })),
-        }));
+        const graphData = Object.keys(data.multipleCounts || {}).map(
+          (question) => ({
+            question,
+            options: Object.entries(
+              data.multipleCounts[question]
+            ).map(([answer, count]) => ({
+              option: answer,
+              count,
+            })),
+          })
+        );
 
         setBarData(graphData);
-        setCurrentBarIndex(0); // Reset carousel to first question
+        setCurrentBarIndex(0);
       } catch (err) {
         console.error("Error fetching multiple-choice counts:", err);
         setBarData([]);
@@ -161,7 +169,9 @@ const Results = () => {
             <select
               value={selectedSurvey?._id || ""}
               onChange={(e) =>
-                setSelectedSurvey(surveys.find((s) => s._id === e.target.value))
+                setSelectedSurvey(
+                  surveys.find((s) => s._id === e.target.value)
+                )
               }
               className="title-dropdown"
             >
@@ -174,7 +184,9 @@ const Results = () => {
             <span className="dropdown-arrow">▼</span>
           </div>
         </h1>
-        <p className="results-subtitle">Tipping Point – Real Estate Development</p>
+        <p className="results-subtitle">
+          Tipping Point – Real Estate Development
+        </p>
       </header>
 
       {/* Metrics Section */}
@@ -184,21 +196,25 @@ const Results = () => {
           <p>Total Responses</p>
           <span className="metric-note">AI analyzed</span>
         </div>
+
         <div className="metric-card">
           <h2>84%</h2>
           <p>Completion Rate</p>
           <span className="metric-note">Above average</span>
         </div>
+
         <div className="metric-card">
           <h2>{sentimentScore}</h2>
           <p>Overall Sentiment</p>
           <span className="metric-note">{sentimentLabel}</span>
         </div>
+
         <div className="metric-card">
           <h2>{themes.length}</h2>
           <p>Most Mentioned Themes</p>
           <span className="metric-note">AI analyzed</span>
         </div>
+
         <div className="metric-card export-buttons">
           <button className="export-btn">Export CSV</button>
           <button className="export-btn">Export PDF</button>
@@ -207,16 +223,31 @@ const Results = () => {
 
       {/* Bar Graph Section */}
       <section className="results-graph-section">
-        <h3 className="section-heading">Multiple Choice Responses</h3>
+        <div className="heading-container">
+          <h3 className="section-heading">Multiple Choice Responses</h3>
+
+          <div className="chart-dropdown-wrapper">
+            <select
+              value={chartType}
+              onChange={(e) => setChartType(e.target.value)}
+              className="chart-dropdown"
+            >
+              <option value="bar">Bar Chart</option>
+              <option value="pie">Pie Chart</option>
+            </select>
+       
+          </div>
+        </div>
 
         {barData.length > 0 ? (
           <div className="carousel-container">
-            {/* Question Tabs */}
             <div className="question-tabs">
-              {barData.map((q, idx) => (
+              {barData.map((_, idx) => (
                 <button
                   key={idx}
-                  className={`question-tab ${idx === currentBarIndex ? "active" : ""}`}
+                  className={`question-tab ${
+                    idx === currentBarIndex ? "active" : ""
+                  }`}
                   onClick={() => setCurrentBarIndex(idx)}
                 >
                   Q{idx + 1}
@@ -224,12 +255,24 @@ const Results = () => {
               ))}
             </div>
 
-            {/* Current Question Bar Graph */}
             <div className="carousel-slide">
               <div className="question-label">
                 {barData[currentBarIndex].question}
               </div>
-              <BarGraph data={barData[currentBarIndex].options} />
+
+              {chartType === "bar" && (
+                <BarGraph
+                  data={barData[currentBarIndex].options}
+                  title={null}
+                />
+              )}
+
+              {chartType === "pie" && (
+                <PieChartComponent
+                  data={barData[currentBarIndex].options}
+                  title={null}
+                />
+              )}
             </div>
           </div>
         ) : (

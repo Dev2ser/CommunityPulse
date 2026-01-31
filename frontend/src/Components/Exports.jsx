@@ -16,6 +16,17 @@ export default function Exports() {
   const handleExportPDF = () => {
     if (!reportRef.current) return;
 
+    // Add the generated date dynamically
+    const today = new Date().toLocaleString();
+    
+    // Create a date element
+    const date = document.createElement("p");
+    date.textContent = "Generated on: " + today;
+    date.style.textAlign = "right";
+    date.style.fontSize = "12px";
+    const pdfContent = reportRef.current;
+    pdfContent.appendChild(date);
+
     const options = {
       margin: 0.5,
       filename: `${selectedSurvey?.surveyTitle || "survey-report"}.pdf`,
@@ -25,6 +36,8 @@ export default function Exports() {
     };
 
     html2pdf().set(options).from(reportRef.current).save();
+    setShowModal(false);
+
   };
 
   // Fetch all surveys
@@ -168,6 +181,8 @@ export default function Exports() {
                     >
                      {loadingResponses ? <Spinner /> : "View Report"}
                     </button>
+                    <button className = "btn secondary">Export Raw Responses (CSV)</button>
+                    
                     
                   </div>
                 </div>
@@ -187,6 +202,7 @@ export default function Exports() {
           src={loginTippingPointLogo}
           alt="Tipping Point Logo"
         className="tippingpoint-logo"
+        crossOrigin="anonymous"
           />
           </div>
           {loadingResponses ? (
