@@ -272,8 +272,8 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
         question: r.question,
         answer: r.answer,
         questionType: r.questionType,
-        followUpAnswer: "",
-        elaboration: "",
+
+        
       }));
 
       const followUpRows = (responseDoc.followUps || []).flatMap((fu) =>
@@ -283,6 +283,7 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
           question: fua.question,
           answer: fua.answer,
           questionType: fua.questionType,
+
         }))
       );
 
