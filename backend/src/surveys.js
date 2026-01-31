@@ -230,7 +230,4 @@ router.put("/surveys/:id", async (req, res) => {
   }
 });
 
-//Get question options for a survey
-
-
 export default router;

@@ -13,6 +13,8 @@ const pageTitles = {
 };
 
 export default function TopBar({ currentPage, onNavigate, onLogout }) {
+  const[username, setUsername] = useState(localStorage.getItem("username") || "Admin User");
+  const [role, setRole] = useState(localStorage.getItem("userRole") || "Administrator");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -44,8 +46,8 @@ export default function TopBar({ currentPage, onNavigate, onLogout }) {
       {/* RIGHT */}
       <div className="topbar-right">
         <div className="topbar-usertext">
-          <div className="topbar-username">Admin User</div>
-          <div className="topbar-role">Administrator</div>
+          <div className="topbar-username">{username}</div>
+          <div className="topbar-role">{role}</div>
         </div>
         <div className="topbar-avatar" ref={menuRef}>
           <img

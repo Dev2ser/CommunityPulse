@@ -242,7 +242,63 @@ router.get("/survey/responseCount/:surveyTitle", async (req, res) => {
   }
 });
 
+ // Get flattened responses and follow-ups by Survey Title
+router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    if (!surveyTitle) {
+      return res.status(400).json({ message: "Survey title is required" });
+    }
+
+    const surveyResponses = await db
+      .collection("SurveyResponse")
+      .find({ surveyTitle })
+      .toArray();
+
+    if (!surveyResponses.length) {
+      return res.status(404).json({ message: "No responses found for this survey" });
+    }
+
+    // Flatten the responses
+    const flattenedRows = surveyResponses.flatMap((responseDoc) => {
+      const responseId = responseDoc._id.toString();
+
+
+      const topResponses = (responseDoc.responses || []).map((r) => ({
+        surveyTitle,
+        responseId,
+        question: r.question,
+        answer: r.answer,
+        questionType: r.questionType,
+        followUpAnswer: "",
+        elaboration: "",
+      }));
+
+      const followUpRows = (responseDoc.followUps || []).flatMap((fu) =>
+        (fu.followUpAnswers || []).map((fua) => ({
+          surveyTitle,
+          responseId,
+          question: fua.question,
+          answer: fua.answer,
+          questionType: fua.questionType,
+        }))
+      );
+
+      return [...topResponses, ...followUpRows];
+    });
+
+    res.json({ surveyTitle, rows: flattenedRows });
+  } catch (err) {
+    console.error("Get responses and follow-ups error:", err);
+    res.status(500).json({ message: "Failed to get responses and follow-ups" });
+  }
+});
+
 export default router;
+
+
 
 
 

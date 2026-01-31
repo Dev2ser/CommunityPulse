@@ -34,10 +34,11 @@ function LoginPage({ onLogin, onBack }) {
       });
 
       const data = await res.json();
-     
+      console.log("Login response data:", data);
       if (!res.ok) throw new Error(data.message || "Login failed");
 
       localStorage.setItem("userRole", data.role);
+      localStorage.setItem("username", data.username);
 
       onLogin();
     } catch (err) {

@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import "../Styles/Exports.css";
 import loginTippingPointLogo from "../assets/loginTippingPointLogo.png";
 import Spinner from "./Spinner.jsx";
+//pdf library
 import html2pdf from "html2pdf.js";
+//csv library
+import Papa from "papaparse";
+
 export default function Exports() {
   const [surveys, setSurveys] = useState([]);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
@@ -40,6 +44,32 @@ export default function Exports() {
 
   };
 
+  const exportResponsesCSV = async (survey) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5001/api/survey/responsesandfollowups/${encodeURIComponent(
+          survey.surveyTitle
+        )}`
+      );
+  
+      const data = await res.json();
+      console.log(data)
+      const csv = Papa.unparse(data.rows);
+  
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+  
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${survey.surveyTitle}-responses.csv`;
+      link.click();
+  
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("CSV export failed:", err);
+    }
+  };
+  
   // Fetch all surveys
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -181,7 +211,7 @@ export default function Exports() {
                     >
                      {loadingResponses ? <Spinner /> : "View Report"}
                     </button>
-                    <button className = "btn secondary">Export Raw Responses (CSV)</button>
+                    <button className = "btn secondary" onClick={() => exportResponsesCSV(survey)}>Export Raw Responses (CSV)</button>
                     
                     
                   </div>
