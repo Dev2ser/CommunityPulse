@@ -220,6 +220,7 @@ const Results = () => {
           <button className="export-btn">Export PDF</button>
         </div>
       </section>
+      
 
       {/* Bar Graph Section */}
       <section className="results-graph-section">
