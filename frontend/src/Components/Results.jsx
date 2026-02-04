@@ -281,21 +281,38 @@ const Results = () => {
         )}
       </section>
 
-      {/* Themes Section */}
       <section className="results-themes-section">
-        <h3 className="section-heading">Top Mentioned Themes</h3>
-        <div className="themes-grid">
-          {themes.length > 0 ? (
-            themes.map((theme, idx) => (
-              <div key={idx} className="theme-tag">
-                {theme}
-              </div>
-            ))
-          ) : (
-            <p>No themes available for this survey.</p>
-          )}
-        </div>
-      </section>
+
+  <div className="themes-row">
+    {/* Top 5 */}
+    <div className="trend-box">
+      <h4 className="trend-box-title">Top 5 Trends</h4>
+      <div className="themes-inline">
+        {themes.slice(0, 5).map((theme, idx) => (
+          <div key={idx} className="theme-tag">
+            {idx + 1}. {theme}
+          </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Remaining */}
+    <div className="trend-box">
+      <h4 className="trend-box-title">Remaining Trends</h4>
+      <div className="themes-inline">
+        {themes.slice(5).map((theme, idx) => (
+          <div key={idx} className="theme-tag">
+            {theme}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+
     </div>
   );
 };

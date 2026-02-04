@@ -256,10 +256,11 @@ export default function Exports() {
                 <p>{surveyData.topWords?.map((w) => w.word).join(", ")}</p>
               </div>
             
-              <h3 className="section-title">Categories</h3>
+              <h3 className="section-title">Top Categories</h3>
               <div className="category-list">
           {surveyData.categories?.map((c, i) => (
            <div className="category-card" key={i}>
+             <div className="rank-badge">{i + 1}</div>
             <div className="category-icon">{c.icon || "📊"}</div>
 
               <div className="category-content">
@@ -274,9 +275,11 @@ export default function Exports() {
                 <div className="suggestions-list">
                   {surveyData.suggestions.map((s, i) => (
                     <div className="suggestion-card" key={i}>
+                      <div className="rank-badge">{i + 1}</div>
                       {s}
                     </div>
                   ))}
+                  
                 </div>
               ) : (
                 <p>No suggestions available.</p>
