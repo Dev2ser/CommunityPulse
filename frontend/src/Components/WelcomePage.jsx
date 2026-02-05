@@ -13,7 +13,7 @@ function WelcomePage({ onStart }) {
         </h2>
 
         <p className="description">
-          Tell us your hopes, dreams, and ideas for your neighborhood
+          Tell us your hopes and dreams for your neighborhood!
         </p>
 
         <button className="start-button" onClick={onStart}>

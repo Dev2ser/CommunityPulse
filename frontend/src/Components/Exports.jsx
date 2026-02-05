@@ -252,7 +252,7 @@ export default function Exports() {
               </div>
             
               <div className="card">
-                <strong>Top Words</strong>
+                <strong>Top Themes</strong>
                 <p>{surveyData.topWords?.map((w) => w.word).join(", ")}</p>
               </div>
             
