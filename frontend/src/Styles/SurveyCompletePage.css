@@ -1,0 +1,35 @@
+.transcript-content {
+    padding: 20px;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .transcript-message {
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  
+  .transcript-message:last-child {
+    margin-bottom: 0;
+  }
+  
+  .transcript-role {
+    color: #374151;
+    font-weight: 600;
+  }
+  
+  .transcript-text {
+    color: #4b5563;
+  }
+  .return-btn {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #22c55e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }

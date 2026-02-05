@@ -3,21 +3,40 @@ dotenv.config();
 import express from "express";
 import { getDb } from "./db.js";
 import OpenAI from "openai";
-
+import multer from "multer";
 const router = express.Router();
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-router.post("/survey-chat", async (req, res) => {
+const imageUpload = multer({ storage: multer.memoryStorage() });
+
+router.post("/survey-chat", imageUpload.single("image"), async (req, res) => {
   try {
     const db = getDb();
-    const { survey, messages } = req.body;
+    // --- Parse survey and messages safely ---
+    let survey, parsedMessages;
+    try {
+      survey = typeof req.body.survey === "string" ? JSON.parse(req.body.survey) : req.body.survey;
+      parsedMessages = typeof req.body.messages === "string" ? JSON.parse(req.body.messages) : req.body.messages;
+    } catch (err) {
+      return res.status(400).json({ message: "Invalid JSON in survey or messages" });
+    }
 
     // --- Basic validation ---
-    if (!survey || !Array.isArray(messages)) {
+    if (!survey || !Array.isArray(parsedMessages)) {
       return res.status(400).json({ message: "Invalid request payload" });
     }
+
+    // --- Handle uploaded image ---
+    if (req.file) {
+      const base64 = req.file.buffer.toString("base64");
+      parsedMessages.push({
+        role: "user",
+        content: `[IMAGE: data:${req.file.mimetype};base64,${base64}]`,
+      });
+    }
+
 
     // --- Build prompt for Responses API ---
     const prompt = `
@@ -42,15 +61,18 @@ RULES:
 
 8. Always start predefined questions with:
    "Question X of Y:"
+
+9. If the type is "image" mention to the user that they can upload one image and analysis the image and explain what you see (in detail) 
+and ask them about the image understand their answer.
    
-9. ONLY if all predefined questions and follow ups are completed explicitly say:
+10. ONLY if all predefined questions and follow ups are completed explicitly say:
    "thank you for completing the survey"
 
 INTERNAL METADATA (VERY IMPORTANT):
 At the VERY TOP of your response, include exactly one line:
 [PROGRESS question=X total=Y]
 
-10. WHEN the survey is fully completed, ALSO append a FINAL JSON block containing the full structured survey result in the following format:
+11. WHEN the survey is fully completed, ALSO append a FINAL JSON block containing the full structured survey result in the following format:
 {
   "surveyResult": {
     "surveyTitle": "...",
@@ -84,7 +106,7 @@ Survey definition:
 ${JSON.stringify(survey, null, 2)}
 
 Conversation so far:
-${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
+${parsedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
     `.trim();
 
     // --- Call Responses API ---
