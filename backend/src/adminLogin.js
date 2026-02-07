@@ -1,6 +1,6 @@
 import express from "express";
 import { getDb } from "./db.js";
-
+import bcrypt from "bcrypt";
 const router = express.Router(); 
 
 router.post("/login", async (req, res) => {
@@ -22,19 +22,20 @@ router.post("/login", async (req, res) => {
     }
 
     const admin = await db.collection("Admin").findOne({
-      $and: [
-        { password },
-        {
-          $or: [
-            { email },
-            { username: identifier },
-            { username: email },
-          ],
-        },
-      ],
+      $or: [
+        { email },
+        { username: identifier },
+        { username: email }
+      ]
     });
 
     if (!admin) {
+      return res.status(400).json({ message: "Invalid username or password" });
+    }
+    
+    const isValid = await bcrypt.compare(password, admin.password);
+
+    if (!isValid) {
       return res.status(400).json({ message: "Invalid username or password" });
     }
 

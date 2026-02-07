@@ -1,8 +1,8 @@
 import express from 'express';
 import { getDb } from './db.js';
-
+import bcrypt from "bcrypt";
 const router = express.Router();
-
+const saltRounds = 12;
 router.post('/createAdmin', async (req, res) => {
   try {
     const username = req.body.username?.trim();
@@ -24,11 +24,12 @@ router.post('/createAdmin', async (req, res) => {
     if (existing) {
       return res.status(400).json({ message: "Username or email already exists" });
     }
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
     // Insert new admin
     await db.collection('Admin').insertOne({
       username,
-      password,
+      password: hashedPassword,
       role,
       email: email.toLowerCase()
     });
