@@ -246,6 +246,7 @@ export default function AdminSettings() {
                           onChange={(e) => setNewAdminEmail(e.target.value)}
                         />
                       </div>
+                    
                       <div className="dialog-field">
                         <label htmlFor="invite-role">Role</label>
                         <select
@@ -322,6 +323,8 @@ export default function AdminSettings() {
                               admin.email || "N/A"
                             )}
                           </td>
+
+                          
 
                           <td>
                             {editingId === admin.id ? (
@@ -404,7 +407,7 @@ export default function AdminSettings() {
                     <div>
                       <h3 className="profile-card-title">Profile Information</h3>
                       <p className="profile-card-subtitle">
-                        Update your name and email
+                        Update your name, email, and password
                       </p>
                     </div>
                   </div>
@@ -426,6 +429,15 @@ export default function AdminSettings() {
                         value={profileEmail}
                         onChange={(e) => setProfileEmail(e.target.value)}
                         placeholder="email@tippingpoint.com"
+                      />
+                    </label>
+                    <label>
+                      New Password
+                      <input
+                        type="password"
+                        value={profileEmail}
+                        onChange={(e) => setProfileEmail(e.target.value)}
+                        placeholder="New Password"
                       />
                     </label>
                     <button
