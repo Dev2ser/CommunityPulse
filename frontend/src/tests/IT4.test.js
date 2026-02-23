@@ -1,12 +1,10 @@
-//integration test for dashboard routes, making sure dashboard computes stats correctly
-const request = require("supertest");
-const express = require("express");
+//Integration test for dashboard routes, making sure dashboard computes stats correctly
+import request from "supertest";
+import express from "express";
+import dashboardRouter from "../dashboard.js";
+import { getDb } from "../db.js";
 
-//paths to backend files
-const dashboardRouter = require("../../../backend/src/dashboard.js");
-const { getDb } = require("../../../backend/src/db.js");
-
-jest.mock("../../../backend/src/db.js");
+jest.mock("../db.js");
 
 const app = express();
 app.use("/", dashboardRouter);
@@ -57,7 +55,6 @@ describe("GET /dashboard", () => {
     getDb.mockReturnValue(null);
 
     const res = await request(app).get("/dashboard");
-
     expect(res.status).toBe(500);
     expect(res.body.message).toBe("Database not initialized");
   });
