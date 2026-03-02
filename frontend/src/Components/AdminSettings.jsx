@@ -13,6 +13,7 @@ export default function AdminSettings() {
 
   const [profileName, setProfileName] = useState("Admin User");
   const [profileEmail, setProfileEmail] = useState("admin@tippingpoint.com");
+  const [profilePassword, setProfilePassword] = useState("");
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [responseNotifications, setResponseNotifications] = useState(true);
   const [weeklyReports, setWeeklyReports] = useState(false);
@@ -156,6 +157,47 @@ export default function AdminSettings() {
       alert("Server error updating admin");
     }
   };
+
+  const handleEditAdmin = async () => {
+    const updates = {};
+  
+    if (profileName.trim()) updates.username = profileName;
+    if (profileEmail.trim()) updates.email = profileEmail;
+    if (profilePassword.trim()) updates.password = profilePassword;
+  
+    if (Object.keys(updates).length === 0) {
+      alert("Nothing to update");
+      return;
+    }
+  
+    const currentUsername = localStorage.getItem("username");
+  
+    try {
+      const res = await fetch("http://localhost:5000/api/admin/updateAdmin", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentUsername,
+          ...updates
+        })
+      });
+  
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+  
+      // Update localStorage if name changed
+      if (updates.username) {
+        localStorage.setItem("username", updates.username);
+      }
+  
+      alert("Profile updated!");
+      setProfilePassword("");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+  
+  
 
   const getRoleBadge = (role) => {
     const base = "badge";
@@ -413,40 +455,45 @@ export default function AdminSettings() {
                   </div>
 
                   <form className="profile-form">
-                    <label>
-                      Full Name
-                      <input
-                        type="text"
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        placeholder="Full Name"
-                      />
-                    </label>
-                    <label>
-                      Email Address
-                      <input
-                        type="email"
-                        value={profileEmail}
-                        onChange={(e) => setProfileEmail(e.target.value)}
-                        placeholder="email@tippingpoint.com"
-                      />
-                    </label>
-                    <label>
-                      New Password
-                      <input
-                        type="password"
-                        value={profileEmail}
-                        onChange={(e) => setProfileEmail(e.target.value)}
-                        placeholder="New Password"
-                      />
-                    </label>
-                    <button
-                      type="button"
-                      className="update-profile-button"
-                    >
-                      Save Changes
-                    </button>
-                  </form>
+  <label>
+    Full Name
+    <input
+      type="text"
+      value={profileName}
+      onChange={(e) => setProfileName(e.target.value)}
+      placeholder="Full Name"
+    />
+  </label>
+
+  <label>
+    Email Address
+    <input
+      type="email"
+      value={profileEmail}
+      onChange={(e) => setProfileEmail(e.target.value)}
+      placeholder="email@tippingpoint.com"
+    />
+  </label>
+
+  <label>
+    New Password
+    <input
+      type="password"
+      value={profilePassword}
+      onChange={(e) => setProfilePassword(e.target.value)}
+      placeholder="New Password"
+    />
+  </label>
+
+  <button
+    type="button"
+    className="update-profile-button"
+    onClick={handleEditAdmin}
+  >
+    Save Changes
+  </button>
+</form>
+
                 </div>
 
                 <div className="notification-card">

@@ -1,4 +1,5 @@
 import "../Styles/SurveyChat.css";
+import sendIcon from "../Assets/send-icon.png";
 import React, { useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import SurveyComplete from "./SurveyCompletePage";
@@ -187,145 +188,149 @@ const SurveyChat = () => {
   }
 
   return (
-    <div className="survey-page">
-      <div className="survey-container">
-        {/* Header */}
-        <header className="survey-header">
-          <h1 className="survey-title">COMMUNITY PULSE ASSISTANT</h1>
-          <p className="survey-subtitle">Powered by Tipping Point</p>
-        </header>
-
-        {/* Progress */}
-        <section className="survey-progress-section">
-          <div className="survey-progress-top-row">
-            <span className="survey-progress-label">{progressPercent}% Complete</span>
+    <div className="survey-app">
+      {/* HEADER */}
+      <header className="survey-header-bar">
+        <div className="survey-header-top">
+          <div className="survey-header-left">
+            <div className="chat-icon">💬</div>
+            <div>
+              <h1>COMMUNITY PULSE ASSISTANT</h1>
+              <p>Powered by Tipping Point</p>
+            </div>
           </div>
-          <div className="survey-progress-bar">
-            <div className="survey-progress-fill" style={{ width: `${progressPercent}%` }} />
+        </div>
+  
+        <div className="survey-progress-bar">
+          <div
+            className="survey-progress-fill"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+  
+        <div className="survey-progress-text">
+          {progressPercent}% Complete
+        </div>
+      </header>
+  
+      {/* CHAT AREA */}
+      <main className="survey-chat-area">
+      
+        {messages.length === 0 && !loading && (
+          <div className="chat-bubble assistant">
+          
+            Hi! I'm your Community Pulse Assistant. I'm here to listen to your ideas and feedback about your neighborhood.
           </div>
-        </section>
-
-        {/* Chat */}
-        <section className="survey-chat-card">
-          {messages.length === 0 && !loading && (
-            <div className="survey-chat-bubble assistant">
-              <p className="survey-chat-text">
-                Hi! I&apos;m your Community Pulse Assistant. I&apos;m here to listen to your ideas
-                and feedback about your neighborhood Type anything to start the survey.
-              </p>
-            </div>
-          )}
-
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`survey-chat-bubble ${msg.role === "assistant" ? "assistant" : "user"}`}
-            >
-              <p className="survey-chat-text">{msg.content}</p>
-            </div>
-          ))}
-
-          {loading && (
-            <div className="survey-chat-bubble assistant">
-              <p className="survey-chat-text">Typing...</p>
-            </div>
-          )}
-
-          {completionCountdown !== null && (
-            <div className="survey-chat-bubble assistant">
-              <p className="survey-chat-text">
-                Thank you for your responses! Survey is closing in {completionCountdown}...
-              </p>
-            </div>
-          )}
-
-          <div ref={chatEndRef} />
-        </section>
-
-        {/* Input / Options */}
-        <section className="survey-input-section">
-          <div className="survey-input-wrapper">
-            {currentQuestionType === "multiple" && currentOptions.length > 0 ? (
-              // --- Multiple-choice buttons ---
-              <div className="survey-options-container">
-                {currentOptions.map((opt, idx) => (
-                  <button
-                    key={idx}
-                    className="survey-option-bubble"
-                    onClick={() => sendToAI(opt)}
-                    disabled={loading || surveyComplete}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              // --- Text input + icons + send button ---
-              <>
-                <input
-                  type="text"
-                  className="survey-input"
-                  placeholder={listening ? "Listening..." : "Type your response..."}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  disabled={loading || surveyComplete || listening}
-                />
-
-                <div className="survey-input-icons">
-                  <button
-                    className="survey-icon-button"
-                    type="button"
-                    onClick={startVoiceInput}
-                    disabled={loading || surveyComplete}
-                  >
-                    <span className="icon">{listening ? "🎙️" : "🎤"}</span>
-                    <span className="icon-label">{listening ? "Listening..." : "Voice"}</span>
-                  </button>
-
-                  <label className="survey-icon-button">
-                    <span className="icon">📷</span>
-                    <span className="icon-label">Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={handleImageSelect}
-                      disabled={loading || surveyComplete}
-                    />
-                  </label>
-
-                  {selectedImage && (
-                    <div className="image-preview-container">
-                      <img
-                        src={URL.createObjectURL(selectedImage)}
-                        alt="Selected"
-                        className="image-preview"
-                      />
-                      <button
-                        type="button"
-                        className="remove-image-button"
-                        onClick={() => setSelectedImage(null)}
-                      >
-                        ❌
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  className="survey-send-button"
-                  type="button"
-                  onClick={handleSend}
-                  disabled={loading || surveyComplete || listening}
-                >
-                  ✈️
-                </button>
-              </>
-            )}
+        )}
+  
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`chat-bubble ${msg.role}`}>
+              <div className="role-label">
+      {msg.role === "assistant" ? "Assistant" : "You"}
+    </div>
+            
+            {msg.content}
           </div>
-        </section>
+        ))}
+  
+        {loading && (
+          <div className="chat-bubble assistant">Typing...</div>
+        )}
+  
+        {completionCountdown !== null && (
+          <div className="chat-bubble assistant">
+            Thank you for your responses! Survey is closing in {completionCountdown}...
+          </div>
+        )}
+  
+        {/* MULTIPLE CHOICE OPTIONS */}
+        {currentQuestionType === "multiple" && currentOptions.length > 0 && (
+          <div className="option-row">
+            {currentOptions.map((opt, idx) => (
+              <button
+                key={idx}
+                className="option-pill"
+                onClick={() => sendToAI(opt)}
+                disabled={loading || surveyComplete}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+        )}
+  
+        <div ref={chatEndRef} />
+      </main>
+  
+      {/* INPUT BAR */}
+  
+      {currentQuestionType !== "multiple" && (
+  <footer className="survey-footer">
+    <div className="footer-inner">
+
+      {/* TEXT INPUT + SEND */}
+      <div className = "input-send-container">
+      <input
+        type="text"
+        className="input"
+        placeholder={listening ? "Listening..." : "Type your response..."}
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && handleSend()}
+        disabled={loading || surveyComplete || listening}
+      />
+      <button
+  className="send-btn"
+  onClick={handleSend}
+  disabled={loading || surveyComplete || listening}
+>
+  <img src={sendIcon} alt="Send" className="send-icon" />
+</button>
+        </div>
+
+      {/* ICONS  */}
+      <div className="footer-actions">
+        <div className="footer-left-icons">
+          <button
+            className="footer-icon-btn"
+            onClick={startVoiceInput}
+            disabled={loading || surveyComplete}
+          >
+            🎤
+          </button>
+
+          <label className="footer-icon-btn">
+            📷
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={handleImageSelect}
+              disabled={loading || surveyComplete}
+            />
+          </label>
+        </div>
+
+
       </div>
+
+      {/* IMAGE PREVIEW */}
+      {selectedImage && (
+        <div className="footer-image-preview">
+          <img
+            src={URL.createObjectURL(selectedImage)}
+            alt="Selected"
+          />
+          <button
+            onClick={() => setSelectedImage(null)}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+    </div>
+  </footer>
+)}
     </div>
   );
 };
