@@ -51,6 +51,7 @@ function AdminApp() {
       <div className="main-content">
         <Topbar
           currentPage={page}
+          pageMode={pageProps.mode}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
         />
@@ -64,6 +65,7 @@ function AdminApp() {
             mode={pageProps.mode || "create"}
             surveyToEdit={pageProps.survey || null}
             onSaved={() => setPage("adminSurveys")}
+            currentPage ={page}
           />
         )}
         {page === "results" && <Results onNavigate={handleNavigate}/>}

@@ -10,15 +10,22 @@ const pageTitles = {
   exports: "Exports",
   settings: "Admin Settings",
   createSurvey: "Create Survey",
+  
 };
 
-export default function TopBar({ currentPage, onNavigate, onLogout }) {
+export default function TopBar({ currentPage, onNavigate, onLogout, pageMode   }) {
   const[username, setUsername] = useState(localStorage.getItem("username") || "Admin User");
   const [role, setRole] = useState(localStorage.getItem("userRole") || "Administrator");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const title = (pageTitles[currentPage] || "Dashboard").toUpperCase();
+  let title = pageTitles[currentPage] || "Dashboard";
+
+if (currentPage === "createSurvey" && pageMode === "edit") {
+  title = "Edit Survey";
+}
+
+title = title.toUpperCase();
 
   useEffect(() => {
     const handler = (e) => {

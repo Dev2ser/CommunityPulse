@@ -73,6 +73,8 @@ At the VERY TOP of your response, include exactly one line:
 [PROGRESS question=X total=Y]
 
 11. WHEN the survey is fully completed, ALSO append a FINAL JSON block containing the full structured survey result in the following format:
+if there is an image question the survey result should include a string describing the image the user sent if there was one, otherwise it should be null also make this an array of
+images in case there are multiple image questions
 {
   "surveyResult": {
     "surveyTitle": "...",
@@ -89,6 +91,7 @@ At the VERY TOP of your response, include exactly one line:
 +         "answer to follow-up 1",
 +         "answer to follow-up 2"
 +       ]
+,      "imageAnalysis": "description of the image content if there was an image question, otherwise null"
       }
     ]
   }
@@ -143,7 +146,7 @@ ${parsedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
     // --- Extract FINAL survey result JSON ---
     let finalSurveyResult = null;
     const finalSurveyMatch = cleanReply.match(
-      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*?\}\s*\}/
+      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*\}\s*\}/
     );
 
     if (finalSurveyMatch) {
@@ -161,6 +164,7 @@ ${parsedMessages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 
     // --- Store structured survey result ---
     if (surveyComplete) {
+      console.log("Survey complete! Storing results...");
       await db.collection("SurveyResponse").insertOne({
         surveyTitle: finalSurveyResult.surveyTitle || survey.title || "unknown",
         responses: finalSurveyResult.responses,

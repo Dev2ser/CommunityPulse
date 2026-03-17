@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/CreateSurvey.css";
-
-function CreateSurvey() {
+import { useParams } from "react-router-dom";
+function CreateSurvey({ mode, surveyToEdit, setPage }) {
   const API_BASE =
     import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
   const [surveyTitle, setSurveyTitle] = useState("");
@@ -12,7 +12,8 @@ function CreateSurvey() {
   const [isSaving, setIsSaving] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [existingTitles, setExistingTitles] = useState([]);
-
+  const isEditMode = mode === "edit";
+const editSurvey = surveyToEdit;
   useEffect(() => {
     const fetchUsedSurveyTitles = async () => {
       try {
@@ -32,10 +33,33 @@ function CreateSurvey() {
     fetchUsedSurveyTitles();
   }, [API_BASE]);
 
+  //useffect for editing survey
+  useEffect(() => {
+    if (!isEditMode || !editSurvey) return;
+  
+        
+    setSurveyTitle(editSurvey.surveyTitle || "");
+    setSurveyDescription(editSurvey.description || "");
+    setTargetNeighborhood(editSurvey.targetNeighborhood || "all");
+    setStatus(editSurvey.status || "draft");
+  
+    setQuestions(
+      (editSurvey.questions || []).map((q) => ({
+        id: Date.now() + Math.random(),
+        text: q.text,
+        type: q.type,
+        allowImage: q.allowImage || false,
+        options: q.options || [],
+      }))
+    );
+  }, [isEditMode, editSurvey]);
+
   const normalizedTitle = surveyTitle.trim().toLowerCase();
   const isDuplicate =
-    normalizedTitle.length > 0 &&
-    existingTitles.includes(normalizedTitle);
+  normalizedTitle.length > 0 &&
+  existingTitles.includes(normalizedTitle) &&
+  (!isEditMode ||
+    normalizedTitle !== editSurvey?.surveyTitle?.trim().toLowerCase());
   
 
   const addQuestion = (type = "text") => {
@@ -82,12 +106,12 @@ function CreateSurvey() {
     setQuestions((prev) => prev.filter((q) => q.id !== id));
   };
 
-  const submitSurvey = async () => {
-    setSaveError("");
-    if (isDuplicate) {
-      setSaveError("Survey title already exists.");
-      return;
-    }
+    const submitSurvey = async () => {
+      setSaveError("");
+      if (isDuplicate && (!isEditMode || normalizedTitle !== editSurvey.surveyTitle.trim().toLowerCase())) {
+        setSaveError("Survey title already exists.");
+        return;
+      }
     if (!surveyTitle.trim()) {
       setSaveError("Survey title is required.");
       return;
@@ -118,11 +142,17 @@ function CreateSurvey() {
     setIsSaving(true);
 
     try {
-      const res = await fetch(`${API_BASE}/surveys`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        isEditMode
+          ? `${API_BASE}/surveys/${editSurvey._id}`
+          : `${API_BASE}/surveys`,
+        {
+          method: isEditMode ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      
+      );
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
@@ -134,12 +164,19 @@ function CreateSurvey() {
       console.log("Survey saved:", data);
 
       // Reset form after successful save
+      if(isEditMode)
+      {
+        setPage("adminSurveys");
+      }
+      if(!isEditMode) {
       setSurveyTitle("");
       setSurveyDescription("");
       setTargetNeighborhood("all");
       setStatus("draft");
       setQuestions([]);
-    } catch (err) {
+    }}
+    
+    catch (err) {
       console.error(err);
       setSaveError(err.message || "Unable to save survey");
     } finally {
@@ -149,10 +186,14 @@ function CreateSurvey() {
 
   return (
     <div className="create-survey-container">
-      <div className="create-survey-header">
-        <div className="create-survey-header-text">
-          <h2>Create New Survey</h2>
-          <p>Design your community feedback survey</p>
+          <div className="create-survey-header">
+          <div className="create-survey-header-text">
+          <h2>{isEditMode ? "Edit Survey" : "Create New Survey"}</h2>
+           <p>
+          {isEditMode
+          ? "Update your survey details and questions"
+         : "Design your community feedback survey"}
+          </p>
         </div>
         <div className="create-survey-actions">
           <button className="btn btn-cancel" type="button">
