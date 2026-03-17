@@ -66,6 +66,7 @@ function AdminApp() {
             surveyToEdit={pageProps.survey || null}
             onSaved={() => setPage("adminSurveys")}
             currentPage ={page}
+            setPage={setPage}  
           />
         )}
         {page === "results" && <Results onNavigate={handleNavigate}/>}
