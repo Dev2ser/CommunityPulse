@@ -89,7 +89,14 @@ const SurveyChat = () => {
 
     // Add user message to chat
     if (userMessage) {
-      setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: userMessage,
+          image: selectedImage ? URL.createObjectURL(selectedImage) : null,
+        },
+      ]);
     }
 
     setLoading(true);
@@ -223,15 +230,23 @@ const SurveyChat = () => {
           </div>
         )}
   
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`chat-bubble ${msg.role}`}>
-              <div className="role-label">
+  {messages.map((msg, idx) => (
+  <div key={idx} className={`chat-bubble ${msg.role}`}>
+    <div className="role-label">
       {msg.role === "assistant" ? "Assistant" : "You"}
     </div>
-            
-            {msg.content}
-          </div>
-        ))}
+
+    {msg.content && <div>{msg.content}</div>}
+
+    {msg.image && (
+      <img
+        src={msg.image}
+        alt="uploaded"
+        className="chat-image"
+      />
+    )}
+  </div>
+))}
   
         {loading && (
           <div className="chat-bubble assistant">Typing...</div>
@@ -324,7 +339,7 @@ const SurveyChat = () => {
           <button
             onClick={() => setSelectedImage(null)}
           >
-            ✕
+            Remove Image
           </button>
         </div>
       )}
