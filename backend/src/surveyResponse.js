@@ -189,6 +189,62 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
     res.status(500).json({ message: "Failed to get multiple-choice counts" });
   }
 });
+
+// Get image responses and analysis for a survey
+router.get("/survey/imageResponses/:surveyTitle", async (req, res) => {
+  try {
+    const db = getDb();
+    const { surveyTitle } = req.params;
+
+    const surveyResponses = await db
+      .collection("SurveyResponse")
+      .find({ surveyTitle })
+      .toArray();
+
+    if (!surveyResponses.length) {
+      return res.status(404).json({ message: "No responses found" });
+    }
+
+    const imageMap = {}; // group by question
+
+    surveyResponses.forEach((doc) => {
+      const responses = doc.responses || [];
+
+      responses.forEach((q) => {
+        if (q.questionType === "image") {
+          const questionText = q.question;
+
+          if (!imageMap[questionText]) {
+            imageMap[questionText] = [];
+          }
+
+          
+          if (q.imageAnalysis) {
+            imageMap[questionText].push({
+              analysis: q.imageAnalysis,   
+              createdAt: doc.createdAt,
+            });
+          }
+        }
+      });
+    });
+
+    const formatted = Object.keys(imageMap).map((question) => ({
+      question,
+      responses: imageMap[question],
+    }));
+
+    res.json({
+      surveyTitle,
+      imageData: formatted,
+    });
+
+  } catch (err) {
+    console.error("Image responses error:", err);
+    res.status(500).json({ message: "Failed to fetch image responses" });
+  }
+});
+
 // response count for all surveys
 router.get("/survey/responseCountAll", async (req, res) => {
   try {

@@ -309,23 +309,9 @@ const editSurvey = surveyToEdit;
                           >
                             <option value="text">Open Ended</option>
                             <option value="multiple">Multiple Choice</option>
+                            <option value = "image">Image-Based</option>
                           </select>
                         </div>
-
-                        {q.type === "text" && (
-                          <label className="toggle">
-                            <input
-                              type="checkbox"
-                              checked={q.allowImage || false}
-                              onChange={(e) =>
-                                updateQuestion(q.id, {
-                                  allowImage: e.target.checked,
-                                })
-                              }
-                            />
-                            <span>Allow image attachments</span>
-                          </label>
-                        )}
                       </div>
 
                       {q.type === "multiple" && (

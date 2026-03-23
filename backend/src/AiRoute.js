@@ -107,7 +107,7 @@ Rules:
 - Include ALL questions
 - followUps + answers must match length
 - Use null if skipped
-- imageAnalysis = description OR null
+- imageAnalysis = your own detailed visual description of the image ONLY nothing about what the user mentioned OR null
 
 Survey:
 ${JSON.stringify(survey, null, 2)}
