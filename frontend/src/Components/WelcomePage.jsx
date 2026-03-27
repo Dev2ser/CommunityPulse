@@ -100,10 +100,10 @@ function WelcomePage({ onStart }) {
                 </div>
               </div>
               <h3 className="welcome-why-heading">
-                Guides Investment
+                Guides Design
               </h3>
               <p className="welcome-why-text">
-                Survey results directly inform where and how Tipping Point allocates resources for housing, services, and neighborhood improvements.
+                Survey results directly inform how Tipping Point plans for your community.
               </p>
             </div>
 
@@ -118,7 +118,7 @@ function WelcomePage({ onStart }) {
                 Simple & Respectful
               </h3>
               <p className="welcome-why-text">
-                We designed this experience to be easy, accessible, and respectful of your time. No jargon, no pressure—just honest questions.
+                We designed this experience to be easy, accessible, and respectful of your time. No jargon, no pressure-just honest questions.
               </p>
             </div>
           </div>
@@ -133,7 +133,7 @@ function WelcomePage({ onStart }) {
               Built on Trust
             </h2>
             <p className="welcome-section-subtitle">
-              Your privacy and peace of mind come first
+              Your privacy and peace of mind come first.
             </p>
           </div>
 
@@ -164,7 +164,7 @@ function WelcomePage({ onStart }) {
                     Real Community Investment
                   </h4>
                   <p className="welcome-trust-card-text">
-                    This isn't a marketing exercise. Feedback directly shapes planning priorities and resource allocation in your area.
+                    This isn't a marketing exercise. Feedback directly shapes planning priorities in your area.
                   </p>
                 </div>
               </div>
