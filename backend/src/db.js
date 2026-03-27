@@ -11,7 +11,7 @@ export const connectToDb = async () => {
     const uri = process.env.MONGODB_URI;
     
 
-    console.log(`Attempting native MongoDB connection: ${uri}`);
+    //console.log(`Attempting native MongoDB connection: ${uri}`);
 
     client = new MongoClient(uri);
     await client.connect();
@@ -22,7 +22,7 @@ export const connectToDb = async () => {
     const collectionsList = await db.listCollections().toArray();
     const collections = collectionsList.map(c => c.name);
 
-    console.log(`Collections: ${collections.join(', ') || 'None'}`);
+    //console.log(`Collections: ${collections.join(', ') || 'None'}`);
 
     return {
       collections
