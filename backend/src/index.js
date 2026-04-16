@@ -57,7 +57,7 @@ app.listen(PORT, async () => {
 
   try {
     const dbInfo = await connectToDb();
-    console.log("Database Connected:", dbInfo);
+    //console.log("Database Connected:", dbInfo);
   } catch (err) {
     console.log("Database failed to connect, server still running.");
   }
