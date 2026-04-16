@@ -1,6 +1,7 @@
 import tippingPointIcon from "../assets/TP_Stacked_BlackGreen.png";
 import tippingPointLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
 import tippingPointHorizontal from "../assets/TP_Wide_BlackGreen_ST2.png";
+import { CheckCircle2, Clock3, Shield } from "lucide-react";
 import "../Styles/WelcomePage.css";
 
 function WelcomePage({ onStart }) {
@@ -65,11 +66,7 @@ function WelcomePage({ onStart }) {
           <div className="welcome-why-grid">
             <div className="welcome-why-block">
               <div className="welcome-why-icon">
-                <div className="welcome-icon-circle">
-                  <span role="img" aria-label="residents">
-                    👥
-                  </span>
-                </div>
+                <div className="welcome-icon-circle" aria-hidden="true" />
               </div>
               <h3 className="welcome-why-heading">Resident-Centered</h3>
               <p className="welcome-why-text">
@@ -81,11 +78,7 @@ function WelcomePage({ onStart }) {
 
             <div className="welcome-why-block">
               <div className="welcome-why-icon">
-                <div className="welcome-icon-circle">
-                  <span role="img" aria-label="investment">
-                    📄
-                  </span>
-                </div>
+                <div className="welcome-icon-circle" aria-hidden="true" />
               </div>
               <h3 className="welcome-why-heading">Guides Investment</h3>
               <p className="welcome-why-text">
@@ -97,11 +90,7 @@ function WelcomePage({ onStart }) {
 
             <div className="welcome-why-block">
               <div className="welcome-why-icon">
-                <div className="welcome-icon-circle">
-                  <span role="img" aria-label="respect">
-                    ❤️
-                  </span>
-                </div>
+                <div className="welcome-icon-circle" aria-hidden="true" />
               </div>
               <h3 className="welcome-why-heading">Simple &amp; Respectful</h3>
               <p className="welcome-why-text">
@@ -126,10 +115,8 @@ function WelcomePage({ onStart }) {
           <div className="welcome-trust-grid">
             <div className="welcome-trust-card">
               <div className="welcome-trust-card-content">
-                <div className="welcome-trust-icon">
-                  <span role="img" aria-label="shield">
-                    🛡️
-                  </span>
+                <div className="welcome-trust-icon" aria-hidden="true">
+                  <Shield />
                 </div>
                 <div>
                   <h4 className="welcome-trust-card-title">
@@ -145,10 +132,8 @@ function WelcomePage({ onStart }) {
 
             <div className="welcome-trust-card">
               <div className="welcome-trust-card-content">
-                <div className="welcome-trust-icon">
-                  <span role="img" aria-label="check">
-                    ✅
-                  </span>
+                <div className="welcome-trust-icon" aria-hidden="true">
+                  <CheckCircle2 />
                 </div>
                 <div>
                   <h4 className="welcome-trust-card-title">
@@ -164,10 +149,8 @@ function WelcomePage({ onStart }) {
 
             <div className="welcome-trust-card">
               <div className="welcome-trust-card-content">
-                <div className="welcome-trust-icon">
-                  <span role="img" aria-label="clock">
-                    ⏱️
-                  </span>
+                <div className="welcome-trust-icon" aria-hidden="true">
+                  <Clock3 />
                 </div>
                 <div>
                   <h4 className="welcome-trust-card-title">
