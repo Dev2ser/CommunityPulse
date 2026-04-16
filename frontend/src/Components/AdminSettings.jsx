@@ -73,7 +73,7 @@ export default function AdminSettings() {
         let body = {};
         try {
           body = await res.json();
-        } catch (e) {}
+        } catch {}
         alert(body.message || "Failed to create admin");
         return;
       }
@@ -110,7 +110,7 @@ export default function AdminSettings() {
       let data = {};
       try {
         data = await res.json();
-      } catch (e) {}
+      } catch {}
 
       if (!res.ok) {
         console.error("Failed to delete admin:", data);

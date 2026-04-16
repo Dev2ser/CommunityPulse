@@ -13,6 +13,7 @@
 .admin-settings-container {
   padding: 2rem;
   position: relative;
+  min-width: 0;
 }
 
 
@@ -43,8 +44,10 @@
   border: 1px solid #e5e7eb;
   padding: 0.25rem;
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   border-radius: 0.5rem;
+  max-width: 100%;
 }
 
 .admin-settings-tab-trigger {
@@ -76,6 +79,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  gap: 1rem;
 }
 
 .admin-list-title {
@@ -150,6 +154,7 @@
 
 .dialog-actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.5rem;
 }
@@ -222,10 +227,13 @@
 /* Table */
 .table-wrapper {
   overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
 }
 
 .admin-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
 }
 
@@ -444,4 +452,36 @@
 
 .save-notification-button:hover {
   background-color: #f9fafb;
+}
+
+@media (max-width: 767px) {
+  .admin-settings-container {
+    padding: 1rem;
+  }
+
+  .admin-settings-title {
+    font-size: 24px;
+  }
+
+  .admin-list-card,
+  .profile-card,
+  .notification-card {
+    padding: 1rem;
+  }
+
+  .admin-list-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-admin-button,
+  .dialog-actions button {
+    width: 100%;
+  }
+
+  .notification-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
 }

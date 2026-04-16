@@ -25,14 +25,14 @@ const PieChartComponent = ({ data, title }) => {
   }));
 
   return (
-    <div style={{ width: "100%", height: 350 }}>
+    <div style={{ width: "100%", height: "clamp(280px, 56vw, 350px)" }}>
       {title && (
         <h3 style={{ textAlign: "center", marginBottom: "1rem" }}>
           {title}
         </h3>
       )}
 
-      <ResponsiveContainer>
+      <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
             data={chartData}
@@ -40,8 +40,8 @@ const PieChartComponent = ({ data, title }) => {
             nameKey="name"
             cx="50%"
             cy="50%"
-            outerRadius={110}
-            label
+            outerRadius="70%"
+            label={false}
           >
             {chartData.map((entry, index) => (
               <Cell
@@ -52,7 +52,7 @@ const PieChartComponent = ({ data, title }) => {
           </Pie>
 
           <Tooltip />
-          <Legend />
+          <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: 12 }} />
         </PieChart>
       </ResponsiveContainer>
     </div>

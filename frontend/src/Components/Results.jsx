@@ -7,7 +7,6 @@
     const [loading, setLoading] = useState(true);
     const [surveys, setSurveys] = useState([]);
     const [selectedSurvey, setSelectedSurvey] = useState(null);
-    const [categoryCount, setCategoryCount] = useState(0);
     const [totalResponses, setTotalResponses] = useState(0);
     const [sentimentScore, setSentimentScore] = useState(0);
     const [sentimentLabel, setSentimentLabel] = useState("");
@@ -39,28 +38,6 @@
 
       fetchSurveys();
     }, []);
-
-    // Fetch category count
-    useEffect(() => {
-      if (!selectedSurvey) return;
-
-      const fetchCategoryCount = async () => {
-        try {
-          const response = await fetch(
-            `http://localhost:5001/api/survey/categories/count/${encodeURIComponent(
-              selectedSurvey.surveyTitle
-            )}`
-          );
-          const data = await response.json();
-          setCategoryCount(data.categoryCount || 0);
-        } catch (err) {
-          console.error("Error fetching category count:", err);
-          setCategoryCount(0);
-        }
-      };
-
-      fetchCategoryCount();
-    }, [selectedSurvey]);
 
     // Fetch sentiment
     useEffect(() => {
@@ -182,7 +159,6 @@
           console.log("Fetched image responses:", data);
     
           setImageAnalysis(data.imageData || []);
-          console.log("ddata.imageData:", imageAnalysis);
           setCurrentImageIndex(0);
     
         } catch (err) {

@@ -206,86 +206,83 @@ export default function AdminSurveys({ onNavigate }) {
       {loading && <p>Loading surveys...</p>}
       {error && <p className="error">{error}</p>}
 
-      <table className="survey-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Status</th>
-            <th>Created</th>
-            <th>Responses</th>
-            <th>Last Updated</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredSurveys.map((survey) => (
-            <tr key={survey._id}>
-              <td>{survey.surveyTitle|| survey.name}</td>
-              <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
-              <td>{formatDate(survey.createdAt || survey.created)}</td>
-              <td>{surveyResponseCount[survey._id] ?? 0}</td>
-              <td>{formatDate(survey.updatedAt || survey.updated)}</td>
-              <td>
-                {/* View */}
-                <button className="icon-button view" title="View Survey">
-                  <FontAwesomeIcon icon={faEye} />
-                </button>
-
-                {/* Edit */}
-                <button
-                  className="icon-button edit"
-                  title="Edit Survey"
-                  onClick={() => onNavigate("createSurvey", { mode: "edit", survey })}
-                >
-                  <FontAwesomeIcon icon={faPen} />
-                </button>
-
-                {/* Copy */}
-                <button className="icon-button copy" title="Copy Survey">
-                  <FontAwesomeIcon icon={faCopy} />
-                </button>
-
-                {/* Delete */}
-                <button className="icon-button delete" title="Delete Survey" onClick={() => setSurveyToDelete(survey)}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </button>
-
-                {/* Conditional Publish / Archive */}
-                {survey.status.toLowerCase() === "published" && (
-                  <button
-                    className="icon-button archive"
-                    title="Archive Survey"
-                    onClick={() => handleArchiveSurvey(survey)}
-                  >
-                    <FontAwesomeIcon icon={faBoxArchive} />
-                  </button>
-                )}
-
-                {["draft", "archived"].includes(survey.status.toLowerCase()) && (
-                  <button
-                    className="icon-button publish"
-                    title="Publish Survey"
-                    onClick={() => handlePublishSurvey(survey)}
-                  >
-                    <FontAwesomeIcon icon={faUpload} />
-                  </button>
-                )}
-              </td>
+      <div className="cards-wrapper survey-table-wrapper">
+        <table className="survey-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Responses</th>
+              <th>Last Updated</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredSurveys.map((survey) => (
+              <tr key={survey._id}>
+                <td>{survey.surveyTitle|| survey.name}</td>
+                <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
+                <td>{formatDate(survey.createdAt || survey.created)}</td>
+                <td>{surveyResponseCount[survey._id] ?? 0}</td>
+                <td>{formatDate(survey.updatedAt || survey.updated)}</td>
+                <td className="action-cell">
+                  <button className="icon-button view" title="View Survey">
+                    <FontAwesomeIcon icon={faEye} />
+                  </button>
+
+                  <button
+                    className="icon-button edit"
+                    title="Edit Survey"
+                    onClick={() => onNavigate("createSurvey", { mode: "edit", survey })}
+                  >
+                    <FontAwesomeIcon icon={faPen} />
+                  </button>
+
+                  <button className="icon-button copy" title="Copy Survey">
+                    <FontAwesomeIcon icon={faCopy} />
+                  </button>
+
+                  <button className="icon-button delete" title="Delete Survey" onClick={() => setSurveyToDelete(survey)}>
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+
+                  {survey.status.toLowerCase() === "published" && (
+                    <button
+                      className="icon-button archive"
+                      title="Archive Survey"
+                      onClick={() => handleArchiveSurvey(survey)}
+                    >
+                      <FontAwesomeIcon icon={faBoxArchive} />
+                    </button>
+                  )}
+
+                  {["draft", "archived"].includes(survey.status.toLowerCase()) && (
+                    <button
+                      className="icon-button publish"
+                      title="Publish Survey"
+                      onClick={() => handlePublishSurvey(survey)}
+                    >
+                      <FontAwesomeIcon icon={faUpload} />
+                    </button>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       {surveyToDelete && (
-  <div className="modal-overlay">
-    <div className="modal">
+  <div className="survey-modal-overlay">
+    <div className="survey-modal">
       <h3>Delete Survey</h3>
       <p>
         Are you sure you want to delete{" "}
         <strong>{surveyToDelete.title || surveyToDelete.surveyTitle}</strong>?
       </p>
 
-      <div className="modal-actions">
+      <div className="survey-modal-actions">
         <button
           className="btn cancel"
           onClick={() => setSurveyToDelete(null)}

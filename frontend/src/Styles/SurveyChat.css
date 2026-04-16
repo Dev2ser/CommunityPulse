@@ -29,8 +29,10 @@ body {
 .survey-app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
+  min-height: 100dvh;
   background: #f3f4f6;
+  min-width: 0;
 }
 
 /* HEADER */
@@ -103,15 +105,15 @@ body {
 
 .chat-bubble {
   position: relative;
-  max-width: 550px;
+  max-width: min(100%, 550px);
   padding: 16px 18px;
   border-radius: 18px;
   font-size: 15px;
   line-height: 1.4;
-  
+  overflow-wrap: anywhere;
 }
 .chat-image {
-  max-width: 200px;
+  max-width: min(100%, 220px);
   border-radius: 10px;
   margin-top: 6px;
 }
@@ -178,16 +180,17 @@ body {
 .input-send-container
 {
   display: flex;
-
+  align-items: center;
   justify-content: center;
   align-self: center;
   width: 100%;
   gap: 10px;
-  
 }
 .input {
-  width: 850px;
-  max-width: 50%;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
   height: 52px;
   border-radius: 12px;
   border: 1px solid #d1d5db;
@@ -197,7 +200,6 @@ body {
   background: #ffffff;
   display: flex;
   align-self: center;
- 
 }
 
 .input:focus {
@@ -206,6 +208,7 @@ body {
 
 /* SEND BUTTON */
 .send-btn {
+  flex: 0 0 auto;
   width: 68px;
   height: 52px;
   border-radius: 16px;
@@ -217,6 +220,12 @@ body {
   align-items: center;
   justify-content: center;
 
+}
+
+.send-icon {
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
 }
 
 .send-btn:hover {
@@ -259,12 +268,15 @@ body {
 /* IMAGE PREVIEW */
 .footer-image-preview {
   display: flex;
-  justify-content: column;
- 
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
-  max-width: 200px;
-  max-height: 200px;
+  width: fit-content;
+  max-width: 100%;
   border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 0.5rem;
+  background: #ffffff;
 }
 
 .footer-image-preview img {
@@ -275,4 +287,243 @@ body {
 .footer-image-preview button {
   background: transparent;
   cursor: pointer;
+  color: #1f2933;
+  border: none;
+  padding: 0;
+}
+
+@media (max-width: 767px) {
+  .survey-header-bar {
+    padding: 14px 16px 12px;
+  }
+
+  .survey-header-left {
+    align-items: flex-start;
+  }
+
+  .chat-icon {
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .survey-header-bar h1 {
+    font-size: 16px;
+  }
+
+  .survey-chat-area {
+    padding: 16px;
+  }
+
+  .chat-bubble {
+    width: 100%;
+    padding: 14px 16px;
+  }
+
+  .survey-footer {
+    padding: 14px 16px 16px;
+  }
+
+  .input-send-container {
+    align-items: stretch;
+  }
+
+  .footer-actions {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .survey-chat-area {
+    padding: 12px;
+  }
+
+  .input-send-container {
+    gap: 8px;
+  }
+
+  .send-btn {
+    width: 56px;
+  }
+
+  .footer-left-icons {
+    width: 100%;
+  }
+
+  .footer-icon-btn {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+@media (max-width: 600px) {
+  .survey-app {
+    min-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .survey-header-bar {
+    flex-shrink: 0;
+    margin-bottom: 0;
+    padding: 12px 14px 10px;
+    gap: 4px;
+  }
+
+  .survey-header-top,
+  .survey-header-left,
+  .survey-header-left > div:last-child {
+    min-width: 0;
+  }
+
+  .survey-header-left {
+    gap: 10px;
+    align-items: center;
+  }
+
+  .chat-icon {
+    padding: 8px;
+    font-size: 15px;
+  }
+
+  .survey-header-bar h1 {
+    font-size: 14px;
+    line-height: 1.2;
+    letter-spacing: 0.04em;
+  }
+
+  .survey-header-bar p,
+  .survey-progress-text {
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .survey-chat-area {
+    min-height: 0;
+    padding: 10px 12px 8px;
+    gap: 10px;
+  }
+
+  .chat-bubble {
+    width: auto;
+    max-width: 84%;
+    padding: 10px 12px;
+    font-size: 14px;
+    line-height: 1.35;
+    border-radius: 18px;
+  }
+
+  .chat-bubble.assistant {
+    border-bottom-left-radius: 8px;
+  }
+
+  .chat-bubble.user {
+    margin-left: auto;
+    border-bottom-right-radius: 8px;
+  }
+
+  .role-label {
+    display: none;
+  }
+
+  .chat-image {
+    max-width: 150px;
+    margin-top: 8px;
+  }
+
+  .option-row {
+    width: 100%;
+    gap: 8px;
+    padding-bottom: 2px;
+  }
+
+  .option-pill {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .survey-footer {
+    flex-shrink: 0;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .footer-inner {
+    gap: 8px;
+  }
+
+  .input-send-container {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 14px;
+    border-radius: 999px;
+  }
+
+  .send-btn {
+    display: flex;
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+  }
+
+  .send-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .footer-actions {
+    justify-content: flex-start;
+  }
+
+  .footer-left-icons {
+    gap: 8px;
+  }
+
+  .footer-icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    font-size: 15px;
+  }
+
+  .footer-image-preview {
+    width: 100%;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .footer-image-preview img {
+    width: 56px;
+  }
+}
+
+@media (max-width: 400px) {
+  .survey-header-bar {
+    padding: 10px 12px 8px;
+  }
+
+  .survey-chat-area {
+    padding: 8px 10px 6px;
+  }
+
+  .chat-bubble {
+    max-width: 88%;
+    padding: 9px 11px;
+    font-size: 13.5px;
+  }
+
+  .option-row {
+    align-self: stretch;
+  }
+
+  .option-pill {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .survey-footer {
+    padding: 8px 10px calc(8px + env(safe-area-inset-bottom));
+  }
 }

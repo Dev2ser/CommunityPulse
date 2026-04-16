@@ -4,6 +4,7 @@
   padding: 2rem;
   background-color: #f9fafb;
   color: #262223;
+  min-width: 0;
 }
 
 .dashboard-container {
@@ -97,6 +98,7 @@
   align-items: flex-end;
   gap: 0.8rem;
   height: 220px;
+  min-width: 0;
 }
 
 .mini-bar {
@@ -253,4 +255,54 @@
 .activity-time {
   color: #9ca3af;
   font-size: 0.9rem;
+}
+
+@media (max-width: 767px) {
+  .dashboard-content {
+    padding: 1rem;
+  }
+
+  .dashboard-header {
+    margin-bottom: 1.25rem;
+  }
+
+  .dashboard-title {
+    font-size: 24px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card,
+  .quick-stats-card,
+  .activity-card {
+    padding: 1rem;
+  }
+
+  .chart-title,
+  .quick-stats-title,
+  .activity-title {
+    font-size: 20px;
+  }
+
+  .mini-bars {
+    gap: 0.45rem;
+    height: 180px;
+  }
+
+  .mini-bar-label {
+    font-size: 0.75rem;
+  }
+
+  .quick-stat-item,
+  .quick-stat-item-last,
+  .activity-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .activity-time {
+    padding-left: 3.25rem;
+  }
 }

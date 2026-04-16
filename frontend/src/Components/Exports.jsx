@@ -14,7 +14,6 @@ export default function Exports() {
   const [surveyData, setSurveyData] = useState(null); 
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
-  const [reportMode, setReportMode] = useState('');
   const reportRef = useRef();
 
   const handleExportPDF = () => {
@@ -150,7 +149,6 @@ export default function Exports() {
   };
 
   const handleViewSurveyAnalytics = async (survey) => {
-    setReportMode("View Report");
     setSelectedSurvey(survey);
     setSurveyData(null);
     await fetchSurveyAnalytics(survey.surveyTitle);

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/CreateSurvey.css";
-import { useParams } from "react-router-dom";
 function CreateSurvey({ mode, surveyToEdit, setPage }) {
   const API_BASE =
     import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
