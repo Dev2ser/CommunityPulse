@@ -3,43 +3,157 @@ import { ObjectId } from "mongodb";
 import { getDb } from "./db.js";
 
 const router = express.Router();
+const SUPPORTED_QUESTION_TYPES = new Set([
+  "text",
+  "textarea",
+  "multiple_choice",
+  "checkbox",
+  "dropdown",
+]);
+const OPTION_BASED_TYPES = new Set([
+  "multiple_choice",
+  "checkbox",
+  "dropdown",
+]);
+const VALID_STATUSES = new Set(["draft", "published", "archived"]);
+const LEGACY_TYPE_MAP = {
+  multiple: "multiple_choice",
+};
+
+const normalizeBoolean = (value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "number") return value === 1;
+
+  const normalized = String(value || "").trim().toLowerCase();
+  if (["true", "yes", "y", "1"].includes(normalized)) return true;
+  if (["false", "no", "n", "0", ""].includes(normalized)) return false;
+  return false;
+};
+
+const normalizeQuestionType = (value) => {
+  const normalized = String(value || "text").trim().toLowerCase();
+  return LEGACY_TYPE_MAP[normalized] || normalized;
+};
+
+const sanitizeOptions = (options) => {
+  if (!Array.isArray(options)) return [];
+  return options
+    .map((option) => String(option || "").trim())
+    .filter(Boolean);
+};
+
+const normalizeQuestions = (questions = []) => {
+  const errors = [];
+
+  const normalizedQuestions = questions.map((question, index) => {
+    const questionText = String(
+      question?.questionText ?? question?.text ?? ""
+    ).trim();
+    const questionType = normalizeQuestionType(
+      question?.questionType ?? question?.type
+    );
+    const required = normalizeBoolean(question?.required);
+    const options = OPTION_BASED_TYPES.has(questionType)
+      ? sanitizeOptions(question?.options)
+      : [];
+
+    if (!questionText) {
+      errors.push(`Question ${index + 1}: questionText is required.`);
+    }
+
+    if (!SUPPORTED_QUESTION_TYPES.has(questionType)) {
+      errors.push(
+        `Question ${index + 1}: questionType must be one of ${[
+          ...SUPPORTED_QUESTION_TYPES,
+        ].join(", ")}.`
+      );
+    }
+
+    if (OPTION_BASED_TYPES.has(questionType) && options.length === 0) {
+      errors.push(
+        `Question ${index + 1}: options are required for ${questionType}.`
+      );
+    }
+
+    return {
+      questionText,
+      questionType,
+      required,
+      options,
+      text: questionText,
+      type: questionType,
+    };
+  });
+
+  return {
+    normalizedQuestions,
+    errors,
+  };
+};
+
+const buildSurveyPayload = (body, existingSurvey = null) => {
+  const surveyTitle = String(
+    body?.surveyTitle ?? body?.title ?? existingSurvey?.surveyTitle ?? ""
+  ).trim();
+  const description = String(
+    body?.description ?? existingSurvey?.description ?? ""
+  ).trim();
+  const targetNeighborhood = String(
+    body?.targetNeighborhood ?? existingSurvey?.targetNeighborhood ?? "all"
+  ).trim() || "all";
+  const status = String(body?.status ?? existingSurvey?.status ?? "draft").trim();
+  const questions = Array.isArray(body?.questions)
+    ? body.questions
+    : existingSurvey?.questions || [];
+
+  const errors = [];
+
+  if (!surveyTitle) {
+    errors.push("Survey title is required.");
+  }
+
+  if (!Array.isArray(questions) || questions.length === 0) {
+    errors.push("At least one question is required.");
+  }
+
+  if (!VALID_STATUSES.has(status)) {
+    errors.push("Status must be draft, published, or archived.");
+  }
+
+  const { normalizedQuestions, errors: questionErrors } = normalizeQuestions(
+    questions
+  );
+
+  return {
+    errors: [...errors, ...questionErrors],
+    payload: {
+      surveyTitle,
+      title: surveyTitle,
+      description,
+      targetNeighborhood,
+      status,
+      questions: normalizedQuestions,
+    },
+  };
+};
 
 // Create a new survey
 router.post("/surveys", async (req, res) => {
   try {
-    const {
-      surveyTitle,
-      description = "",
-      targetNeighborhood = "all",
-      status = "draft",
-      questions = [],
-    } = req.body;
+    const { errors, payload } = buildSurveyPayload(req.body);
 
-    if (!surveyTitle || !Array.isArray(questions)) {
-      return res
-        .status(400)
-        .json({ message: "Survey title and questions are required." });
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: errors[0],
+        errors,
+      });
     }
 
     const db = getDb();
     if (!db) return res.status(500).json({ message: "Database not initialized" });
 
-    const cleanedQuestions = questions.map((q) => ({
-      text: q.text || "",
-      type: q.type || "text",
-      allowImage: q.type === "text" ? !!q.allowImage : false,
-      options:
-        q.type === "multiple"
-          ? (q.options || []).filter((opt) => opt && opt.trim().length > 0)
-          : [],
-    }));
-
     const doc = {
-      surveyTitle,
-      description,
-      targetNeighborhood,
-      status,
-      questions: cleanedQuestions,
+      ...payload,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -187,12 +301,6 @@ router.put("/surveys/:id", async (req, res) => {
     const { id } = req.params;
     if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
 
-    const { surveyTitle, questions = [] } = req.body;
-
-    if (!surveyTitle || !Array.isArray(questions)) {
-      return res.status(400).json({ message: "Survey title and questions are required." });
-    }
-
     const db = getDb();
     if (!db) return res.status(500).json({ message: "Database not initialized" });
 
@@ -202,22 +310,20 @@ router.put("/surveys/:id", async (req, res) => {
 
     if (!existingSurvey) return res.status(404).json({ message: "Survey not found" });
 
-    const cleanedQuestions = questions.map((q) => ({
-      text: q.text || "",
-      type: q.type || "text",
-      allowImage: q.type === "text" ? !!q.allowImage : false,
-      options:
-        q.type === "multiple"
-          ? (q.options || []).filter((opt) => opt && opt.trim().length > 0)
-          : [],
-    }));
+    const { errors, payload } = buildSurveyPayload(req.body, existingSurvey);
+
+    if (errors.length > 0) {
+      return res.status(400).json({
+        message: errors[0],
+        errors,
+      });
+    }
 
     await db.collection("Surveys").updateOne(
       { _id: new ObjectId(id) },
       {
         $set: {
-          surveyTitle,
-          questions: cleanedQuestions,
+          ...payload,
           updatedAt: new Date(),
         },
       }
