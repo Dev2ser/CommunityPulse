@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import "../Styles/CreateSurvey.css";
+import { API_BASE } from "../utils/api";
 import {
   CSV_SAMPLE,
   JSON_SAMPLE,
@@ -14,9 +15,6 @@ import {
 } from "../utils/surveyQuestionImport";
 
 function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
-  const API_BASE =
-    import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
-
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDescription, setSurveyDescription] = useState("");
   const [targetNeighborhood, setTargetNeighborhood] = useState("all");

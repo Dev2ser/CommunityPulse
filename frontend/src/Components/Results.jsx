@@ -3,6 +3,7 @@
   import BarGraph from "./BarGraph";
   import PieChartComponent from "./PieChart";
   import Spinner from "./Spinner";
+  import { buildApiUrl } from "../utils/api";
   const Results = () => {
     const [loading, setLoading] = useState(true);
     const [surveys, setSurveys] = useState([]);
@@ -23,7 +24,7 @@
       const fetchSurveys = async () => {
         try {
           const response = await fetch(
-            "http://localhost:5001/api/publishedAndArchivedSurveys"
+            buildApiUrl("/api/publishedAndArchivedSurveys")
           );
 
           const data = await response.json();
@@ -46,9 +47,9 @@
       const fetchSentiment = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5001/api/survey/analytics/${encodeURIComponent(
+            buildApiUrl(`/api/survey/analytics/${encodeURIComponent(
               selectedSurvey.surveyTitle
-            )}`
+            )}`)
           );
           const data = await response.json();
           setSentimentScore(data.sentimentScore || 0);
@@ -68,9 +69,9 @@
       const fetchTotalResponses = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5001/api/survey/responseCount/${encodeURIComponent(
+            buildApiUrl(`/api/survey/responseCount/${encodeURIComponent(
               selectedSurvey.surveyTitle
-            )}`
+            )}`)
           );
           const data = await response.json();
           setTotalResponses(data.totalResponses || 0);
@@ -90,9 +91,9 @@
       const fetchThemes = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5001/api/survey/themes/${encodeURIComponent(
+            buildApiUrl(`/api/survey/themes/${encodeURIComponent(
               selectedSurvey.surveyTitle
-            )}`
+            )}`)
           );
           const data = await response.json();
           const themeWords = data.themes.map((t) => t.word);
@@ -113,9 +114,9 @@
       const fetchBarData = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5001/api/survey/multipleCounts/${encodeURIComponent(
+            buildApiUrl(`/api/survey/multipleCounts/${encodeURIComponent(
               selectedSurvey.surveyTitle
-            )}`
+            )}`)
           );
           const data = await response.json();
           setLoading(false);
@@ -150,9 +151,9 @@
       const fetchImageResponses = async () => {
         try {
           const response = await fetch(
-            `http://localhost:5001/api/survey/imageResponses/${encodeURIComponent(
+            buildApiUrl(`/api/survey/imageResponses/${encodeURIComponent(
               selectedSurvey.surveyTitle
-            )}`
+            )}`)
           );
     
           const data = await response.json();

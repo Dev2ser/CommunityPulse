@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import "../Styles/AdminSurveys.css";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faPen, faCopy, faTrash, faBoxArchive, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { API_BASE } from "../utils/api";
 
 export default function AdminSurveys({ onNavigate }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -11,8 +12,6 @@ export default function AdminSurveys({ onNavigate }) {
   const[surveyResponseCount, setSurveyResponseCount]=useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
-
   // Fetch surveys from backend
   useEffect(() => {
     const fetchSurveys = async () => {

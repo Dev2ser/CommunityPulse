@@ -59,6 +59,7 @@ body {
 .header-content {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
   padding: 22px 32px;
 }
@@ -93,6 +94,7 @@ body {
   align-items: center;
   gap: 14px;
   min-width: 0;
+  flex: 1;
 }
 
 .header-logo {
@@ -116,6 +118,69 @@ body {
   color: #737373;
   font-size: 13px;
   line-height: 1.4;
+}
+
+.voice-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.voice-status-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  font-size: 11px;
+  line-height: 1;
+  color: #6b7280;
+  background: #f3f4f6;
+}
+
+.voice-status-pill.listening {
+  background: rgba(134, 199, 121, 0.16);
+  color: #3f7b33;
+}
+
+.voice-status-pill.speaking {
+  background: rgba(42, 103, 152, 0.12);
+  color: #2a6798;
+}
+
+.voice-support-note {
+  font-size: 11px;
+  color: #8d8d8d;
+}
+
+.voice-toggle-button {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(38, 34, 35, 0.12);
+  border-radius: 14px;
+  background: #ffffff;
+  color: #262223;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.voice-toggle-button:hover {
+  background: #f7f8f8;
+  border-color: rgba(38, 34, 35, 0.18);
+}
+
+.voice-toggle-button.muted {
+  color: #8a96a3;
+}
+
+.voice-toggle-icon {
+  width: 20px;
+  height: 20px;
 }
 
 .messages-container {
@@ -267,6 +332,15 @@ body {
   box-shadow: none;
 }
 
+.voice-button.is-listening {
+  background: #2a6798;
+  box-shadow: 0 12px 24px rgba(42, 103, 152, 0.24);
+}
+
+.voice-button.is-speaking {
+  background: #6aa85f;
+}
+
 .button-icon {
   width: 20px;
   height: 20px;
@@ -298,6 +372,12 @@ body {
 
   .header-title {
     font-size: 19px;
+  }
+
+  .voice-toggle-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
   }
 
   .messages-container {
@@ -345,6 +425,16 @@ body {
 
   .header-subtitle {
     font-size: 12px;
+  }
+
+  .voice-status-row {
+    margin-top: 6px;
+  }
+
+  .voice-toggle-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
   }
 
   .messages-container {

@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowLeft, Send, Mic, Image } from "lucide-react";
+import { ArrowLeft, Send, Mic, Image, Volume2, VolumeX } from "lucide-react";
 import imgImageTippingPoint from "../assets/TP_Stacked_BlackGreen.png";
 import "../Styles/SurveyChat.css";
-
-const API_BASE =
-  import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
+import useSpeechRecognition from "../hooks/useSpeechRecognition";
+import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
+import { API_BASE } from "../utils/api";
 
 function SurveyChat() {
   const navigate = useNavigate();
@@ -17,15 +17,33 @@ function SurveyChat() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [listening, setListening] = useState(false);
   const [progress, setProgress] = useState({ current: 0, total: 1 });
   const [surveyComplete, setSurveyComplete] = useState(false);
 
-  const recognitionRef = useRef(null);
   const messagesRef = useRef([]);
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const startedRef = useRef(false);
+  const previousListeningRef = useRef(false);
+  const voiceSessionRef = useRef(false);
+  const lastSpokenMessageIdRef = useRef(null);
+
+  const {
+    recognitionSupported,
+    isListening,
+    transcript,
+    error: recognitionError,
+    startListening,
+    clearTranscript,
+  } = useSpeechRecognition();
+  const {
+    speechSupported,
+    isSpeaking,
+    voiceEnabled,
+    speak,
+    stopSpeaking,
+    toggleVoiceEnabled,
+  } = useSpeechSynthesis();
 
   useEffect(() => {
     messagesRef.current = messages;
@@ -36,28 +54,6 @@ function SurveyChat() {
   }, [messages, loading]);
 
   useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) return;
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-
-    recognition.onstart = () => setListening(true);
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-    recognition.onresult = (event) => {
-      const transcript = event.results?.[0]?.[0]?.transcript || "";
-      setInputValue(transcript);
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  useEffect(() => {
     return () => {
       messagesRef.current.forEach((message) => {
         if (message.imageUrl) {
@@ -66,6 +62,49 @@ function SurveyChat() {
       });
     };
   }, []);
+
+  useEffect(() => {
+    if (!isListening) return;
+    setInputValue(transcript);
+  }, [isListening, transcript]);
+
+  useEffect(() => {
+    if (recognitionError) {
+      setError(recognitionError);
+    }
+  }, [recognitionError]);
+
+  useEffect(() => {
+    const wasListening = previousListeningRef.current;
+
+    if (wasListening && !isListening && voiceSessionRef.current) {
+      const finalTranscript = transcript.trim();
+      voiceSessionRef.current = false;
+
+      if (finalTranscript) {
+        submitResponse({
+          text: finalTranscript,
+          displayText: finalTranscript,
+        });
+      } else {
+        clearTranscript();
+      }
+    }
+
+    previousListeningRef.current = isListening;
+  }, [clearTranscript, isListening, transcript]);
+
+  useEffect(() => {
+    const latestAssistantMessage = [...messages]
+      .reverse()
+      .find((message) => message.sender === "bot" && message.text?.trim());
+
+    if (!latestAssistantMessage) return;
+    if (lastSpokenMessageIdRef.current === latestAssistantMessage.id) return;
+
+    lastSpokenMessageIdRef.current = latestAssistantMessage.id;
+    speak(latestAssistantMessage.text);
+  }, [messages, speak]);
 
   const mapMessagesForApi = (chatMessages) =>
     chatMessages
@@ -173,23 +212,43 @@ function SurveyChat() {
     sendToAI();
   }, [survey]);
 
+  const submitResponse = ({ text = "", imageFile = null, displayText } = {}) => {
+    if (!text.trim() && !imageFile) return;
+    sendToAI({
+      text,
+      imageFile,
+      displayText:
+        displayText ?? (text.trim() || (imageFile ? "[Photo uploaded]" : "")),
+    });
+    setInputValue("");
+    clearTranscript();
+  };
+
   const handleSend = () => {
     if (!inputValue.trim() && !selectedImage) return;
 
-    sendToAI({
+    submitResponse({
       text: inputValue,
       imageFile: selectedImage,
       displayText: inputValue.trim() || (selectedImage ? "[Photo uploaded]" : ""),
     });
-    setInputValue("");
   };
 
   const handleVoiceInput = () => {
-    if (!recognitionRef.current) {
+    if (!recognitionSupported) {
       setError("Voice input is not supported in this browser.");
       return;
     }
-    recognitionRef.current.start();
+
+    stopSpeaking();
+    setError("");
+    voiceSessionRef.current = true;
+    clearTranscript();
+
+    const started = startListening();
+    if (!started) {
+      voiceSessionRef.current = false;
+    }
   };
 
   const handlePhotoUpload = (event) => {
@@ -260,16 +319,37 @@ function SurveyChat() {
                 <ArrowLeft className="back-icon" />
               </button>
               <div className="header-info">
-                <img
-                  alt="Tipping Point"
-                  className="header-logo"
-                  src={imgImageTippingPoint}
-                />
-                <div>
-                  <h1 className="header-title">COMMUNITY PULSE</h1>
-                  <p className="header-subtitle">{questionLabel}</p>
+                  <img
+                    alt="Tipping Point"
+                    className="header-logo"
+                    src={imgImageTippingPoint}
+                  />
+                  <div>
+                    <h1 className="header-title">COMMUNITY PULSE</h1>
+                    <p className="header-subtitle">{questionLabel}</p>
+                    <div className="voice-status-row">
+                      <span className={`voice-status-pill ${isListening ? "listening" : isSpeaking ? "speaking" : "idle"}`}>
+                        {isListening
+                          ? "Listening"
+                          : isSpeaking
+                            ? "Assistant speaking"
+                            : "Voice idle"}
+                      </span>
+                      {!recognitionSupported ? (
+                        <span className="voice-support-note">Voice input unavailable in this browser</span>
+                      ) : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              <button
+                type="button"
+                className={`voice-toggle-button ${voiceEnabled ? "" : "muted"}`}
+                onClick={toggleVoiceEnabled}
+                aria-label={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
+                title={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
+              >
+                {voiceEnabled ? <Volume2 className="voice-toggle-icon" /> : <VolumeX className="voice-toggle-icon" />}
+              </button>
             </div>
           </header>
 
@@ -334,7 +414,7 @@ function SurveyChat() {
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
                 onKeyDown={(event) => event.key === "Enter" && handleSend()}
-                placeholder={listening ? "Listening..." : "Type your answer..."}
+                placeholder={isListening ? "Listening..." : "Type your answer..."}
                 className="text-input"
                 disabled={loading || surveyComplete}
               />
@@ -349,8 +429,8 @@ function SurveyChat() {
               <button
                 type="button"
                 onClick={handleVoiceInput}
-                disabled={loading || surveyComplete}
-                className="action-button voice-button"
+                disabled={loading || surveyComplete || !recognitionSupported}
+                className={`action-button voice-button ${isListening ? "is-listening" : ""} ${isSpeaking ? "is-speaking" : ""}`}
               >
                 <Mic className="button-icon" />
               </button>
@@ -376,7 +456,13 @@ function SurveyChat() {
             {error ? <p className="privacy-notice">{error}</p> : null}
             {!error && !selectedImage ? (
               <p className="privacy-notice">
-                Your responses are anonymous and confidential
+                {isListening
+                  ? "Listening... your response will send automatically when you stop speaking."
+                  : !recognitionSupported
+                    ? "Your responses are anonymous and confidential. Voice input is not supported in this browser."
+                    : !speechSupported
+                      ? "Your responses are anonymous and confidential. Voice playback is not supported in this browser."
+                      : "Your responses are anonymous and confidential"}
               </p>
             ) : null}
           </div>
