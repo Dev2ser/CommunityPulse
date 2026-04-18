@@ -224,8 +224,7 @@ function WelcomePage({ onStart }) {
             />
           </div>
           <div className="welcome-footer-text">
-            © 2026 Tipping Point Community Development • Community Pulse
-            Platform
+            © 2026 Tipping Point Management Company LLC • CommunityPulse Platform
           </div>
         </div>
       </footer>
