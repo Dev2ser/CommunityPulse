@@ -1,10 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/Dashboard.css";
+import { API_BASE, buildApiUrl } from "../utils/api";
 
 const weekdayOrder = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function Dashboard() {
-  const API_BASE = import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [totalResponses, setTotalResponses] = useState(0);
@@ -44,12 +44,12 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [API_BASE]);
+  }, []);
 
   useEffect(() => {
     const getTotalResponseCount = async () => {
       try {
-        const response = await fetch("http://localhost:5001/api/survey/responseCountAll");
+        const response = await fetch(buildApiUrl("/api/survey/responseCountAll"));
         const data = await response.json();
   
         console.log("Total response count data:", data);

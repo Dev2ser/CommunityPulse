@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/AvailableSurveys.css";
+import { buildApiUrl } from "../utils/api";
 
 
 function AvailableSurveys() {
@@ -14,7 +15,7 @@ function AvailableSurveys() {
   useEffect(() => {
     async function fetchSurveys() {
       try {
-        const res = await fetch("http://localhost:5001/api/publishedSurveys");
+        const res = await fetch(buildApiUrl("/api/publishedSurveys"));
         const data = await res.json();
 
         if (!res.ok) {
@@ -75,6 +76,5 @@ function AvailableSurveys() {
 }
 
 export default AvailableSurveys;
-
 
 

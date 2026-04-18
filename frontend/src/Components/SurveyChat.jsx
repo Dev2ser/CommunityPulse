@@ -1,353 +1,475 @@
+import { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ArrowLeft, Send, Mic, Image, Volume2, VolumeX } from "lucide-react";
+import imgImageTippingPoint from "../assets/TP_Stacked_BlackGreen.png";
 import "../Styles/SurveyChat.css";
-import sendIcon from "../Assets/send-icon.png";
-import React, { useEffect, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
-import SurveyComplete from "./SurveyCompletePage";
-const SurveyChat = () => {
+import useSpeechRecognition from "../hooks/useSpeechRecognition";
+import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
+import { API_BASE } from "../utils/api";
+
+function SurveyChat() {
+  const navigate = useNavigate();
   const { state } = useLocation();
   const survey = state?.survey;
 
   const [messages, setMessages] = useState([]);
+  const [inputValue, setInputValue] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // VOICE
-  const [listening, setListening] = useState(false);
-  const recognitionRef = useRef(null);
-
-  // Survey progress
+  const [error, setError] = useState("");
   const [progress, setProgress] = useState({ current: 0, total: 1 });
-
-  // Survey complete flag
   const [surveyComplete, setSurveyComplete] = useState(false);
 
-  // Current question type & options
-  const [currentQuestionType, setCurrentQuestionType] = useState("text");
-  const [currentOptions, setCurrentOptions] = useState([]);
-
+  const messagesRef = useRef([]);
   const chatEndRef = useRef(null);
-  const countdownIntervalRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const startedRef = useRef(false);
+  const previousListeningRef = useRef(false);
+  const voiceSessionRef = useRef(false);
+  const lastSpokenMessageIdRef = useRef(null);
 
-  // Completion countdown
-  const [completionCountdown, setCompletionCountdown] = useState(null);
+  const {
+    recognitionSupported,
+    isListening,
+    transcript,
+    error: recognitionError,
+    startListening,
+    clearTranscript,
+  } = useSpeechRecognition();
+  const {
+    speechSupported,
+    isSpeaking,
+    voiceEnabled,
+    speak,
+    stopSpeaking,
+    toggleVoiceEnabled,
+  } = useSpeechSynthesis();
 
-  // Auto-scroll
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading, completionCountdown]);
+  }, [messages, loading]);
 
-  // VOICE SETUP
-  useEffect(() => {
-    const SpeechRecognition =
-      window.SpeechRecognition || window.webkitSpeechRecognition;
-
-    if (!SpeechRecognition) {
-      console.warn("Speech recognition not supported");
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
-    recognition.onstart = () => setListening(true);
-    recognition.onend = () => setListening(false);
-    recognition.onerror = () => setListening(false);
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setInput(transcript);
-    };
-
-    recognitionRef.current = recognition;
-  }, []);
-
-  const startVoiceInput = () => {
-    if (!recognitionRef.current) {
-      alert("Voice input not supported in this browser.");
-      return;
-    }
-    recognitionRef.current.start();
-  };
-
-  // Handle image selection
-  const handleImageSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) setSelectedImage(file);
-  };
-
-  // Revoke object URL on unmount or image change
   useEffect(() => {
     return () => {
-      if (selectedImage) URL.revokeObjectURL(selectedImage);
+      messagesRef.current.forEach((message) => {
+        if (message.imageUrl) {
+          URL.revokeObjectURL(message.imageUrl);
+        }
+      });
     };
-  }, [selectedImage]);
+  }, []);
 
-  const sendToAI = async (userMessage) => {
-    if (!survey || !userMessage) return;
+  useEffect(() => {
+    if (!isListening) return;
+    setInputValue(transcript);
+  }, [isListening, transcript]);
 
-    // Add user message to chat
-    if (userMessage) {
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "user",
-          content: userMessage,
-          image: selectedImage ? URL.createObjectURL(selectedImage) : null,
-        },
-      ]);
+  useEffect(() => {
+    if (recognitionError) {
+      setError(recognitionError);
+    }
+  }, [recognitionError]);
+
+  useEffect(() => {
+    const wasListening = previousListeningRef.current;
+
+    if (wasListening && !isListening && voiceSessionRef.current) {
+      const finalTranscript = transcript.trim();
+      voiceSessionRef.current = false;
+
+      if (finalTranscript) {
+        submitResponse({
+          text: finalTranscript,
+          displayText: finalTranscript,
+        });
+      } else {
+        clearTranscript();
+      }
+    }
+
+    previousListeningRef.current = isListening;
+  }, [clearTranscript, isListening, transcript]);
+
+  useEffect(() => {
+    const latestAssistantMessage = [...messages]
+      .reverse()
+      .find((message) => message.sender === "bot" && message.text?.trim());
+
+    if (!latestAssistantMessage) return;
+    if (lastSpokenMessageIdRef.current === latestAssistantMessage.id) return;
+
+    lastSpokenMessageIdRef.current = latestAssistantMessage.id;
+    speak(latestAssistantMessage.text);
+  }, [messages, speak]);
+
+  const mapMessagesForApi = (chatMessages) =>
+    chatMessages
+      .filter((message) => message.sender === "user" || message.sender === "bot")
+      .map((message) => ({
+        role: message.sender === "user" ? "user" : "assistant",
+        content: message.text || (message.imageUrl ? "[Photo uploaded]" : ""),
+      }))
+      .filter((message) => message.content);
+
+  const appendSystemMessage = (text) => {
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-${Math.random()}`,
+        text,
+        sender: "bot",
+        timestamp: new Date(),
+      },
+    ]);
+  };
+
+  const sendToAI = async ({ text = "", imageFile = null, displayText } = {}) => {
+    if (!survey || surveyComplete) return;
+
+    const trimmedText = text.trim();
+    const hasUserTurn = Boolean(trimmedText || imageFile);
+    const nextMessages = [...messagesRef.current];
+
+    if (hasUserTurn) {
+      const imageUrl = imageFile ? URL.createObjectURL(imageFile) : null;
+      const userMessage = {
+        id: `${Date.now()}-${Math.random()}`,
+        text: displayText ?? trimmedText ?? "",
+        sender: "user",
+        timestamp: new Date(),
+        imageUrl,
+      };
+      nextMessages.push(userMessage);
+      setMessages(nextMessages);
+      messagesRef.current = nextMessages;
     }
 
     setLoading(true);
+    setError("");
 
     try {
       const formData = new FormData();
       formData.append("survey", JSON.stringify(survey));
-
-      // Include all messages 
       formData.append(
         "messages",
-        JSON.stringify(userMessage ? [...messages, { role: "user", content: userMessage }] : messages)
+        JSON.stringify(mapMessagesForApi(nextMessages))
       );
 
-      // Append selected image if it exists
-      if (selectedImage) {
-        formData.append("image", selectedImage);
+      if (imageFile) {
+        formData.append("image", imageFile);
       }
 
-      const res = await fetch("http://localhost:5001/api/ai/survey-chat", {
+      const res = await fetch(`${API_BASE}/ai/survey-chat`, {
         method: "POST",
         body: formData,
       });
 
       const data = await res.json();
 
-      // --- Update progress ---
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to send message");
+      }
+
       if (data.progress) {
         setProgress({
-          current: data.progress.current,
-          total: data.progress.total,
+          current: data.progress.current || 0,
+          total: data.progress.total || 1,
         });
       }
 
-      // --- Handle survey completion ---
-      if (data.surveyComplete) {
-        let seconds = 3;
-        setCompletionCountdown(seconds);
-
-        // Clear previous interval if exists
-        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-
-        countdownIntervalRef.current = setInterval(() => {
-          seconds -= 1;
-          setCompletionCountdown(seconds);
-
-          if (seconds <= 0) {
-            clearInterval(countdownIntervalRef.current);
-            countdownIntervalRef.current = null;
-            setSurveyComplete(true);
-            setCompletionCountdown(null);
-          }
-        }, 1000);
+      if (data.reply) {
+        const botMessage = {
+          id: `${Date.now()}-${Math.random()}`,
+          text: data.reply,
+          sender: "bot",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, botMessage]);
       }
 
-      // --- Update current question type & options ---
-      setCurrentQuestionType(data.questionType || "text");
-      setCurrentOptions(data.options || []);
-
-      // --- Add AI reply ---
-      if (!data.surveyComplete && data.reply) {
-        setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      if (data.surveyComplete) {
+        setSurveyComplete(true);
       }
     } catch (err) {
-      console.error("Network error:", err);
+      console.error("Survey chat error:", err);
+      setError(err.message || "Failed to connect to the survey service.");
+      appendSystemMessage(
+        "We couldn’t send that response right now. Please try again."
+      );
     } finally {
       setLoading(false);
+      setSelectedImage(null);
     }
+  };
+
+  useEffect(() => {
+    if (!survey || startedRef.current) return;
+    startedRef.current = true;
+    sendToAI();
+  }, [survey]);
+
+  const submitResponse = ({ text = "", imageFile = null, displayText } = {}) => {
+    if (!text.trim() && !imageFile) return;
+    sendToAI({
+      text,
+      imageFile,
+      displayText:
+        displayText ?? (text.trim() || (imageFile ? "[Photo uploaded]" : "")),
+    });
+    setInputValue("");
+    clearTranscript();
   };
 
   const handleSend = () => {
-    if (!input.trim()) return;
-    sendToAI(input);
-    setInput("");
-    setSelectedImage(null); // reset selected image after send
+    if (!inputValue.trim() && !selectedImage) return;
+
+    submitResponse({
+      text: inputValue,
+      imageFile: selectedImage,
+      displayText: inputValue.trim() || (selectedImage ? "[Photo uploaded]" : ""),
+    });
   };
-  useEffect(() => {
-    if (survey && messages.length === 0) {
-      sendToAI(null);
+
+  const handleVoiceInput = () => {
+    if (!recognitionSupported) {
+      setError("Voice input is not supported in this browser.");
+      return;
     }
-  }, [survey]);
 
+    stopSpeaking();
+    setError("");
+    voiceSessionRef.current = true;
+    clearTranscript();
 
+    const started = startListening();
+    if (!started) {
+      voiceSessionRef.current = false;
+    }
+  };
 
-  // Calculate progress percentage safely
-  const progressPercent =
-    progress.total > 0 ? Math.round((progress.current / progress.total) * 100) : 0;
+  const handlePhotoUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setSelectedImage(file);
+  };
 
-  // --- Render ---
-  if (surveyComplete) {
+  const questionLabel =
+    progress.current > 0
+      ? `Question ${progress.current} of ${Math.max(progress.total, 1)}`
+      : "Survey Assistant";
+
+  if (!survey) {
     return (
-      <div>
-        <SurveyComplete messages={messages} />
+      <div className="chatbot-page">
+        <div className="chatbot-shell">
+          <div className="chatbot-container">
+            <header className="chatbot-header">
+              <div className="header-content">
+                <button
+                  type="button"
+                  onClick={() => navigate("/surveys")}
+                  className="back-button"
+                >
+                  <ArrowLeft className="back-icon" />
+                </button>
+                <div className="header-info">
+                  <img
+                    alt="Tipping Point"
+                    className="header-logo"
+                    src={imgImageTippingPoint}
+                  />
+                  <div>
+                    <h1 className="header-title">COMMUNITY PULSE</h1>
+                    <p className="header-subtitle">Select a survey to begin</p>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <main className="messages-container">
+              <div className="message-wrapper message-wrapper-bot">
+                <div className="message-bubble message-bubble-bot">
+                  <p className="message-text">
+                    No survey was selected. Return to the surveys list to start.
+                  </p>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="survey-app">
-      {/* HEADER */}
-      <header className="survey-header-bar">
-        <div className="survey-header-top">
-          <div className="survey-header-left">
-            <div className="chat-icon">💬</div>
-            <div>
-              <h1>COMMUNITY PULSE ASSISTANT</h1>
-              <p>Powered by Tipping Point</p>
-            </div>
-          </div>
-        </div>
-  
-        <div className="survey-progress-bar">
-          <div
-            className="survey-progress-fill"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-  
-        <div className="survey-progress-text">
-          {progressPercent}% Complete
-        </div>
-      </header>
-  
-      {/* CHAT AREA */}
-      <main className="survey-chat-area">
-      
-        {messages.length === 0 && !loading && (
-          <div className="chat-bubble assistant">
-          
-            Hi! I'm your Community Pulse Assistant. I'm here to listen to your ideas and feedback about your neighborhood.
-          </div>
-        )}
-  
-  {messages.map((msg, idx) => (
-  <div key={idx} className={`chat-bubble ${msg.role}`}>
-    <div className="role-label">
-      {msg.role === "assistant" ? "Assistant" : "You"}
-    </div>
-
-    {msg.content && <div>{msg.content}</div>}
-
-    {msg.image && (
-      <img
-        src={msg.image}
-        alt="uploaded"
-        className="chat-image"
-      />
-    )}
-  </div>
-))}
-  
-        {loading && (
-          <div className="chat-bubble assistant">Typing...</div>
-        )}
-  
-        {completionCountdown !== null && (
-          <div className="chat-bubble assistant">
-            Thank you for your responses! Survey is closing in {completionCountdown}...
-          </div>
-        )}
-  
-        {/* MULTIPLE CHOICE OPTIONS */}
-        {currentQuestionType === "multiple" && currentOptions.length > 0 && (
-          <div className="option-row">
-            {currentOptions.map((opt, idx) => (
+    <div className="chatbot-page">
+      <div className="chatbot-shell">
+        <div className="chatbot-container">
+          <header className="chatbot-header">
+            <div className="header-content">
               <button
-                key={idx}
-                className="option-pill"
-                onClick={() => sendToAI(opt)}
-                disabled={loading || surveyComplete}
+                type="button"
+                onClick={() => navigate("/surveys")}
+                className="back-button"
               >
-                {opt}
+                <ArrowLeft className="back-icon" />
               </button>
-            ))}
+              <div className="header-info">
+                  <img
+                    alt="Tipping Point"
+                    className="header-logo"
+                    src={imgImageTippingPoint}
+                  />
+                  <div>
+                    <h1 className="header-title">COMMUNITY PULSE</h1>
+                    <p className="header-subtitle">{questionLabel}</p>
+                    <div className="voice-status-row">
+                      <span className={`voice-status-pill ${isListening ? "listening" : isSpeaking ? "speaking" : "idle"}`}>
+                        {isListening
+                          ? "Listening"
+                          : isSpeaking
+                            ? "Assistant speaking"
+                            : "Voice idle"}
+                      </span>
+                      {!recognitionSupported ? (
+                        <span className="voice-support-note">Voice input unavailable in this browser</span>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              <button
+                type="button"
+                className={`voice-toggle-button ${voiceEnabled ? "" : "muted"}`}
+                onClick={toggleVoiceEnabled}
+                aria-label={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
+                title={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
+              >
+                {voiceEnabled ? <Volume2 className="voice-toggle-icon" /> : <VolumeX className="voice-toggle-icon" />}
+              </button>
+            </div>
+          </header>
+
+          <main className="messages-container">
+            <div className="messages-inner">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={`message-wrapper ${
+                    message.sender === "user"
+                      ? "message-wrapper-user"
+                      : "message-wrapper-bot"
+                  }`}
+                >
+                  <div
+                    className={`message-bubble ${
+                      message.sender === "user"
+                        ? "message-bubble-user"
+                        : "message-bubble-bot"
+                    }`}
+                  >
+                    {message.text ? (
+                      <p className="message-text">{message.text}</p>
+                    ) : null}
+                    {message.imageUrl ? (
+                      <img
+                        className="message-image"
+                        src={message.imageUrl}
+                        alt="Uploaded survey response"
+                      />
+                    ) : null}
+                    <p
+                      className={`message-timestamp ${
+                        message.sender === "user" ? "timestamp-user" : "timestamp-bot"
+                      }`}
+                    >
+                      {message.timestamp.toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {loading ? (
+                <div className="message-wrapper message-wrapper-bot">
+                  <div className="message-bubble message-bubble-bot">
+                    <p className="message-text">Typing...</p>
+                  </div>
+                </div>
+              ) : null}
+
+              <div ref={chatEndRef} />
+            </div>
+          </main>
+
+          <div className="input-area">
+            <div className="input-controls">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(event) => setInputValue(event.target.value)}
+                onKeyDown={(event) => event.key === "Enter" && handleSend()}
+                placeholder={isListening ? "Listening..." : "Type your answer..."}
+                className="text-input"
+                disabled={loading || surveyComplete}
+              />
+              <button
+                type="button"
+                onClick={handleSend}
+                disabled={(!inputValue.trim() && !selectedImage) || loading || surveyComplete}
+                className="action-button send-button"
+              >
+                <Send className="button-icon" />
+              </button>
+              <button
+                type="button"
+                onClick={handleVoiceInput}
+                disabled={loading || surveyComplete || !recognitionSupported}
+                className={`action-button voice-button ${isListening ? "is-listening" : ""} ${isSpeaking ? "is-speaking" : ""}`}
+              >
+                <Mic className="button-icon" />
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={loading || surveyComplete}
+                className="action-button photo-button"
+              >
+                <Image className="button-icon" />
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden-file-input"
+                onChange={handlePhotoUpload}
+              />
+            </div>
+            {selectedImage ? (
+              <p className="privacy-notice">Image attached. Add a note or press send.</p>
+            ) : null}
+            {error ? <p className="privacy-notice">{error}</p> : null}
+            {!error && !selectedImage ? (
+              <p className="privacy-notice">
+                {isListening
+                  ? "Listening... your response will send automatically when you stop speaking."
+                  : !recognitionSupported
+                    ? "Your responses are anonymous and confidential. Voice input is not supported in this browser."
+                    : !speechSupported
+                      ? "Your responses are anonymous and confidential. Voice playback is not supported in this browser."
+                      : "Your responses are anonymous and confidential"}
+              </p>
+            ) : null}
           </div>
-        )}
-  
-        <div ref={chatEndRef} />
-      </main>
-  
-      {/* INPUT BAR */}
-  
-      {currentQuestionType !== "multiple" && (
-  <footer className="survey-footer">
-    <div className="footer-inner">
-
-      {/* TEXT INPUT + SEND */}
-      <div className = "input-send-container">
-      <input
-        type="text"
-        className="input"
-        placeholder={listening ? "Listening..." : "Type your response..."}
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSend()}
-        disabled={loading || surveyComplete || listening}
-      />
-      <button
-  className="send-btn"
-  onClick={handleSend}
-  disabled={loading || surveyComplete || listening}
->
-  <img src={sendIcon} alt="Send" className="send-icon" />
-</button>
         </div>
-
-      {/* ICONS  */}
-      <div className="footer-actions">
-        <div className="footer-left-icons">
-          <button
-            className="footer-icon-btn"
-            onClick={startVoiceInput}
-            disabled={loading || surveyComplete}
-          >
-            🎤
-          </button>
-
-          <label className="footer-icon-btn">
-            📷
-            <input
-              type="file"
-              accept="image/*"
-              hidden
-              onChange={handleImageSelect}
-              disabled={loading || surveyComplete}
-            />
-          </label>
-        </div>
-
-
       </div>
-
-      {/* IMAGE PREVIEW */}
-      {selectedImage && (
-        <div className="footer-image-preview">
-          <img
-            src={URL.createObjectURL(selectedImage)}
-            alt="Selected"
-          />
-          <button
-            onClick={() => setSelectedImage(null)}
-          >
-            Remove Image
-          </button>
-        </div>
-      )}
-    </div>
-  </footer>
-)}
     </div>
   );
-};
+}
 
 export default SurveyChat;

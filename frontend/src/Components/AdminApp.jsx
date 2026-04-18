@@ -14,6 +14,7 @@ function AdminApp() {
     const stored = localStorage.getItem("currentpage");
     return stored || "dashboard";
   });
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const [pageProps, setPageProps] = useState({}); // <-- store props for navigation
 
@@ -24,6 +25,26 @@ function AdminApp() {
 
   useEffect(() => localStorage.setItem("currentpage", page), [page]);
   useEffect(() => localStorage.setItem("authed", isAuthed), [isAuthed]);
+  useEffect(() => {
+    if (!isSidebarOpen) return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isSidebarOpen]);
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const handleLogin = () => {
     setIsAuthed(true);
@@ -33,6 +54,7 @@ function AdminApp() {
   const handleLogout = () => {
     setIsAuthed(false);
     setPage("login");
+    setIsSidebarOpen(false);
   };
 
   const handleNavigate = (nextPage, props = {}) => {
@@ -40,13 +62,19 @@ function AdminApp() {
     setPage(nextPage);
     console.log("THE PAGE IS " + page);
     setPageProps(props); // <-- store extra props
+    setIsSidebarOpen(false);
   };
 
   if (!isAuthed) return <LoginPage onLogin={handleLogin} />;
 
   return (
     <div className="app-layout">
-      <Sidebar onNavigate={handleNavigate} />
+      <Sidebar
+        currentPage={page}
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        onNavigate={handleNavigate}
+      />
 
       <div className="main-content">
         <Topbar
@@ -54,6 +82,7 @@ function AdminApp() {
           pageMode={pageProps.mode}
           onNavigate={handleNavigate}
           onLogout={handleLogout}
+          onMenuToggle={() => setIsSidebarOpen((open) => !open)}
         />
 
         {page === "dashboard" && <Dashboard />}

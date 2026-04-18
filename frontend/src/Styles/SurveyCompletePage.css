@@ -19,6 +19,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 1rem;
 }
  
 .survey-complete-brand {
@@ -190,6 +191,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 0.25rem;
+  gap: 1rem;
 }
  
 .survey-complete-return-btn {
@@ -221,6 +223,13 @@
  
 
 @media (max-width: 480px) {
+  .survey-complete-header,
+  .survey-complete-question-header,
+  .survey-complete-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .survey-complete-page {
     padding: 1.25rem 1rem;
   }
@@ -232,5 +241,9 @@
  
   .survey-complete-bubble {
     max-width: 95%;
+  }
+
+  .survey-complete-return-btn {
+    width: 100%;
   }
 }

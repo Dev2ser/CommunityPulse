@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import "../Styles/LoginPage.css";
 import sidebarLogo from "../assets/loginTippingPointLogo.png";
+import { API_BASE } from "../utils/api";
 
-function LoginPage({ onLogin, onBack }) {
-  const API_BASE =
-    import.meta?.env?.VITE_API_URL || "http://localhost:5001/api";
+function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);

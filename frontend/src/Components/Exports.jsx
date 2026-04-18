@@ -6,6 +6,7 @@ import Spinner from "./Spinner.jsx";
 import html2pdf from "html2pdf.js";
 //csv library
 import Papa from "papaparse";
+import { buildApiUrl } from "../utils/api";
 
 export default function Exports() {
   const [surveys, setSurveys] = useState([]);
@@ -14,7 +15,6 @@ export default function Exports() {
   const [surveyData, setSurveyData] = useState(null); 
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
-  const [reportMode, setReportMode] = useState('');
   const reportRef = useRef();
 
   const handleExportPDF = () => {
@@ -47,9 +47,9 @@ export default function Exports() {
   const exportResponsesCSV = async (survey) => {
     try {
       const res = await fetch(
-        `http://localhost:5001/api/survey/responsesandfollowups/${encodeURIComponent(
+        buildApiUrl(`/api/survey/responsesandfollowups/${encodeURIComponent(
           survey.surveyTitle
-        )}`
+        )}`)
       );
   
       const data = await res.json();
@@ -75,7 +75,7 @@ export default function Exports() {
     const fetchSurveys = async () => {
       try {
         setLoadingSurveys(true);
-        const res = await fetch("http://localhost:5001/api/surveys");
+        const res = await fetch(buildApiUrl("/api/surveys"));
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch surveys");
         setSurveys(data.surveys || []);
@@ -99,7 +99,7 @@ export default function Exports() {
       console.log(surveyTitle);
 
       const res = await fetch(
-        `http://localhost:5001/api/survey/responses/${encodeURIComponent(surveyTitle)}`
+        buildApiUrl(`/api/survey/responses/${encodeURIComponent(surveyTitle)}`)
       );
 
       const data = await res.json();
@@ -123,7 +123,7 @@ export default function Exports() {
       console.log(surveyTitle);
 
       const res = await fetch(
-        `http://localhost:5001/api/survey/analytics/${encodeURIComponent(surveyTitle)}`
+        buildApiUrl(`/api/survey/analytics/${encodeURIComponent(surveyTitle)}`)
       );
 
       const data = await res.json();
@@ -150,7 +150,6 @@ export default function Exports() {
   };
 
   const handleViewSurveyAnalytics = async (survey) => {
-    setReportMode("View Report");
     setSelectedSurvey(survey);
     setSurveyData(null);
     await fetchSurveyAnalytics(survey.surveyTitle);

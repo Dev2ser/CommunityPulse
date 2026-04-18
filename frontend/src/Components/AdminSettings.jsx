@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/AdminSettings.css";
-
-const API_BASE = "http://localhost:5001"; 
+import { buildApiUrl } from "../utils/api";
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -26,7 +25,7 @@ export default function AdminSettings() {
   useEffect(() => {
     async function loadAdmins() {
       try {
-        const res = await fetch(`${API_BASE}/api/admin/getTable`);
+        const res = await fetch(buildApiUrl("/api/admin/getTable"));
         if (!res.ok) {
           console.error("Failed to load admins", res.status);
           return;
@@ -58,7 +57,7 @@ export default function AdminSettings() {
     }
 
     try {
-      const res = await fetch(`${API_BASE}/api/admin/createAdmin`, {
+      const res = await fetch(buildApiUrl("/api/admin/createAdmin"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -73,13 +72,13 @@ export default function AdminSettings() {
         let body = {};
         try {
           body = await res.json();
-        } catch (e) {}
+        } catch {}
         alert(body.message || "Failed to create admin");
         return;
       }
 
       
-      const tableRes = await fetch(`${API_BASE}/api/admin/getTable`);
+      const tableRes = await fetch(buildApiUrl("/api/admin/getTable"));
       const tableData = await tableRes.json();
       const normalized = tableData.map((a) => ({
         id: a._id,
@@ -103,14 +102,14 @@ export default function AdminSettings() {
   
   const handleDeleteAdmin = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/deleteAdmin/${id}`, {
+      const res = await fetch(buildApiUrl(`/api/admin/deleteAdmin/${id}`), {
         method: "DELETE",
       });
 
       let data = {};
       try {
         data = await res.json();
-      } catch (e) {}
+      } catch {}
 
       if (!res.ok) {
         console.error("Failed to delete admin:", data);
@@ -127,7 +126,7 @@ export default function AdminSettings() {
 
   const handleSaveAdmin = async (id) => {
     try {
-      const res = await fetch(`${API_BASE}/api/admin/updateAdmin/${id}`, {
+      const res = await fetch(buildApiUrl(`/api/admin/updateAdmin/${id}`), {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -173,7 +172,7 @@ export default function AdminSettings() {
     const currentUsername = localStorage.getItem("username");
   
     try {
-      const res = await fetch("http://localhost:5000/api/admin/updateAdmin", {
+      const res = await fetch(buildApiUrl("/api/admin/updateAdmin"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -13,9 +13,9 @@ const pageTitles = {
   
 };
 
-export default function TopBar({ currentPage, onNavigate, onLogout, pageMode   }) {
-  const[username, setUsername] = useState(localStorage.getItem("username") || "Admin User");
-  const [role, setRole] = useState(localStorage.getItem("userRole") || "Administrator");
+export default function TopBar({ currentPage, onNavigate, onLogout, pageMode, onMenuToggle }) {
+  const [username] = useState(localStorage.getItem("username") || "Admin User");
+  const [role] = useState(localStorage.getItem("userRole") || "Administrator");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
 
@@ -42,7 +42,16 @@ title = title.toUpperCase();
     <div className="topbar">
 
       {/* LEFT PLACEHOLDER - keeps center text truly centered */}
-      <div className="topbar-left"></div>
+      <div className="topbar-left">
+        <button
+          type="button"
+          className="topbar-menu-button"
+          onClick={onMenuToggle}
+          aria-label="Open navigation"
+        >
+          ☰
+        </button>
+      </div>
 
       {/* CENTER */}
       <div className="topbar-center">
