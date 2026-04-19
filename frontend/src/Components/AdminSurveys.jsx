@@ -244,8 +244,8 @@ export default function AdminSurveys({ onNavigate }) {
           <tbody>
             {filteredSurveys.map((survey) => (
               <tr key={survey._id}>
-                <td>{survey.surveyTitle || survey.name}</td>
-                <td>
+                <td data-label="Survey Name">{survey.surveyTitle || survey.name}</td>
+                <td data-label="Status">
                   <span
                     className={`status-badge ${survey.status.toLowerCase()}`}
                   >
@@ -253,10 +253,10 @@ export default function AdminSurveys({ onNavigate }) {
                     {survey.status}
                   </span>
                 </td>
-                <td>{formatDate(survey.createdAt || survey.created)}</td>
-                <td>{surveyResponseCount[survey._id] ?? 0}</td>
-                <td>{formatDate(survey.updatedAt || survey.updated)}</td>
-                <td className="action-cell">
+                <td data-label="Created">{formatDate(survey.createdAt || survey.created)}</td>
+                <td data-label="Responses">{surveyResponseCount[survey._id] ?? 0}</td>
+                <td data-label="Last Updated">{formatDate(survey.updatedAt || survey.updated)}</td>
+                <td className="action-cell" data-label="Actions">
                   <button className="icon-button view" title="View Survey">
                     <FontAwesomeIcon icon={faEye} />
                   </button>

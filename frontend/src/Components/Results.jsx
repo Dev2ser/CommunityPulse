@@ -13,6 +13,7 @@ const Results = () => {
   const [surveys, setSurveys] = useState([]);
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [totalResponses, setTotalResponses] = useState(0);
+  const [completionRate, setCompletionRate] = useState(0);
   const [sentimentScore, setSentimentScore] = useState(0);
   const [sentimentLabel, setSentimentLabel] = useState("");
   const [themes, setThemes] = useState([]);
@@ -88,9 +89,13 @@ const Results = () => {
         );
         const data = await response.json();
         setTotalResponses(data.totalResponses || 0);
+        setCompletionRate(
+          typeof data.completionRate === "number" ? data.completionRate : 0,
+        );
       } catch (err) {
         console.error("Error fetching total responses:", err);
         setTotalResponses(0);
+        setCompletionRate(0);
       }
     };
 
@@ -365,9 +370,13 @@ const Results = () => {
         </div>
 
         <div className="metric-card">
-          <h2>84%</h2>
+          <h2>{`${Number.isFinite(completionRate) ? completionRate : 0}%`}</h2>
           <p>Completion Rate</p>
-          <span className="metric-note">Above average</span>
+          <span className="metric-note">
+            {Number.isFinite(completionRate) && completionRate >= 80
+              ? "Above average"
+              : "Needs attention"}
+          </span>
         </div>
 
         <div className="metric-card">

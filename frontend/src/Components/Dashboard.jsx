@@ -225,7 +225,7 @@ export default function Dashboard() {
           <div className="activity-panel">
             <h3 className="activity-panel-title">Weekly Activity</h3>
             <div className="activity-chart-card">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height={280} minHeight={240}>
                 <BarChart
                   data={weeklyChartData}
                   margin={{ top: 10, right: 18, left: -18, bottom: 0 }}
