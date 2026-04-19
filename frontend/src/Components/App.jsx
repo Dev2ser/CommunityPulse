@@ -8,13 +8,11 @@ function MainApp() {
     <Router>
       <ToastHost />
       <Routes>
-
         {/* Resident */}
         <Route path="/*" element={<ResidentApp />} />
 
         {/* Admin */}
         <Route path="/admin/*" element={<AdminApp />} />
-
       </Routes>
     </Router>
   );

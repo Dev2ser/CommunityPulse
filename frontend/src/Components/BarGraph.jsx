@@ -7,7 +7,7 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts";
 
 const COLORS = [
@@ -20,13 +20,15 @@ const COLORS = [
   "#d29160", // orange
 ];
 
-
 const BarGraph = ({ data, title }) => {
   const chartData = [
-    data.reduce((acc, curr) => {
-      acc[curr.option] = curr.count;
-      return acc;
-    }, { name: "Responses" })
+    data.reduce(
+      (acc, curr) => {
+        acc[curr.option] = curr.count;
+        return acc;
+      },
+      { name: "Responses" },
+    ),
   ];
 
   return (
@@ -34,10 +36,21 @@ const BarGraph = ({ data, title }) => {
       {title && <h3 style={{ textAlign: "center" }}>{title}</h3>}
 
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+        <BarChart
+          data={chartData}
+          margin={{ top: 8, right: 8, left: 0, bottom: 8 }}
+        >
           <CartesianGrid strokeDasharray="3 3" stroke="#e6ebf1" />
-          <XAxis dataKey="name" tickMargin={8} tick={{ fill: "#6f7783", fontSize: 12 }} />
-          <YAxis allowDecimals={false} width={32} tick={{ fill: "#6f7783", fontSize: 12 }} />
+          <XAxis
+            dataKey="name"
+            tickMargin={8}
+            tick={{ fill: "#6f7783", fontSize: 12 }}
+          />
+          <YAxis
+            allowDecimals={false}
+            width={32}
+            tick={{ fill: "#6f7783", fontSize: 12 }}
+          />
           <Tooltip cursor={{ fill: "rgba(95, 143, 216, 0.1)" }} />
           <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: 12 }} />
 

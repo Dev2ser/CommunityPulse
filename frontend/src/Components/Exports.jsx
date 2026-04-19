@@ -26,7 +26,7 @@ export default function Exports() {
   const [generatedReports, setGeneratedReports] = useState({});
   const [selectedSurvey, setSelectedSurvey] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [surveyData, setSurveyData] = useState(null); 
+  const [surveyData, setSurveyData] = useState(null);
   const [loadingResponses, setLoadingResponses] = useState(false);
   const [loadingSurveys, setLoadingSurveys] = useState(true);
   const [loadingAction, setLoadingAction] = useState(null);
@@ -38,7 +38,7 @@ export default function Exports() {
 
     // Add the generated date dynamically
     const today = new Date().toLocaleString();
-    
+
     // Create a date element
     const date = document.createElement("p");
     date.textContent = "Generated on: " + today;
@@ -52,27 +52,28 @@ export default function Exports() {
       filename: `${selectedSurvey?.surveyTitle || "survey-report"}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
       html2canvas: { scale: 2, useCORS: true },
-      jsPDF: { unit: "in", format: "letter", orientation: "portrait" }
+      jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
     };
 
     html2pdf().set(options).from(reportRef.current).save();
     setShowModal(false);
-
   };
 
   const exportResponsesCSV = async (survey) => {
     try {
       const res = await fetch(
-        buildApiUrl(`/api/survey/responsesandfollowups/${encodeURIComponent(
-          survey.surveyTitle
-        )}`)
+        buildApiUrl(
+          `/api/survey/responsesandfollowups/${encodeURIComponent(
+            survey.surveyTitle,
+          )}`,
+        ),
       );
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to export CSV");
       }
-  
+
       const data = await res.json();
       const rows = Array.isArray(data?.rows) ? data.rows : [];
 
@@ -82,23 +83,23 @@ export default function Exports() {
       }
 
       const csv = Papa.unparse(data.rows);
-  
+
       const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
-  
+
       const link = document.createElement("a");
       link.href = url;
       link.download = `${survey.surveyTitle}-responses.csv`;
       link.click();
-  
+
       URL.revokeObjectURL(url);
-        showToast("CSV exported successfully", "success");
+      showToast("CSV exported successfully", "success");
     } catch (err) {
       console.error("CSV export failed:", err);
-        showToast(err.message || "CSV export failed", "error");
+      showToast(err.message || "CSV export failed", "error");
     }
   };
-  
+
   // Fetch all surveys
   useEffect(() => {
     const fetchSurveys = async () => {
@@ -163,17 +164,20 @@ export default function Exports() {
       try {
         const res = await fetch(buildApiUrl("/api/survey/reportsGenerated"));
         const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.message || "Failed to fetch generated reports status");
+        if (!res.ok)
+          throw new Error(
+            data.message || "Failed to fetch generated reports status",
+          );
 
         const generatedByTitle = new Set(
-          (data.surveys || [])
-            .map((item) => item?.surveyTitle)
-            .filter(Boolean),
+          (data.surveys || []).map((item) => item?.surveyTitle).filter(Boolean),
         );
 
         const generatedBySurveyId = {};
         surveys.forEach((survey) => {
-          generatedBySurveyId[survey._id] = generatedByTitle.has(survey.surveyTitle);
+          generatedBySurveyId[survey._id] = generatedByTitle.has(
+            survey.surveyTitle,
+          );
         });
 
         setGeneratedReports(generatedBySurveyId);
@@ -194,7 +198,7 @@ export default function Exports() {
       console.log(surveyTitle);
 
       const res = await fetch(
-        buildApiUrl(`/api/survey/responses/${encodeURIComponent(surveyTitle)}`)
+        buildApiUrl(`/api/survey/responses/${encodeURIComponent(surveyTitle)}`),
       );
 
       const data = await res.json();
@@ -220,7 +224,7 @@ export default function Exports() {
       console.log(surveyTitle);
 
       const res = await fetch(
-        buildApiUrl(`/api/survey/analytics/${encodeURIComponent(surveyTitle)}`)
+        buildApiUrl(`/api/survey/analytics/${encodeURIComponent(surveyTitle)}`),
       );
 
       const data = await res.json();
@@ -299,12 +303,16 @@ export default function Exports() {
   }, [surveys, searchTerm, statusFilter]);
 
   const publishedCount = useMemo(
-    () => surveys.filter((s) => (s.status || "").toLowerCase() === "published").length,
+    () =>
+      surveys.filter((s) => (s.status || "").toLowerCase() === "published")
+        .length,
     [surveys],
   );
 
   const archivedCount = useMemo(
-    () => surveys.filter((s) => (s.status || "").toLowerCase() === "archived").length,
+    () =>
+      surveys.filter((s) => (s.status || "").toLowerCase() === "archived")
+        .length,
     [surveys],
   );
 
@@ -412,46 +420,53 @@ export default function Exports() {
                     </span>
 
                     <div className="report-actions">
-                  {["Admin", "Super Admin"].includes(localStorage.getItem("userRole")) && (
-                    <button
-                    className="btn primary action-btn generate-btn"
-                    onClick={() => handleGenerateSurvey(survey)}
-                    disabled={loadingResponses}
-                    >
-                      {loadingAction === "generate" && loadingSurveyId === survey._id ? (
-                        <>
-                          <Spinner />
-                          <span>Generating...</span>
-                        </>
-                      ) : (
-                        <>
-                          <FileText size={16} strokeWidth={2.2} />
-                          <span>Generate Report</span>
-                        </>
+                      {["Admin", "Super Admin"].includes(
+                        localStorage.getItem("userRole"),
+                      ) && (
+                        <button
+                          className="btn primary action-btn generate-btn"
+                          onClick={() => handleGenerateSurvey(survey)}
+                          disabled={loadingResponses}
+                        >
+                          {loadingAction === "generate" &&
+                          loadingSurveyId === survey._id ? (
+                            <>
+                              <Spinner />
+                              <span>Generating...</span>
+                            </>
+                          ) : (
+                            <>
+                              <FileText size={16} strokeWidth={2.2} />
+                              <span>Generate Report</span>
+                            </>
+                          )}
+                        </button>
                       )}
-                    </button>
-                  )}
-                    <button
-                      className="btn secondary action-btn view-btn"
-                      onClick={() => handleViewSurveyAnalytics(survey)}
-                      disabled={loadingResponses}
-                    >
-                     {loadingAction === "view" && loadingSurveyId === survey._id ? (
-                       <>
-                         <Spinner />
-                         <span>Loading...</span>
-                       </>
-                     ) : (
-                       <>
-                         <Eye size={16} strokeWidth={2.2} />
-                         <span>View Report</span>
-                       </>
-                     )}
-                    </button>
-                    <button className="btn secondary action-btn" onClick={() => exportResponsesCSV(survey)}>
-                      <Download size={16} strokeWidth={2.2} />
-                      <span>Export CSV</span>
-                    </button>
+                      <button
+                        className="btn secondary action-btn view-btn"
+                        onClick={() => handleViewSurveyAnalytics(survey)}
+                        disabled={loadingResponses}
+                      >
+                        {loadingAction === "view" &&
+                        loadingSurveyId === survey._id ? (
+                          <>
+                            <Spinner />
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye size={16} strokeWidth={2.2} />
+                            <span>View Report</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        className="btn secondary action-btn"
+                        onClick={() => exportResponsesCSV(survey)}
+                      >
+                        <Download size={16} strokeWidth={2.2} />
+                        <span>Export CSV</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -497,60 +512,69 @@ export default function Exports() {
               </div>
             ) : surveyData ? (
               <div className="responses-analytics" ref={reportRef}>
-              <div className="section-title">Analytics</div>
-              <div className="horizontal-line"></div>
-              <div className="card sentiment-card">
-              <span>Overall Sentiment:</span>  
-            <span className={`sentiment-badge ${surveyData.sentimentLabel  || "Neutral"}`}>
-            {surveyData.sentimentLabel || "No data"}
-            </span>
-              </div>
-            
-              <div className="card">
-                <strong>Top Themes</strong>
-                <p>{surveyData.topWords?.map((w) => w.word).join(", ")}</p>
-              </div>
-            
-              <h3 className="section-title">Top Categories</h3>
-              <div className="category-list">
-          {surveyData.categories?.map((c, i) => (
-           <div className="category-card" key={i}>
-             <div className="rank-badge">{i + 1}</div>
-            <div className="category-icon">{c.icon || "📊"}</div>
+                <div className="section-title">Analytics</div>
+                <div className="horizontal-line"></div>
+                <div className="card sentiment-card">
+                  <span>Overall Sentiment:</span>
+                  <span
+                    className={`sentiment-badge ${surveyData.sentimentLabel || "Neutral"}`}
+                  >
+                    {surveyData.sentimentLabel || "No data"}
+                  </span>
+                </div>
 
-              <div className="category-content">
-               <div className="category-name">{c.name}</div>
-               <div className="category-words">{c.words.join(", ")}</div>
-               </div>
-            </div>
-            ))}
-            </div>
-              <h3 className="section-title">Suggestions</h3>
-              {surveyData.suggestions.length ? (
-                <div className="suggestions-list">
-                  {surveyData.suggestions.map((s, i) => (
-                    <div className="suggestion-card" key={i}>
+                <div className="card">
+                  <strong>Top Themes</strong>
+                  <p>{surveyData.topWords?.map((w) => w.word).join(", ")}</p>
+                </div>
+
+                <h3 className="section-title">Top Categories</h3>
+                <div className="category-list">
+                  {surveyData.categories?.map((c, i) => (
+                    <div className="category-card" key={i}>
                       <div className="rank-badge">{i + 1}</div>
-                      {s}
+                      <div className="category-icon">{c.icon || "📊"}</div>
+
+                      <div className="category-content">
+                        <div className="category-name">{c.name}</div>
+                        <div className="category-words">
+                          {c.words.join(", ")}
+                        </div>
+                      </div>
                     </div>
                   ))}
-                  
                 </div>
-              ) : (
-                <p className="modal-empty-text">No suggestions available.</p>
-              )}
-            </div>
+                <h3 className="section-title">Suggestions</h3>
+                {surveyData.suggestions.length ? (
+                  <div className="suggestions-list">
+                    {surveyData.suggestions.map((s, i) => (
+                      <div className="suggestion-card" key={i}>
+                        <div className="rank-badge">{i + 1}</div>
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="modal-empty-text">No suggestions available.</p>
+                )}
+              </div>
             ) : (
               <p className="modal-empty-text">No responses yet.</p>
             )}
 
             <div className="modal-actions-row">
-            <button className="modal-btn modal-btn-primary" onClick={handleExportPDF}>
-              Export as PDF
-            </button>
-            <button className="modal-btn modal-btn-secondary" onClick={handleCloseModal}>
-              Close
-            </button>
+              <button
+                className="modal-btn modal-btn-primary"
+                onClick={handleExportPDF}
+              >
+                Export as PDF
+              </button>
+              <button
+                className="modal-btn modal-btn-secondary"
+                onClick={handleCloseModal}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

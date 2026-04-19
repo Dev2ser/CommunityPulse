@@ -41,7 +41,11 @@ router.get("/dashboard", async (_req, res) => {
     };
 
     const today = new Date();
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const todayStart = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate(),
+    );
     const weekStart = new Date(todayStart);
     weekStart.setDate(todayStart.getDate() - 6);
 
@@ -57,10 +61,14 @@ router.get("/dashboard", async (_req, res) => {
       });
     }
 
-    const weeklyMap = new Map(weeklyBuckets.map((bucket) => [bucket.key, bucket]));
+    const weeklyMap = new Map(
+      weeklyBuckets.map((bucket) => [bucket.key, bucket]),
+    );
 
     surveyResponses.forEach((responseDoc) => {
-      const createdAt = responseDoc?.createdAt ? new Date(responseDoc.createdAt) : null;
+      const createdAt = responseDoc?.createdAt
+        ? new Date(responseDoc.createdAt)
+        : null;
       if (!createdAt || Number.isNaN(createdAt.getTime())) return;
 
       const key = toDateKey(createdAt);

@@ -169,7 +169,11 @@ export default function Dashboard() {
   ];
 
   const weeklyChartData = useMemo(
-    () => (data.weekly || []).map((item) => ({ day: item.day, count: item.count || 0 })),
+    () =>
+      (data.weekly || []).map((item) => ({
+        day: item.day,
+        count: item.count || 0,
+      })),
     [data.weekly],
   );
 
