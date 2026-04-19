@@ -22,6 +22,10 @@
   background: #f3f4f6;
 }
 
+.main-content.create-survey-main {
+  background: #fbfcfe;
+}
+
 .admin-page-area {
   flex: 1;
   min-height: calc(100vh - 78px);
@@ -31,6 +35,10 @@
 .admin-page-shell {
   min-height: 100%;
   padding: 22px 26px 28px;
+}
+
+.admin-page-shell.create-survey-shell {
+  padding: 20px 18px 26px;
 }
 
 .App {
@@ -82,6 +90,10 @@ main {
 
   .admin-page-shell {
     padding: 16px;
+  }
+
+  .admin-page-shell.create-survey-shell {
+    padding: 12px;
   }
 }
 

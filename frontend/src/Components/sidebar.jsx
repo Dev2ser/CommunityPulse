@@ -17,6 +17,23 @@ export default function Sidebar({
   onNavigate,
   onLogout,
 }) {
+  const storedName = localStorage.getItem("username") || "Administrator";
+  const storedRole = localStorage.getItem("userRole") || "Administrator";
+
+  const getInitials = (name) => {
+    const parts = String(name || "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+
+    if (parts.length === 0) return "AD";
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+
+    return `${parts[0][0] || ""}${parts[1][0] || ""}`.toUpperCase();
+  };
+
+  const userInitials = getInitials(storedName);
+
   const menuItems = [
     { name: "Dashboard", icon: ChartColumn, page: "dashboard" },
     { name: "Surveys", icon: ClipboardList, page: "adminSurveys" },
@@ -89,10 +106,10 @@ export default function Sidebar({
 
         <div className="sidebar-footer">
           <div className="sidebar-user-chip">
-            <span className="sidebar-user-initials">DT</span>
+            <span className="sidebar-user-initials">{userInitials}</span>
             <div>
-              <p className="sidebar-user-name">Dominik Tyrk</p>
-              <p className="sidebar-user-role">Administrator</p>
+              <p className="sidebar-user-name">{storedName}</p>
+              <p className="sidebar-user-role">{storedRole}</p>
             </div>
           </div>
 

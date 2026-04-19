@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import "../Styles/LoginPage.css";
-import sidebarLogo from "../assets/loginTippingPointLogo.png";
+import brandLogo from "../assets/TP_Wide_BlackGreen_ST2.png";
+import { Mail, Lock, ArrowRight } from "lucide-react";
 import { API_BASE } from "../utils/api";
 
 function LoginPage({ onLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -50,44 +50,38 @@ function LoginPage({ onLogin }) {
 
   return (
     <div className="login-page">
-      <div className="branding-loginform">
-        <div className="branding">
-          <img src={sidebarLogo} alt="Tipping Point Logo" className="logo" />
-          <h3>
-            COMMUNITY PULSE SURVEY <br /> PORTAL
-          </h3>
-          <p>Real estate development feedback platform</p>
-        </div>
+      <div className="login-shell">
+        <img src={brandLogo} alt="Tipping Point" className="login-brand-logo" />
+
         <div className="login-box">
           <div className="login-form">
-            <h4>ADMINISTRATOR LOGIN</h4>
+            <h2 className="login-title">COMMUNITYPULSE ADMIN</h2>
+            <p className="login-subtitle">
+              Sign in to access the administrative dashboard
+            </p>
+
             {error && <div className="login-error">{error}</div>}
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+
+            <label>Email Address</label>
+            <div className="input-wrap">
+              <Mail size={16} className="input-icon" />
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
             <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-
-            <div className="options">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                Remember me
-              </label>
-              <a href="#" className="forgot">
-                Forgot password?
-              </a>
+            <div className="input-wrap">
+              <Lock size={16} className="input-icon" />
+              <input
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
             </div>
 
             <button
@@ -95,8 +89,13 @@ function LoginPage({ onLogin }) {
               onClick={handleLogin}
               disabled={loading}
             >
-              {loading ? "Logging in..." : "Login to Portal"}
+              <span>{loading ? "Signing In..." : "Sign In"}</span>
+              {!loading && <ArrowRight size={16} />}
             </button>
+
+            <div className="login-footer-note">
+              Access restricted to authorized Tipping Point administrators only.
+            </div>
           </div>
         </div>
       </div>

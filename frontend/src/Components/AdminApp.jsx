@@ -77,7 +77,11 @@ function AdminApp() {
         onLogout={handleLogout}
       />
 
-      <div className="main-content">
+      <div
+        className={`main-content ${
+          page === "createSurvey" ? "create-survey-main" : ""
+        }`}
+      >
         <Topbar
           currentPage={page}
           pageMode={pageProps.mode}
@@ -85,7 +89,11 @@ function AdminApp() {
         />
 
         <div className="admin-page-area">
-          <div className="admin-page-shell">
+          <div
+            className={`admin-page-shell ${
+              page === "createSurvey" ? "create-survey-shell" : ""
+            }`}
+          >
             {page === "dashboard" && <Dashboard />}
             {page === "adminSurveys" && (
               <AdminSurveys onNavigate={handleNavigate} />
