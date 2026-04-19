@@ -21,12 +21,14 @@ function SurveyChat() {
   const [surveyComplete, setSurveyComplete] = useState(false);
 
   const messagesRef = useRef([]);
+  const messagesContainerRef = useRef(null);
   const chatEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const startedRef = useRef(false);
   const previousListeningRef = useRef(false);
   const voiceSessionRef = useRef(false);
   const lastSpokenMessageIdRef = useRef(null);
+  const shouldStickToBottomRef = useRef(true);
 
   const {
     recognitionSupported,
@@ -50,8 +52,19 @@ function SurveyChat() {
   }, [messages]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (!shouldStickToBottomRef.current) return;
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, loading]);
+
+  const handleMessagesScroll = () => {
+    const container = messagesContainerRef.current;
+    if (!container) return;
+
+    const distanceFromBottom =
+      container.scrollHeight - container.scrollTop - container.clientHeight;
+
+    shouldStickToBottomRef.current = distanceFromBottom < 80;
+  };
 
   useEffect(() => {
     return () => {
@@ -214,6 +227,10 @@ function SurveyChat() {
 
   const submitResponse = ({ text = "", imageFile = null, displayText } = {}) => {
     if (!text.trim() && !imageFile) return;
+
+    // When the user sends a message, return to stick-to-bottom behavior.
+    shouldStickToBottomRef.current = true;
+
     sendToAI({
       text,
       imageFile,
@@ -290,7 +307,7 @@ function SurveyChat() {
               </div>
             </header>
 
-            <main className="messages-container">
+            <main className="messages-container" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
               <div className="message-wrapper message-wrapper-bot">
                 <div className="message-bubble message-bubble-bot">
                   <p className="message-text">
@@ -348,12 +365,16 @@ function SurveyChat() {
                 aria-label={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
                 title={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
               >
-                {voiceEnabled ? <Volume2 className="voice-toggle-icon" /> : <VolumeX className="voice-toggle-icon" />}
+                {voiceEnabled ? (
+                  <Volume2 className="voice-toggle-icon" size={46} strokeWidth={3.2} />
+                ) : (
+                  <VolumeX className="voice-toggle-icon" size={46} strokeWidth={3.2} />
+                )}
               </button>
             </div>
           </header>
 
-          <main className="messages-container">
+          <main className="messages-container" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
             <div className="messages-inner">
               {messages.map((message) => (
                 <div

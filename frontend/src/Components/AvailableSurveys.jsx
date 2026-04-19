@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../Styles/AvailableSurveys.css";
 import { buildApiUrl } from "../utils/api";
 import brandLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
-import { ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 
 function AvailableSurveys() {
   const navigate = useNavigate();
@@ -54,9 +54,7 @@ function AvailableSurveys() {
             onClick={goBack}
             aria-label="Go back"
           >
-            <span className="surveys-back-glyph" aria-hidden="true">
-              &larr;
-            </span>
+            <ArrowLeft className="surveys-back-icon" />
           </button>
 
           <img
