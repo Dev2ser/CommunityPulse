@@ -510,9 +510,10 @@
 
 .modal-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 14px;
+  flex-wrap: wrap;
   padding-bottom: 14px;
   margin-bottom: 14px;
   border-bottom: 1px solid #eceff3;
@@ -531,12 +532,11 @@
 }
 
 .modal-header-actions {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .modal-close-btn {
@@ -761,6 +761,9 @@
 .tippingpoint-logo {
   position: static;
   height: 34px;
+  width: auto;
+  max-width: min(42vw, 220px);
+  object-fit: contain;
 }
 
 
@@ -864,6 +867,11 @@
   .modal-header {
     align-items: flex-start;
     gap: 10px;
+    position: relative;
+  }
+
+  .modal-header-copy {
+    padding-right: 44px;
   }
 
   .modal-title {
@@ -875,12 +883,23 @@
   }
 
   .modal-header-actions {
-    margin-left: auto;
-    padding-right: 38px;
+    width: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+    padding-right: 0;
+    position: relative;
+    min-height: 34px;
+  }
+
+  .modal-header-actions .modal-close-btn {
+    position: absolute;
+    top: -40px;
+    right: 0;
   }
 
   .tippingpoint-logo {
-    height: 28px;
+    height: 26px;
+    max-width: 58vw;
   }
 
   .category-list {
