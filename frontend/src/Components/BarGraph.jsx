@@ -11,13 +11,13 @@ import {
 } from "recharts";
 
 const COLORS = [
-  "#4f46e5", // indigo
-  "#22c55e", // green
-  "#eab308", // yellow
-  "#ef4444", // red
-  "#06b6d4", // cyan
-  "#a855f7", // purple
-  "#f97316", // orange    
+  "#5f8fd8", // balanced blue
+  "#72b98f", // fresh green
+  "#cda95f", // warm amber
+  "#d37f7f", // soft red
+  "#61a9bf", // teal
+  "#9b81cb", // violet
+  "#d29160", // orange
 ];
 
 
@@ -35,10 +35,10 @@ const BarGraph = ({ data, title }) => {
 
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="name" tickMargin={8} />
-          <YAxis allowDecimals={false} width={32} />
-          <Tooltip />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e6ebf1" />
+          <XAxis dataKey="name" tickMargin={8} tick={{ fill: "#6f7783", fontSize: 12 }} />
+          <YAxis allowDecimals={false} width={32} tick={{ fill: "#6f7783", fontSize: 12 }} />
+          <Tooltip cursor={{ fill: "rgba(95, 143, 216, 0.1)" }} />
           <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: 12 }} />
 
           {data.map((item, index) => (
@@ -46,6 +46,9 @@ const BarGraph = ({ data, title }) => {
               key={item.option}
               dataKey={item.option}
               fill={COLORS[index % COLORS.length]}
+              stroke="rgba(34, 44, 58, 0.16)"
+              strokeWidth={1}
+              fillOpacity={0.95}
               radius={[4, 4, 0, 0]}
             />
           ))}

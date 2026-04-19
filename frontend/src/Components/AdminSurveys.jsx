@@ -1,32 +1,40 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/AdminSurveys.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPen, faCopy, faTrash, faBoxArchive, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faPen,
+  faCopy,
+  faTrash,
+  faBoxArchive,
+  faUpload,
+} from "@fortawesome/free-solid-svg-icons";
 import { API_BASE } from "../utils/api";
+import { showToast } from "../utils/toast";
 
 export default function AdminSurveys({ onNavigate }) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('All');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState("All");
   const [surveys, setSurveys] = useState([]);
   const [surveyToDelete, setSurveyToDelete] = useState(null);
-  const[surveyResponseCount, setSurveyResponseCount]=useState({});
+  const [surveyResponseCount, setSurveyResponseCount] = useState({});
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   // Fetch surveys from backend
   useEffect(() => {
     const fetchSurveys = async () => {
       setLoading(true);
-      setError('');
+      setError("");
       try {
         const res = await fetch(`${API_BASE}/surveys`);
         if (!res.ok) {
           const errData = await res.json().catch(() => ({}));
-          throw new Error(errData.message || 'Failed to load surveys');
+          throw new Error(errData.message || "Failed to load surveys");
         }
         const data = await res.json();
         setSurveys(data.surveys || []);
       } catch (err) {
-        setError(err.message || 'Unable to fetch surveys');
+        setError(err.message || "Unable to fetch surveys");
       } finally {
         setLoading(false);
       }
@@ -42,164 +50,180 @@ export default function AdminSurveys({ onNavigate }) {
           surveys.map(async (survey) => {
             const res = await fetch(
               `${API_BASE}/survey/responseCount/${encodeURIComponent(
-                survey.surveyTitle
-              )}`
+                survey.surveyTitle,
+              )}`,
             );
-  
+
             if (!res.ok) {
               throw new Error("Failed to fetch response count");
             }
-  
+
             const data = await res.json();
             return {
               id: survey._id,
               count: data.totalResponses || 0,
             };
-          })
+          }),
         );
-  
+
         const countsMap = {};
         results.forEach(({ id, count }) => {
           countsMap[id] = count;
         });
-  
+
         setSurveyResponseCount(countsMap);
       } catch (err) {
         console.error("Failed to fetch response counts:", err);
       }
     };
-  
+
     if (surveys.length > 0) {
       fetchAllResponseCounts();
     }
   }, [API_BASE, surveys]);
-  
-  
-
 
   //delete survey handler
   const handleDeleteSurvey = async () => {
     try {
       console.log(surveyToDelete);
-      const res = await fetch(
-        `${API_BASE}/surveys/${surveyToDelete._id}`,
-        {
-          method: "DELETE",
-        }
-      );
-  
+      const res = await fetch(`${API_BASE}/surveys/${surveyToDelete._id}`, {
+        method: "DELETE",
+      });
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to delete survey");
       }
-  
+
       // Remove from UI
-      setSurveys((prev) =>
-        prev.filter((s) => s._id !== surveyToDelete._id)
-      );
-  
+      setSurveys((prev) => prev.filter((s) => s._id !== surveyToDelete._id));
+
       setSurveyToDelete(null);
     } catch (err) {
       console.error("Failed to delete survey:", err);
-      alert(err.message);
+      showToast(err.message || "Failed to delete survey", "error");
     }
   };
-  
-  
 
   // Filtered and sorted surveys
   const filteredSurveys = useMemo(() => {
     return surveys
       .filter((survey) => {
-        const titleMatch = survey.surveyTitle?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesFilter = filter === 'All' || survey.status?.toLowerCase() === filter.toLowerCase();
+        const titleMatch = survey.surveyTitle
+          ?.toLowerCase()
+          .includes(searchTerm.toLowerCase());
+        const matchesFilter =
+          filter === "All" ||
+          survey.status?.toLowerCase() === filter.toLowerCase();
         return titleMatch && matchesFilter;
       })
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
   }, [surveys, searchTerm, filter]);
 
+  const summaryCounts = useMemo(() => {
+    return surveys.reduce(
+      (acc, survey) => {
+        const status = (survey.status || "draft").toLowerCase();
+        if (status === "published") acc.published += 1;
+        else if (status === "archived") acc.archived += 1;
+        else acc.draft += 1;
+        return acc;
+      },
+      { published: 0, archived: 0, draft: 0 },
+    );
+  }, [surveys]);
+
   // Format dates
   const formatDate = (value) => {
-    if (!value) return '-';
+    if (!value) return "-";
     const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return '-';
+    if (Number.isNaN(d.getTime())) return "-";
     return d.toLocaleDateString();
   };
 
   const handleArchiveSurvey = async (survey) => {
     try {
       console.log("Archiving survey:", survey);
-  
+
       const res = await fetch(`${API_BASE}/surveys/${survey._id}/archive`, {
         method: "POST",
       });
-  
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to archive survey");
       }
-  
+
       // Update local state after successful archive
       setSurveys((prev) =>
         prev.map((s) =>
-          s._id === survey._id ? { ...s, status: "archived" } : s
-        )
+          s._id === survey._id ? { ...s, status: "archived" } : s,
+        ),
       );
     } catch (err) {
       console.error("Failed to archive survey:", err);
     }
   };
-  
- 
+
   const handlePublishSurvey = async (survey) => {
     try {
       console.log("Publishing survey:", survey);
-  
+
       const res = await fetch(`${API_BASE}/surveys/${survey._id}/publish`, {
         method: "POST",
       });
-  
+
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Failed to publish survey");
       }
-  
+
       // Update local state after successful publish
       setSurveys((prev) =>
         prev.map((s) =>
-          s._id === survey._id ? { ...s, status: "published" } : s
-        )
+          s._id === survey._id ? { ...s, status: "published" } : s,
+        ),
       );
     } catch (err) {
       console.error("Failed to publish survey:", err);
     }
-  }
+  };
 
   return (
     <div className="admin-surveys">
       <div className="header">
-        <h2>Survey Management</h2>
-        <button 
+        <div className="header-copy">
+          <h2>Survey Management</h2>
+          <p>Create, manage and monitor all community surveys</p>
+        </div>
+
+        <button
           className="create-button"
           onClick={() => onNavigate("createSurvey")}
         >
-          + Create New Survey
+          <span className="create-plus">+</span> Create New Survey
         </button>
       </div>
 
       <div className="controls">
-        <input
-          type="text"
-          placeholder="Search surveys..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-          <option value="All">All Statuses</option>
-          <option value="draft">Draft</option>
-          <option value="active">Published</option>
-          <option value="archived">Archived</option>
-        </select>
+        <div className="controls-left">
+          <input
+            type="text"
+            placeholder="Search surveys..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="All">All Statuses</option>
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </div>
+
+        <div className="survey-count-label">
+          {filteredSurveys.length} surveys found
+        </div>
       </div>
 
       {loading && <p>Loading surveys...</p>}
@@ -209,19 +233,26 @@ export default function AdminSurveys({ onNavigate }) {
         <table className="survey-table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Responses</th>
-              <th>Last Updated</th>
-              <th>Actions</th>
+              <th>SURVEY NAME</th>
+              <th>STATUS</th>
+              <th>CREATED</th>
+              <th>RESPONSES</th>
+              <th>LAST UPDATED</th>
+              <th>ACTIONS</th>
             </tr>
           </thead>
           <tbody>
             {filteredSurveys.map((survey) => (
               <tr key={survey._id}>
-                <td>{survey.surveyTitle|| survey.name}</td>
-                <td className={`status ${survey.status.toLowerCase()}`}>{survey.status}</td>
+                <td>{survey.surveyTitle || survey.name}</td>
+                <td>
+                  <span
+                    className={`status-badge ${survey.status.toLowerCase()}`}
+                  >
+                    <span className="status-dot" />
+                    {survey.status}
+                  </span>
+                </td>
                 <td>{formatDate(survey.createdAt || survey.created)}</td>
                 <td>{surveyResponseCount[survey._id] ?? 0}</td>
                 <td>{formatDate(survey.updatedAt || survey.updated)}</td>
@@ -233,7 +264,9 @@ export default function AdminSurveys({ onNavigate }) {
                   <button
                     className="icon-button edit"
                     title="Edit Survey"
-                    onClick={() => onNavigate("createSurvey", { mode: "edit", survey })}
+                    onClick={() =>
+                      onNavigate("createSurvey", { mode: "edit", survey })
+                    }
                   >
                     <FontAwesomeIcon icon={faPen} />
                   </button>
@@ -242,7 +275,11 @@ export default function AdminSurveys({ onNavigate }) {
                     <FontAwesomeIcon icon={faCopy} />
                   </button>
 
-                  <button className="icon-button delete" title="Delete Survey" onClick={() => setSurveyToDelete(survey)}>
+                  <button
+                    className="icon-button delete"
+                    title="Delete Survey"
+                    onClick={() => setSurveyToDelete(survey)}
+                  >
                     <FontAwesomeIcon icon={faTrash} />
                   </button>
 
@@ -256,7 +293,9 @@ export default function AdminSurveys({ onNavigate }) {
                     </button>
                   )}
 
-                  {["draft", "archived"].includes(survey.status.toLowerCase()) && (
+                  {["draft", "archived"].includes(
+                    survey.status.toLowerCase(),
+                  ) && (
                     <button
                       className="icon-button publish"
                       title="Publish Survey"
@@ -272,33 +311,42 @@ export default function AdminSurveys({ onNavigate }) {
         </table>
       </div>
 
-      {surveyToDelete && (
-  <div className="survey-modal-overlay">
-    <div className="survey-modal">
-      <h3>Delete Survey</h3>
-      <p>
-        Are you sure you want to delete{" "}
-        <strong>{surveyToDelete.title || surveyToDelete.surveyTitle}</strong>?
-      </p>
-
-      <div className="survey-modal-actions">
-        <button
-          className="btn cancel"
-          onClick={() => setSurveyToDelete(null)}
-        >
-          Cancel
-        </button>
-        <button
-          className="btn danger"
-          onClick={handleDeleteSurvey}
-        >
-          Delete
-        </button>
+      <div className="survey-status-summary">
+        <span className="summary-chip published">
+          {summaryCounts.published} Published
+        </span>
+        <span className="summary-chip archived">
+          {summaryCounts.archived} Archived
+        </span>
+        <span className="summary-chip draft">{summaryCounts.draft} Draft</span>
       </div>
-    </div>
-  </div>
-)}
 
+      {surveyToDelete && (
+        <div className="survey-modal-overlay">
+          <div className="survey-modal">
+            <h3>Delete Survey</h3>
+            <p>
+              Are you sure you want to delete{" "}
+              <strong>
+                {surveyToDelete.title || surveyToDelete.surveyTitle}
+              </strong>
+              ?
+            </p>
+
+            <div className="survey-modal-actions">
+              <button
+                className="btn cancel"
+                onClick={() => setSurveyToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button className="btn danger" onClick={handleDeleteSurvey}>
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

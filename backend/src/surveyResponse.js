@@ -38,6 +38,8 @@ router.get("/survey/responses/:surveyTitle", async (req, res) => {
           topWords,
           suggestions,
           categories,
+          reportGenerated: true,
+          reportGeneratedAt: new Date(),
           updatedAt: new Date()
         },
         $setOnInsert: {
@@ -80,6 +82,32 @@ router.get("/survey/analytics/:surveyTitle", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch analytics" });
   }
 });
+
+router.get("/survey/reportsGenerated", async (_req, res) => {
+  try {
+    const db = getDb();
+
+    const docs = await db
+      .collection("SurveyAnalytics")
+      .find({
+        $or: [
+          { reportGenerated: true },
+          { reportGenerated: { $exists: false } },
+        ],
+      })
+      .project({ _id: 0, surveyTitle: 1, reportGeneratedAt: 1 })
+      .toArray();
+
+    res.json({
+      surveys: docs,
+      totalGenerated: docs.length,
+    });
+  } catch (err) {
+    console.error("Fetch generated reports status error:", err);
+    res.status(500).json({ message: "Failed to fetch generated reports status" });
+  }
+});
+
 router.get("/survey/categories/count/:surveyTitle", async (req, res) => {
   try {
     const db = getDb();

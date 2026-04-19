@@ -1,9 +1,13 @@
-  import React, { useState, useEffect } from "react";
+  import React, { useState, useEffect, useRef } from "react";
   import "../Styles/Results.css";
   import BarGraph from "./BarGraph";
   import PieChartComponent from "./PieChart";
   import Spinner from "./Spinner";
+  import { ChevronDown } from "lucide-react";
+  import html2pdf from "html2pdf.js";
+  import Papa from "papaparse";
   import { buildApiUrl } from "../utils/api";
+  import { showToast } from "../utils/toast";
   const Results = () => {
     const [loading, setLoading] = useState(true);
     const [surveys, setSurveys] = useState([]);
@@ -18,6 +22,11 @@
     const [responseType, setResponseType] = useState("Multiple Choice Responses");
     const [imageAnalysis, setImageAnalysis] = useState([]);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isSurveyDropdownOpen, setIsSurveyDropdownOpen] = useState(false);
+    const [exportingCsv, setExportingCsv] = useState(false);
+    const [exportingPdf, setExportingPdf] = useState(false);
+    const dropdownRef = useRef(null);
+    const resultsReportRef = useRef(null);
 
     // Fetch published + archived surveys on mount
     useEffect(() => {
@@ -171,27 +180,166 @@
       fetchImageResponses();
     }, [selectedSurvey]);
 
+    useEffect(() => {
+      const handleOutsideClick = (event) => {
+        if (!dropdownRef.current) return;
+        if (!dropdownRef.current.contains(event.target)) {
+          setIsSurveyDropdownOpen(false);
+        }
+      };
+
+      const handleEscape = (event) => {
+        if (event.key === "Escape") {
+          setIsSurveyDropdownOpen(false);
+        }
+      };
+
+      document.addEventListener("mousedown", handleOutsideClick);
+      document.addEventListener("keydown", handleEscape);
+
+      return () => {
+        document.removeEventListener("mousedown", handleOutsideClick);
+        document.removeEventListener("keydown", handleEscape);
+      };
+    }, []);
+
+    const handleSelectSurvey = (survey) => {
+      setSelectedSurvey(survey);
+      setIsSurveyDropdownOpen(false);
+    };
+
+    const handleExportCSV = async () => {
+      if (!selectedSurvey?.surveyTitle) {
+        showToast("Please select a survey first", "info");
+        return;
+      }
+
+      try {
+        setExportingCsv(true);
+        const res = await fetch(
+          buildApiUrl(
+            `/api/survey/responsesandfollowups/${encodeURIComponent(
+              selectedSurvey.surveyTitle,
+            )}`,
+          ),
+        );
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.message || "Failed to export CSV");
+        }
+
+        const data = await res.json();
+        const rows = Array.isArray(data?.rows) ? data.rows : [];
+
+        if (rows.length === 0) {
+          showToast("No data available to export for this survey", "info");
+          return;
+        }
+
+        const csv = Papa.unparse(rows);
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${selectedSurvey.surveyTitle}-results.csv`;
+        link.click();
+
+        URL.revokeObjectURL(url);
+        showToast("CSV exported successfully", "success");
+      } catch (err) {
+        console.error("Results CSV export failed:", err);
+        showToast(err.message || "Failed to export CSV", "error");
+      } finally {
+        setExportingCsv(false);
+      }
+    };
+
+    const handleExportPDF = async () => {
+      if (!resultsReportRef.current) {
+        showToast("Unable to generate PDF right now", "error");
+        return;
+      }
+
+      if (!selectedSurvey?.surveyTitle) {
+        showToast("Please select a survey first", "info");
+        return;
+      }
+
+      try {
+        setExportingPdf(true);
+
+        const dateNode = document.createElement("p");
+        dateNode.className = "results-pdf-generated-at";
+        dateNode.textContent = `Generated on: ${new Date().toLocaleString()}`;
+        resultsReportRef.current.appendChild(dateNode);
+
+        const options = {
+          margin: 0.5,
+          filename: `${selectedSurvey.surveyTitle}-results.pdf`,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+        };
+
+        await html2pdf().set(options).from(resultsReportRef.current).save();
+        showToast("PDF exported successfully", "success");
+      } catch (err) {
+        console.error("Results PDF export failed:", err);
+        showToast("Failed to export PDF", "error");
+      } finally {
+        const stamp = resultsReportRef.current?.querySelector(
+          ".results-pdf-generated-at",
+        );
+        if (stamp) stamp.remove();
+        setExportingPdf(false);
+      }
+    };
+
     return loading ? (
       <Spinner />
     ) : (
-      <div className="results-page">
+      <div className="results-page" ref={resultsReportRef}>
         <header className="results-header">
           <h1 className="results-title">
-            <div className="dropdown-wrapper">
-              <select
-                value={selectedSurvey?._id || ""}
-                onChange={(e) =>
-                  setSelectedSurvey(surveys.find((s) => s._id === e.target.value))
-                }
-                className="title-dropdown"
+            <div className="dropdown-wrapper" ref={dropdownRef}>
+              <button
+                type="button"
+                className="title-dropdown-trigger"
+                onClick={() => setIsSurveyDropdownOpen((open) => !open)}
+                aria-haspopup="listbox"
+                aria-expanded={isSurveyDropdownOpen}
               >
-                {surveys.map((survey) => (
-                  <option key={survey._id} value={survey._id}>
-                    {survey.surveyTitle}
-                  </option>
-                ))}
-              </select>
-              <span className="dropdown-arrow">▼</span>
+                <span className="title-dropdown-text">
+                  {selectedSurvey?.surveyTitle || "Select Survey"}
+                </span>
+                <span
+                  className={`dropdown-arrow ${isSurveyDropdownOpen ? "open" : ""}`}
+                  aria-hidden="true"
+                >
+                  <ChevronDown size={16} strokeWidth={2.5} />
+                </span>
+              </button>
+
+              {isSurveyDropdownOpen && (
+                <div className="survey-options-panel" role="listbox">
+                  {surveys.map((survey) => (
+                    <button
+                      key={survey._id}
+                      type="button"
+                      role="option"
+                      aria-selected={selectedSurvey?._id === survey._id}
+                      className={`survey-option-item ${
+                        selectedSurvey?._id === survey._id ? "active" : ""
+                      }`}
+                      onClick={() => handleSelectSurvey(survey)}
+                    >
+                      {survey.surveyTitle}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </h1>
           <p className="results-subtitle">Tipping Point – Real Estate Development</p>
@@ -224,8 +372,12 @@
           </div>
     
           <div className="metric-card export-buttons">
-            <button className="export-btn">Export CSV</button>
-            <button className="export-btn">Export PDF</button>
+            <button className="export-btn" onClick={handleExportCSV} disabled={exportingCsv || exportingPdf}>
+              {exportingCsv ? "Exporting..." : "Export CSV"}
+            </button>
+            <button className="export-btn" onClick={handleExportPDF} disabled={exportingCsv || exportingPdf}>
+              {exportingPdf ? "Exporting..." : "Export PDF"}
+            </button>
           </div>
         </section>
     
@@ -249,8 +401,6 @@
           Image Responses
         </button>
       </div>
-
-      <h3 className="section-heading">{responseType}</h3>
 
       {/* ONLY SHOW FOR MULTIPLE CHOICE */}
       {responseType === "Multiple Choice Responses" && (

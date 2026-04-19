@@ -1,0 +1,39 @@
+.app-toast-stack {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  z-index: 3200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.app-toast {
+  min-width: 260px;
+  max-width: 380px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.app-toast.success {
+  color: #276738;
+  background: #edf8ef;
+  border-color: #b8e2c1;
+}
+
+.app-toast.error {
+  color: #a12b2b;
+  background: #fff1f2;
+  border-color: #fecdd3;
+}
+
+.app-toast.info {
+  color: #0f4c81;
+  background: #e9f2ff;
+  border-color: #c7dcff;
+}

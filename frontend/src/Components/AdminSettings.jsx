@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/AdminSettings.css";
 import { buildApiUrl } from "../utils/api";
+import { showToast } from "../utils/toast";
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -52,7 +53,7 @@ export default function AdminSettings() {
   
   const addAdmin = async () => {
     if (!newAdminName.trim() || !newAdminRole.trim() || !newAdminEmail.trim()) {
-      alert("Please provide name, email, and role.");
+      showToast("Please provide name, email, and role.", "error");
       return;
     }
 
@@ -73,7 +74,7 @@ export default function AdminSettings() {
         try {
           body = await res.json();
         } catch {}
-        alert(body.message || "Failed to create admin");
+        showToast(body.message || "Failed to create admin", "error");
         return;
       }
 
@@ -93,9 +94,10 @@ export default function AdminSettings() {
       setNewAdminEmail("");
       setNewAdminRole("Admin");
       setIsInviteOpen(false);
+      showToast("Admin created successfully", "success");
     } catch (err) {
       console.error("Failed to create admin", err);
-      alert("Server error creating admin");
+      showToast("Server error creating admin", "error");
     }
   };
 
@@ -113,14 +115,15 @@ export default function AdminSettings() {
 
       if (!res.ok) {
         console.error("Failed to delete admin:", data);
-        alert(data.message || "Failed to delete admin. Please try again.");
+        showToast(data.message || "Failed to delete admin. Please try again.", "error");
         return;
       }
 
       setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+      showToast("Admin deleted", "success");
     } catch (error) {
       console.error("Failed to delete admin", error);
-      alert("Failed to delete admin. Please try again.");
+      showToast("Failed to delete admin. Please try again.", "error");
     }
   };
 
@@ -139,7 +142,7 @@ export default function AdminSettings() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Failed to update admin");
+        showToast(data.message || "Failed to update admin", "error");
         return;
       }
 
@@ -151,9 +154,10 @@ export default function AdminSettings() {
 
       setEditingId(null);
       setEditEmail("");
+      showToast("Admin updated", "success");
     } catch (err) {
       console.error("Failed to update admin", err);
-      alert("Server error updating admin");
+      showToast("Server error updating admin", "error");
     }
   };
 
@@ -165,7 +169,7 @@ export default function AdminSettings() {
     if (profilePassword.trim()) updates.password = profilePassword;
   
     if (Object.keys(updates).length === 0) {
-      alert("Nothing to update");
+      showToast("Nothing to update", "info");
       return;
     }
   
@@ -189,10 +193,10 @@ export default function AdminSettings() {
         localStorage.setItem("username", updates.username);
       }
   
-      alert("Profile updated!");
+      showToast("Profile updated!", "success");
       setProfilePassword("");
     } catch (err) {
-      alert(err.message);
+      showToast(err.message, "error");
     }
   };
   

@@ -74,32 +74,37 @@ function AdminApp() {
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         onNavigate={handleNavigate}
+        onLogout={handleLogout}
       />
 
       <div className="main-content">
         <Topbar
           currentPage={page}
           pageMode={pageProps.mode}
-          onNavigate={handleNavigate}
-          onLogout={handleLogout}
           onMenuToggle={() => setIsSidebarOpen((open) => !open)}
         />
 
-        {page === "dashboard" && <Dashboard />}
-        {page === "adminSurveys" && <AdminSurveys onNavigate={handleNavigate} />}
-        {page === "settings" && <AdminSettings />}
-        {page === "createSurvey" && (
-          <CreateSurvey
-            onNavigate={handleNavigate}
-            mode={pageProps.mode || "create"}
-            surveyToEdit={pageProps.survey || null}
-            onSaved={() => setPage("adminSurveys")}
-            currentPage ={page}
-            setPage={setPage}  
-          />
-        )}
-        {page === "results" && <Results onNavigate={handleNavigate}/>}
-        {page === "exports" && <Exports />}
+        <div className="admin-page-area">
+          <div className="admin-page-shell">
+            {page === "dashboard" && <Dashboard />}
+            {page === "adminSurveys" && (
+              <AdminSurveys onNavigate={handleNavigate} />
+            )}
+            {page === "settings" && <AdminSettings />}
+            {page === "createSurvey" && (
+              <CreateSurvey
+                onNavigate={handleNavigate}
+                mode={pageProps.mode || "create"}
+                surveyToEdit={pageProps.survey || null}
+                onSaved={() => setPage("adminSurveys")}
+                currentPage={page}
+                setPage={setPage}
+              />
+            )}
+            {page === "results" && <Results onNavigate={handleNavigate} />}
+            {page === "exports" && <Exports />}
+          </div>
+        </div>
       </div>
     </div>
   );
