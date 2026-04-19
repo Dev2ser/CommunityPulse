@@ -1,6 +1,8 @@
 import axios from "axios";
 
-export const API_ORIGIN = "http://192.168.1.111:5001";
+const configuredApiOrigin = import.meta.env.VITE_API_ORIGIN;
+
+export const API_ORIGIN = configuredApiOrigin || "http://localhost:5001";
 export const API_BASE = `${API_ORIGIN}/api`;
 
 export const apiClient = axios.create({
