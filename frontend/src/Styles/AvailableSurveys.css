@@ -17,38 +17,37 @@
   width: 100%;
   height: 100%;
   margin: 0 auto;
-  padding: 0 8px 0 2px;
+  padding: 0 12px;
   display: grid;
-  grid-template-columns: 46px 1fr 46px;
+  grid-template-columns: 56px 1fr 56px;
   align-items: center;
 }
 
 .surveys-back {
-  width: 40px;
-  height: 40px;
-  border: 1px solid #ccd4de;
-  border-radius: 999px;
+  width: 56px;
+  height: 56px;
+  border: 1px solid rgba(38, 34, 35, 0.12);
+  border-radius: 16px;
   background: #ffffff;
-  color: #2f343a;
+  color: #262223;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   justify-self: start;
-  margin-left: 10px;
   cursor: pointer;
   z-index: 1;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
 }
 
-.surveys-back-glyph {
-  color: #1f2937;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1;
-  transform: translateY(-1px);
+.surveys-back-icon {
+  width: 26px;
+  height: 26px;
 }
 
 .surveys-back:hover {
-  background: #f2f5f9;
+  background: #f7f8f8;
+  border-color: rgba(38, 34, 35, 0.18);
+  transform: translateY(-1px);
 }
 
 .surveys-back:focus,
@@ -67,8 +66,8 @@
 }
 
 .surveys-topbar-spacer {
-  width: 40px;
-  height: 40px;
+  width: 56px;
+  height: 56px;
 }
 
 .surveys-content {
@@ -230,14 +229,18 @@
   }
 
   .surveys-topbar-inner {
-    padding: 0 6px 0 2px;
-    grid-template-columns: 36px 1fr 36px;
+    padding: 0 10px;
+    grid-template-columns: 50px 1fr 50px;
   }
 
   .surveys-back {
-    width: 34px;
-    height: 34px;
-    margin-left: 8px;
+    width: 50px;
+    height: 50px;
+  }
+
+  .surveys-back-icon {
+    width: 24px;
+    height: 24px;
   }
 
   .surveys-brand-logo {
@@ -245,8 +248,8 @@
   }
 
   .surveys-topbar-spacer {
-    width: 34px;
-    height: 34px;
+    width: 50px;
+    height: 50px;
   }
 
   .surveys-content {
