@@ -56,7 +56,9 @@ function LoginPage({ onLogin }) {
         <div className="login-box">
           <div className="login-form">
             <h2 className="login-title">COMMUNITYPULSE ADMIN</h2>
-            <p className="login-subtitle">Sign in to access the administrative dashboard</p>
+            <p className="login-subtitle">
+              Sign in to access the administrative dashboard
+            </p>
 
             {error && <div className="login-error">{error}</div>}
 
@@ -82,7 +84,11 @@ function LoginPage({ onLogin }) {
               />
             </div>
 
-            <button className="login-btn" onClick={handleLogin} disabled={loading}>
+            <button
+              className="login-btn"
+              onClick={handleLogin}
+              disabled={loading}
+            >
               <span>{loading ? "Signing In..." : "Sign In"}</span>
               {!loading && <ArrowRight size={16} />}
             </button>
