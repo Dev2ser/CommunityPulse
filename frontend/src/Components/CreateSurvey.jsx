@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import "../Styles/CreateSurvey.css";
 import { API_BASE } from "../utils/api";
+import { showToast } from "../utils/toast";
 import {
   CSV_SAMPLE,
   JSON_SAMPLE,
@@ -19,7 +20,6 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
   const [surveyDescription, setSurveyDescription] = useState("");
   const [targetNeighborhood, setTargetNeighborhood] = useState("all");
   const [status, setStatus] = useState("draft");
-  const [saveError, setSaveError] = useState("");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [questions, setQuestions] = useState([]);
@@ -304,21 +304,20 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
   };
 
   const submitSurvey = async () => {
-    setSaveError("");
     setSaveSuccess("");
 
     if (isDuplicate) {
-      setSaveError("Survey title already exists.");
+      showToast("Survey title already exists.", "error");
       return;
     }
 
     if (!surveyTitle.trim()) {
-      setSaveError("Survey title is required.");
+      showToast("Survey title is required.", "error");
       return;
     }
 
     if (!questions.length) {
-      setSaveError("Add at least one question.");
+      showToast("Add at least one question.", "error");
       return;
     }
 
@@ -332,7 +331,7 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
 
     if (Object.keys(nextQuestionErrors).length > 0) {
       setQuestionErrors(nextQuestionErrors);
-      setSaveError("Fix the highlighted questions before saving.");
+      showToast("Fix the highlighted questions before saving.", "error");
       return;
     }
 
@@ -383,7 +382,7 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
       }
     } catch (err) {
       console.error(err);
-      setSaveError(err.message || "Unable to save survey");
+      showToast(err.message || "Unable to save survey", "error");
     } finally {
       setIsSaving(false);
     }
@@ -814,7 +813,6 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
         </div>
       </div>
 
-      {saveError ? <div className="error-banner">{saveError}</div> : null}
       {saveSuccess ? <div className="success-banner">{saveSuccess}</div> : null}
     </div>
   );

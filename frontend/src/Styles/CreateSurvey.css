@@ -19,10 +19,14 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  padding: 2rem;
+  padding: 20px 18px 26px;
   min-height: calc(100vh - 64px);
-  background: #f9fafb;
+  background: transparent;
   color: var(--tp-black);
+}
+
+.create-survey-shell {
+  background: #fbfcfe;
 }
 
 .create-survey-header {
@@ -540,20 +544,24 @@
   border-color: #d1d5db;
 }
 
-.btn-publish {
-  background: var(--tp-green);
+.create-survey-actions .btn-publish {
+  background-color: var(--tp-green);
   border-color: var(--tp-green);
   color: var(--tp-white);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
 }
 
-.btn-publish:hover {
-  background: var(--tp-green-dark);
+.create-survey-actions .btn-publish:hover {
+  background-color: var(--tp-green-dark);
   border-color: var(--tp-green-dark);
   filter: none;
 }
 
-.btn-publish:disabled {
-  opacity: 0.75;
+.create-survey-actions .btn-publish:disabled {
+  background-color: var(--tp-green);
+  border-color: var(--tp-green);
+  color: var(--tp-white);
+  opacity: 0.78;
   cursor: not-allowed;
 }
 
@@ -590,7 +598,7 @@
 
 @media (max-width: 900px) {
   .create-survey-container {
-    padding: 1.25rem;
+    padding: 16px 16px 24px;
   }
 
   .questions-header,
@@ -609,7 +617,7 @@
 
 @media (max-width: 640px) {
   .create-survey-container {
-    padding: 1rem;
+    padding: 12px;
   }
 
   .create-survey-actions,

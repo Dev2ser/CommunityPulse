@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../Styles/AvailableSurveys.css";
 import { buildApiUrl } from "../utils/api";
+import brandLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
+import { ChevronRight } from "lucide-react";
 
 
 function AvailableSurveys() {
@@ -40,37 +42,69 @@ function AvailableSurveys() {
     navigate("/survey-chat", { state: { survey } });
   };
 
-  if (loading) return <p className="loading">Loading surveys...</p>;
-  if (error) return <p className="error">Error: {error}</p>;
-  if (surveys.length === 0) return <p>No surveys found.</p>;
+  const goBack = () => {
+    navigate("/");
+  };
 
   return (
     <div className="surveys-page">
-      <header className="surveys-header">
-        <h1 className="brand">TIPPING POINT</h1>
-        <p className="brand-sub">REAL ESTATE DEVELOPMENT</p>
+      <header className="surveys-topbar">
+        <div className="surveys-topbar-inner">
+          <button
+            type="button"
+            className="surveys-back"
+            onClick={goBack}
+            aria-label="Go back"
+          >
+            <span className="surveys-back-glyph" aria-hidden="true">&larr;</span>
+          </button>
 
-        <h2 className="surveys-title">CHOOSE A SURVEY TO BEGIN</h2>
-        <p className="surveys-subtitle">
-          These surveys are part of ongoing community projects. Select the one for your area.
-        </p>
+          <img
+            src={brandLogo}
+            alt="Tipping Point Real Estate Development"
+            className="surveys-brand-logo"
+          />
+
+          <span className="surveys-topbar-spacer" aria-hidden="true" />
+        </div>
       </header>
 
-      <div className="surveys-list">
-        {surveys.map((s) => (
-          <button
-            key={s._id}
-            className="survey-card"
-            onClick={() => openSurvey(s)}
-          >
-            <div className="survey-text">
-              <div className="survey-title">{s.surveyTitle}</div>
-              <div className="survey-location">{s.targetNeighborhood || "All"}</div>
+      <main className="surveys-content">
+        <section className="surveys-intro">
+          <h2 className="surveys-title">CHOOSE A SURVEY TO BEGIN</h2>
+          <p className="surveys-subtitle">
+            These surveys are part of ongoing community projects. Select the one for your area.
+          </p>
+        </section>
+
+        <section className="surveys-cards-section">
+          {loading && <p className="surveys-state">Loading surveys...</p>}
+          {error && <p className="surveys-state surveys-state-error">Error: {error}</p>}
+          {!loading && !error && surveys.length === 0 && (
+            <p className="surveys-state">No surveys found.</p>
+          )}
+
+          {!loading && !error && surveys.length > 0 && (
+            <div className="surveys-list">
+              {surveys.map((s) => (
+                <button
+                  key={s._id}
+                  className="survey-card"
+                  onClick={() => openSurvey(s)}
+                >
+                  <div className="survey-text">
+                    <div className="survey-title">{s.surveyTitle}</div>
+                    <div className="survey-location">{s.targetNeighborhood || "All"}</div>
+                  </div>
+                  <div className="survey-arrow" aria-hidden="true">
+                    <ChevronRight size={19} strokeWidth={2.2} />
+                  </div>
+                </button>
+              ))}
             </div>
-            <div className="survey-arrow">›</div>
-          </button>
-        ))}
-      </div>
+          )}
+        </section>
+      </main>
     </div>
   );
 }
