@@ -338,12 +338,44 @@ router.get("/survey/responseCount/:surveyTitle", async (req, res) => {
       return res.status(400).json({ message: "Survey title is required" });
     }
 
+    const survey = await db
+      .collection("Surveys")
+      .findOne(
+        { surveyTitle },
+        { projection: { questions: 1, surveyTitle: 1 } },
+      );
+
     // Count documents in SurveyResponse for this survey
     const count = await db
       .collection("SurveyResponse")
       .countDocuments({ surveyTitle });
 
-    res.json({ surveyTitle, totalResponses: count });
+    const surveyResponses = await db
+      .collection("SurveyResponse")
+      .find({ surveyTitle })
+      .project({ responses: 1 })
+      .toArray();
+
+    const totalQuestions = Array.isArray(survey?.questions)
+      ? survey.questions.length
+      : 0;
+
+    const completionRate =
+      count > 0 && totalQuestions > 0
+        ? Math.round(
+            (surveyResponses.reduce((sum, responseDoc) => {
+              const answeredQuestions = Array.isArray(responseDoc.responses)
+                ? responseDoc.responses.length
+                : 0;
+
+              return sum + answeredQuestions / totalQuestions;
+            }, 0) /
+              count) *
+              100,
+          )
+        : 0;
+
+    res.json({ surveyTitle, totalResponses: count, completionRate });
   } catch (err) {
     console.error("Response count error:", err);
     res.status(500).json({ message: "Failed to get response count" });
