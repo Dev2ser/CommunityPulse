@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/AdminSettings.css";
 import { buildApiUrl } from "../utils/api";
+import { showToast } from "../utils/toast";
 
 export default function AdminSettings() {
   const [activeTab, setActiveTab] = useState("admins");
@@ -21,7 +22,6 @@ export default function AdminSettings() {
   const [editRole, setEditRole] = useState("");
   const [editEmail, setEditEmail] = useState("");
 
-  
   useEffect(() => {
     async function loadAdmins() {
       try {
@@ -49,10 +49,9 @@ export default function AdminSettings() {
     loadAdmins();
   }, []);
 
-  
   const addAdmin = async () => {
     if (!newAdminName.trim() || !newAdminRole.trim() || !newAdminEmail.trim()) {
-      alert("Please provide name, email, and role.");
+      showToast("Please provide name, email, and role.", "error");
       return;
     }
 
@@ -73,11 +72,10 @@ export default function AdminSettings() {
         try {
           body = await res.json();
         } catch {}
-        alert(body.message || "Failed to create admin");
+        showToast(body.message || "Failed to create admin", "error");
         return;
       }
 
-      
       const tableRes = await fetch(buildApiUrl("/api/admin/getTable"));
       const tableData = await tableRes.json();
       const normalized = tableData.map((a) => ({
@@ -93,13 +91,13 @@ export default function AdminSettings() {
       setNewAdminEmail("");
       setNewAdminRole("Admin");
       setIsInviteOpen(false);
+      showToast("Admin created successfully", "success");
     } catch (err) {
       console.error("Failed to create admin", err);
-      alert("Server error creating admin");
+      showToast("Server error creating admin", "error");
     }
   };
 
-  
   const handleDeleteAdmin = async (id) => {
     try {
       const res = await fetch(buildApiUrl(`/api/admin/deleteAdmin/${id}`), {
@@ -113,14 +111,18 @@ export default function AdminSettings() {
 
       if (!res.ok) {
         console.error("Failed to delete admin:", data);
-        alert(data.message || "Failed to delete admin. Please try again.");
+        showToast(
+          data.message || "Failed to delete admin. Please try again.",
+          "error",
+        );
         return;
       }
 
       setAdmins((prev) => prev.filter((admin) => admin.id !== id));
+      showToast("Admin deleted", "success");
     } catch (error) {
       console.error("Failed to delete admin", error);
-      alert("Failed to delete admin. Please try again.");
+      showToast("Failed to delete admin. Please try again.", "error");
     }
   };
 
@@ -139,64 +141,65 @@ export default function AdminSettings() {
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Failed to update admin");
+        showToast(data.message || "Failed to update admin", "error");
         return;
       }
 
       setAdmins((prev) =>
         prev.map((a) =>
-          a.id === id ? { ...a, name: editName, role: editRole, email: editEmail } : a
-        )
+          a.id === id
+            ? { ...a, name: editName, role: editRole, email: editEmail }
+            : a,
+        ),
       );
 
       setEditingId(null);
       setEditEmail("");
+      showToast("Admin updated", "success");
     } catch (err) {
       console.error("Failed to update admin", err);
-      alert("Server error updating admin");
+      showToast("Server error updating admin", "error");
     }
   };
 
   const handleEditAdmin = async () => {
     const updates = {};
-  
+
     if (profileName.trim()) updates.username = profileName;
     if (profileEmail.trim()) updates.email = profileEmail;
     if (profilePassword.trim()) updates.password = profilePassword;
-  
+
     if (Object.keys(updates).length === 0) {
-      alert("Nothing to update");
+      showToast("Nothing to update", "info");
       return;
     }
-  
+
     const currentUsername = localStorage.getItem("username");
-  
+
     try {
       const res = await fetch(buildApiUrl("/api/admin/updateAdmin"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currentUsername,
-          ...updates
-        })
+          ...updates,
+        }),
       });
-  
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
-  
+
       // Update localStorage if name changed
       if (updates.username) {
         localStorage.setItem("username", updates.username);
       }
-  
-      alert("Profile updated!");
+
+      showToast("Profile updated!", "success");
       setProfilePassword("");
     } catch (err) {
-      alert(err.message);
+      showToast(err.message, "error");
     }
   };
-  
-  
 
   const getRoleBadge = (role) => {
     const base = "badge";
@@ -222,7 +225,9 @@ export default function AdminSettings() {
       <div className="admin-settings-content">
         <div className="admin-settings-container">
           <div className="admin-settings-header">
-            <h2 className="admin-settings-title">Settings &amp; Administration</h2>
+            <h2 className="admin-settings-title">
+              Settings &amp; Administration
+            </h2>
             <p className="admin-settings-subtitle">
               Manage administrators and account preferences
             </p>
@@ -287,7 +292,7 @@ export default function AdminSettings() {
                           onChange={(e) => setNewAdminEmail(e.target.value)}
                         />
                       </div>
-                    
+
                       <div className="dialog-field">
                         <label htmlFor="invite-role">Role</label>
                         <select
@@ -308,10 +313,7 @@ export default function AdminSettings() {
                         >
                           Cancel
                         </button>
-                        <button
-                          className="dialog-submit"
-                          onClick={addAdmin}
-                        >
+                        <button className="dialog-submit" onClick={addAdmin}>
                           Send Invitation
                         </button>
                       </div>
@@ -335,9 +337,7 @@ export default function AdminSettings() {
                         <tr
                           key={admin.id}
                           className={
-                            index % 2 === 0
-                              ? "table-row-even"
-                              : "table-row-odd"
+                            index % 2 === 0 ? "table-row-even" : "table-row-odd"
                           }
                         >
                           <td className="table-cell-name">
@@ -364,8 +364,6 @@ export default function AdminSettings() {
                               admin.email || "N/A"
                             )}
                           </td>
-
-                          
 
                           <td>
                             {editingId === admin.id ? (
@@ -446,7 +444,9 @@ export default function AdminSettings() {
                       <span className="profile-icon">👤</span>
                     </div>
                     <div>
-                      <h3 className="profile-card-title">Profile Information</h3>
+                      <h3 className="profile-card-title">
+                        Profile Information
+                      </h3>
                       <p className="profile-card-subtitle">
                         Update your name, email, and password
                       </p>
@@ -454,45 +454,44 @@ export default function AdminSettings() {
                   </div>
 
                   <form className="profile-form">
-  <label>
-    Full Name
-    <input
-      type="text"
-      value={profileName}
-      onChange={(e) => setProfileName(e.target.value)}
-      placeholder="Full Name"
-    />
-  </label>
+                    <label>
+                      Full Name
+                      <input
+                        type="text"
+                        value={profileName}
+                        onChange={(e) => setProfileName(e.target.value)}
+                        placeholder="Full Name"
+                      />
+                    </label>
 
-  <label>
-    Email Address
-    <input
-      type="email"
-      value={profileEmail}
-      onChange={(e) => setProfileEmail(e.target.value)}
-      placeholder="email@tippingpoint.com"
-    />
-  </label>
+                    <label>
+                      Email Address
+                      <input
+                        type="email"
+                        value={profileEmail}
+                        onChange={(e) => setProfileEmail(e.target.value)}
+                        placeholder="email@tippingpoint.com"
+                      />
+                    </label>
 
-  <label>
-    New Password
-    <input
-      type="password"
-      value={profilePassword}
-      onChange={(e) => setProfilePassword(e.target.value)}
-      placeholder="New Password"
-    />
-  </label>
+                    <label>
+                      New Password
+                      <input
+                        type="password"
+                        value={profilePassword}
+                        onChange={(e) => setProfilePassword(e.target.value)}
+                        placeholder="New Password"
+                      />
+                    </label>
 
-  <button
-    type="button"
-    className="update-profile-button"
-    onClick={handleEditAdmin}
-  >
-    Save Changes
-  </button>
-</form>
-
+                    <button
+                      type="button"
+                      className="update-profile-button"
+                      onClick={handleEditAdmin}
+                    >
+                      Save Changes
+                    </button>
+                  </form>
                 </div>
 
                 <div className="notification-card">
@@ -526,7 +525,9 @@ export default function AdminSettings() {
                     </div>
                     <div className="notification-item">
                       <div>
-                        <div className="notification-label">Response Updates</div>
+                        <div className="notification-label">
+                          Response Updates
+                        </div>
                         <div className="notification-description">
                           Notify me when responses increase
                         </div>
@@ -554,10 +555,7 @@ export default function AdminSettings() {
                     </div>
                   </div>
                   <div className="notification-save">
-                    <button
-                      type="button"
-                      className="save-notification-button"
-                    >
+                    <button type="button" className="save-notification-button">
                       Save Preferences
                     </button>
                   </div>

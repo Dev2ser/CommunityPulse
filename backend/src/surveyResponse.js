@@ -1,6 +1,12 @@
 import express from "express";
 import { getDb } from "./db.js";
-import { extractResponses, getTopWords, getSentiment, getSuggestions, getCategories} from "./analytics.js";
+import {
+  extractResponses,
+  getTopWords,
+  getSentiment,
+  getSuggestions,
+  getCategories,
+} from "./analytics.js";
 
 const router = express.Router();
 
@@ -22,30 +28,34 @@ router.get("/survey/responses/:surveyTitle", async (req, res) => {
       return res.status(404).json({ message: "Survey not found" });
     }
 
-    const responses = surveys.flatMap(s => extractResponses(s) || []);
+    const responses = surveys.flatMap((s) => extractResponses(s) || []);
     const topWords = responses.length ? getTopWords(responses) : [];
     const categories = topWords.length ? await getCategories(topWords) : [];
-    const sentiment = responses.length ? getSentiment(responses) : { score: 0, label: "No data" };
+    const sentiment = responses.length
+      ? getSentiment(responses)
+      : { score: 0, label: "No data" };
     const suggestions = topWords.length ? await getSuggestions(topWords) : [];
-    
+
     await db.collection("SurveyAnalytics").updateOne(
       { surveyTitle },
       {
         $set: {
           totalResponses: responses.length,
-          sentimentScore: sentiment.score,  
-          sentimentLabel: sentiment.label, 
+          sentimentScore: sentiment.score,
+          sentimentLabel: sentiment.label,
           topWords,
           suggestions,
           categories,
-          updatedAt: new Date()
+          reportGenerated: true,
+          reportGeneratedAt: new Date(),
+          updatedAt: new Date(),
         },
         $setOnInsert: {
           surveyTitle,
-          createdAt: new Date()
-        }
+          createdAt: new Date(),
+        },
       },
-      { upsert: true }
+      { upsert: true },
     );
 
     const analyticsDoc = await db
@@ -59,19 +69,23 @@ router.get("/survey/responses/:surveyTitle", async (req, res) => {
   }
 });
 
-
 router.get("/survey/analytics/:surveyTitle", async (req, res) => {
   try {
     const db = getDb();
     const { surveyTitle } = req.params;
 
-    if (!surveyTitle) return res.status(400).json({ message: "Survey title is required" });
+    if (!surveyTitle)
+      return res.status(400).json({ message: "Survey title is required" });
 
     // Find analytics document
-    const analytics = await db.collection("SurveyAnalytics").findOne({ surveyTitle });
+    const analytics = await db
+      .collection("SurveyAnalytics")
+      .findOne({ surveyTitle });
 
     if (!analytics) {
-      return res.status(404).json({ message: "Analytics not found. Generate report first." });
+      return res
+        .status(404)
+        .json({ message: "Analytics not found. Generate report first." });
     }
 
     res.json(analytics);
@@ -80,6 +94,34 @@ router.get("/survey/analytics/:surveyTitle", async (req, res) => {
     res.status(500).json({ message: "Failed to fetch analytics" });
   }
 });
+
+router.get("/survey/reportsGenerated", async (_req, res) => {
+  try {
+    const db = getDb();
+
+    const docs = await db
+      .collection("SurveyAnalytics")
+      .find({
+        $or: [
+          { reportGenerated: true },
+          { reportGenerated: { $exists: false } },
+        ],
+      })
+      .project({ _id: 0, surveyTitle: 1, reportGeneratedAt: 1 })
+      .toArray();
+
+    res.json({
+      surveys: docs,
+      totalGenerated: docs.length,
+    });
+  } catch (err) {
+    console.error("Fetch generated reports status error:", err);
+    res
+      .status(500)
+      .json({ message: "Failed to fetch generated reports status" });
+  }
+});
+
 router.get("/survey/categories/count/:surveyTitle", async (req, res) => {
   try {
     const db = getDb();
@@ -90,18 +132,24 @@ router.get("/survey/categories/count/:surveyTitle", async (req, res) => {
     }
 
     // Find the analytics document
-    const analytics = await db.collection("SurveyAnalytics").findOne({ surveyTitle });
+    const analytics = await db
+      .collection("SurveyAnalytics")
+      .findOne({ surveyTitle });
 
     if (!analytics) {
-      return res.status(404).json({ message: "Analytics not found for this survey" });
+      return res
+        .status(404)
+        .json({ message: "Analytics not found for this survey" });
     }
 
     // Count the categories
-    const categoryCount = Array.isArray(analytics.categories) ? analytics.categories.length : 0;
+    const categoryCount = Array.isArray(analytics.categories)
+      ? analytics.categories.length
+      : 0;
 
     res.json({
       surveyTitle,
-      categoryCount
+      categoryCount,
     });
   } catch (err) {
     console.error("Get category count error:", err);
@@ -119,20 +167,24 @@ router.get("/survey/themes/:surveyTitle", async (req, res) => {
     }
 
     // Find the analytics document for this survey
-    const analytics = await db.collection("SurveyAnalytics").findOne({ surveyTitle });
+    const analytics = await db
+      .collection("SurveyAnalytics")
+      .findOne({ surveyTitle });
 
     if (!analytics || !Array.isArray(analytics.topWords)) {
-      return res.status(404).json({ message: "No themes found for this survey" });
+      return res
+        .status(404)
+        .json({ message: "No themes found for this survey" });
     }
 
     // Sort topWords by count descending and grab top 10
     const themes = analytics.topWords
-      .filter(wordObj => wordObj.word) // remove empty objects
+      .filter((wordObj) => wordObj.word) // remove empty objects
       .sort((a, b) => b.count - a.count) // sort descending
       .slice(0, 10) // top 10
       .map((wordObj) => ({
         word: wordObj.word,
-        count: wordObj.count || 0
+        count: wordObj.count || 0,
       }));
 
     res.json({ surveyTitle, themes });
@@ -157,7 +209,9 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
       .toArray();
 
     if (!surveyResponses.length) {
-      return res.status(404).json({ message: "No responses found for this survey" });
+      return res
+        .status(404)
+        .json({ message: "No responses found for this survey" });
     }
 
     const multipleCounts = {};
@@ -170,7 +224,7 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
         if (q.questionType === "multiple" && q.answer) {
           if (!multipleCounts[q.question]) {
             multipleCounts[q.question] = {};
-            questions.push(q.question); 
+            questions.push(q.question);
           }
 
           multipleCounts[q.question][q.answer] =
@@ -179,10 +233,10 @@ router.get("/survey/multipleCounts/:surveyTitle", async (req, res) => {
       });
     });
 
-    res.json({ 
-      surveyTitle, 
-      questions,        
-      multipleCounts 
+    res.json({
+      surveyTitle,
+      questions,
+      multipleCounts,
     });
   } catch (err) {
     console.error("Multiple choice counts error:", err);
@@ -218,10 +272,9 @@ router.get("/survey/imageResponses/:surveyTitle", async (req, res) => {
             imageMap[questionText] = [];
           }
 
-          
           if (q.imageAnalysis) {
             imageMap[questionText].push({
-              analysis: q.imageAnalysis,   
+              analysis: q.imageAnalysis,
               createdAt: doc.createdAt,
             });
           }
@@ -238,7 +291,6 @@ router.get("/survey/imageResponses/:surveyTitle", async (req, res) => {
       surveyTitle,
       imageData: formatted,
     });
-
   } catch (err) {
     console.error("Image responses error:", err);
     res.status(500).json({ message: "Failed to fetch image responses" });
@@ -256,16 +308,16 @@ router.get("/survey/responseCountAll", async (req, res) => {
         {
           $group: {
             _id: "$surveyTitle",
-            totalResponses: { $sum: 1 }
-          }
+            totalResponses: { $sum: 1 },
+          },
         },
         {
           $project: {
             _id: 0,
             surveyTitle: "$_id",
-            totalResponses: 1
-          }
-        }
+            totalResponses: 1,
+          },
+        },
       ])
       .toArray();
 
@@ -298,7 +350,7 @@ router.get("/survey/responseCount/:surveyTitle", async (req, res) => {
   }
 });
 
- // Get flattened responses and follow-ups by Survey Title
+// Get flattened responses and follow-ups by Survey Title
 router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
   try {
     const db = getDb();
@@ -314,13 +366,14 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
       .toArray();
 
     if (!surveyResponses.length) {
-      return res.status(404).json({ message: "No responses found for this survey" });
+      return res
+        .status(404)
+        .json({ message: "No responses found for this survey" });
     }
 
     // Flatten the responses
     const flattenedRows = surveyResponses.flatMap((responseDoc) => {
       const responseId = responseDoc._id.toString();
-
 
       const topResponses = (responseDoc.responses || []).map((r) => ({
         surveyTitle,
@@ -328,8 +381,6 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
         question: r.question,
         answer: r.answer,
         questionType: r.questionType,
-
-        
       }));
 
       const followUpRows = (responseDoc.followUps || []).flatMap((fu) =>
@@ -339,8 +390,7 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
           question: fua.question,
           answer: fua.answer,
           questionType: fua.questionType,
-
-        }))
+        })),
       );
 
       return [...topResponses, ...followUpRows];

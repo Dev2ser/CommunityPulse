@@ -1,79 +1,52 @@
-.topbar {
-  position: relative; /* needed for absolute center */
-  display: flex;
-  align-items: center;
-  padding: 12px 20px;
-  border-bottom: 1px solid #ddd;
-  width: 100%;
-  background-color: #fff;
-  box-sizing: border-box;
+.topbar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.1);
 }
 
-/* LEFT SECTION */
-.topbar-left {
-  flex: 1; 
+.topbar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  width: 100%;
+  min-height: 78px;
+  padding: 0 24px;
+  background: #f7f7f8;
+  border-bottom: 1px solid #d9dde3;
+}
+
+.topbar-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
   min-width: 0;
 }
 
-/* CENTER SECTION */
 .topbar-center {
-  position: absolute; 
+  position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 16px;
-  font-weight: 700;
   max-width: calc(100% - 16rem);
   text-align: center;
 }
 
 .topbar-title {
   margin: 0;
+  color: #24282e;
   font-family: "Bebas Neue", sans-serif;
-  font-size: 1.8rem;
-  letter-spacing: 0.05em;
+  font-size: 52px;
+  line-height: 0.86;
+  letter-spacing: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* RIGHT SECTION */
 .topbar-right {
-  flex: 1; 
-  display: flex;
-  align-items: center;
-  justify-content: flex-end; 
-  gap: 12px;
+  flex: 1;
+  display: block;
   min-width: 0;
-}
-
-.topbar-usertext {
-  text-align: right;
-  min-width: 0;
-}
-
-.topbar-username {
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.topbar-role {
-  font-size: 13px;
-  color: #777;
-}
-
-.topbar-usericon {
-  height: 45px;
-  width: 45px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 1px solid black;
-}
-
-.topbar-usericon:hover {
-  border: 1px solid #4ba3ff;
 }
 
 .topbar-menu-button {
@@ -90,44 +63,11 @@
   cursor: pointer;
 }
 
-.topbar-avatar {
-  position: relative;
-}
-
-.topbar-dropdown {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  padding: 0.35rem;
-  z-index: 10;
-  min-width: 140px;
-}
-
-.dropdown-item {
-  width: 100%;
-  text-align: left;
-  padding: 0.55rem 0.7rem;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  border-radius: 0.35rem;
-  font-weight: 600;
-  color: #262223;
-}
-
-.dropdown-item:hover {
-  background: rgba(134, 199, 121, 0.12);
-  color: #2a6798;
-}
-
 @media (max-width: 1023px) {
   .topbar {
     gap: 0.75rem;
     padding: 12px 16px;
+    min-height: 64px;
     justify-content: space-between;
   }
 
@@ -146,7 +86,6 @@
 
   .topbar-right {
     flex: 0 0 auto;
-    gap: 0.5rem;
   }
 
   .topbar-menu-button {
@@ -154,18 +93,12 @@
   }
 
   .topbar-title {
-    font-size: 1.15rem;
+    font-size: 1.25rem;
     line-height: 1.1;
+    letter-spacing: 0.06em;
   }
 
-  .topbar-usertext {
-    display: none;
-  }
 
-  .topbar-usericon {
-    width: 40px;
-    height: 40px;
-  }
 }
 
 @media (max-width: 480px) {

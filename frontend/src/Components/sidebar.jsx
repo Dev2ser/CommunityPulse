@@ -1,36 +1,42 @@
-  import '../Styles/sidebar.css';
-  import React from "react";
-  import dashboardIcon from '../assets/dashboardIcon.svg';
-  import surveysIcon from '../assets/surveysIcon.png';
-  import exportsIcon from '../assets/exportsIcon.png';
-  import adminIcon from '../assets/settingsIcon.png';
-  import sidebarLogo from '../assets/tippingPointLogo.png';
+import "../Styles/sidebar.css";
+import React from "react";
+import {
+  ChartColumn,
+  ClipboardList,
+  BarChart3,
+  Download,
+  Settings,
+  LogOut,
+} from "lucide-react";
+import sidebarLogo from "../assets/TP_Stacked_BlackGreen.png";
 
-  export default function Sidebar({ currentPage, isOpen, onClose, onNavigate }) {
-    const menuItems = [
-      { name: 'Dashboard', icon: dashboardIcon, page: 'dashboard' },
-      { name: 'Surveys', icon: surveysIcon, page: 'adminSurveys' },
-      {name: 'Results', icon: adminIcon, page: 'results'},
-      { name: 'Exports', icon: exportsIcon, page: 'exports' },
-      { name: 'Admin Settings', icon: adminIcon, page: 'settings' }
-      
-    ];
+export default function Sidebar({
+  currentPage,
+  isOpen,
+  onClose,
+  onNavigate,
+  onLogout,
+}) {
+  const menuItems = [
+    { name: "Dashboard", icon: ChartColumn, page: "dashboard" },
+    { name: "Surveys", icon: ClipboardList, page: "adminSurveys" },
+    { name: "Results", icon: BarChart3, page: "results" },
+    { name: "Exports", icon: Download, page: "exports" },
+    { name: "Admin Settings", icon: Settings, page: "settings" },
+  ];
 
-    function handleNavigation(page) {
-      onNavigate(page);
-    }
+  return (
+    <>
+      <button
+        type="button"
+        className={`sidebar-backdrop ${isOpen ? "is-open" : ""}`}
+        aria-label="Close navigation"
+        onClick={onClose}
+      />
 
-    return (
-      <>
-        <button
-          type="button"
-          className={`sidebar-backdrop ${isOpen ? "is-open" : ""}`}
-          aria-label="Close navigation"
-          onClick={onClose}
-        />
-
-        <aside className={`sidebar ${isOpen ? "is-open" : ""}`}>
-          <div className="sidebar-logo-container">
+      <aside className={`sidebar ${isOpen ? "is-open" : ""}`}>
+        <div className="sidebar-top">
+          <div className="sidebar-brand">
             <button
               type="button"
               className="sidebar-close"
@@ -39,28 +45,63 @@
             >
               ×
             </button>
-            <img src={sidebarLogo} alt="Tipping Point Logo" className="sidebar-logo" />
-            <div className="community-pulse">COMMUNITY PULSE</div>
-            <div className="survey-platform">Survey Platform</div>
+
+            <div className="sidebar-brand-row">
+              <img
+                src={sidebarLogo}
+                alt="Tipping Point"
+                className="sidebar-logo"
+              />
+              <div className="sidebar-brand-text">
+                <p className="community-pulse">CommunityPulse</p>
+                <p className="survey-platform">Survey Platform</p>
+              </div>
+            </div>
           </div>
-          <div className="sidebar-horizontal-line"></div>
+
           <nav className="sidebar-nav" aria-label="Admin navigation">
             <ul>
-              {menuItems.map((item) => (
-                <li key={item.name}>
-                  <button
-                    type="button"
-                    onClick={() => handleNavigation(item.page)}
-                    className={`sidebar-item-button ${currentPage === item.page ? 'active' : ''}`}
-                  >
-                    <img src={item.icon} alt="" className="sidebar-icon" />
-                    <span>{item.name}</span>
-                  </button>
-                </li>
-              ))}
+              {menuItems.map((item) => {
+                const Icon = item.icon;
+
+                return (
+                  <li key={item.name}>
+                    <button
+                      type="button"
+                      onClick={() => onNavigate(item.page)}
+                      className={`sidebar-item-button ${
+                        currentPage === item.page ? "active" : ""
+                      }`}
+                    >
+                      <Icon
+                        size={18}
+                        strokeWidth={2}
+                        className="sidebar-icon"
+                      />
+                      <span>{item.name}</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </nav>
-        </aside>
-      </>
-    );
-  }
+        </div>
+
+        <div className="sidebar-footer">
+          <div className="sidebar-user-chip">
+            <span className="sidebar-user-initials">DT</span>
+            <div>
+              <p className="sidebar-user-name">Dominik Tyrk</p>
+              <p className="sidebar-user-role">Administrator</p>
+            </div>
+          </div>
+
+          <button type="button" className="sidebar-signout" onClick={onLogout}>
+            <LogOut size={18} strokeWidth={2} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </aside>
+    </>
+  );
+}
