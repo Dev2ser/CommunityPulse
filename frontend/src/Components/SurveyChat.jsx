@@ -121,7 +121,9 @@ function SurveyChat() {
 
   const mapMessagesForApi = (chatMessages) =>
     chatMessages
-      .filter((message) => message.sender === "user" || message.sender === "bot")
+      .filter(
+        (message) => message.sender === "user" || message.sender === "bot",
+      )
       .map((message) => ({
         role: message.sender === "user" ? "user" : "assistant",
         content: message.text || (message.imageUrl ? "[Photo uploaded]" : ""),
@@ -140,7 +142,11 @@ function SurveyChat() {
     ]);
   };
 
-  const sendToAI = async ({ text = "", imageFile = null, displayText } = {}) => {
+  const sendToAI = async ({
+    text = "",
+    imageFile = null,
+    displayText,
+  } = {}) => {
     if (!survey || surveyComplete) return;
 
     const trimmedText = text.trim();
@@ -169,7 +175,7 @@ function SurveyChat() {
       formData.append("survey", JSON.stringify(survey));
       formData.append(
         "messages",
-        JSON.stringify(mapMessagesForApi(nextMessages))
+        JSON.stringify(mapMessagesForApi(nextMessages)),
       );
 
       if (imageFile) {
@@ -211,7 +217,7 @@ function SurveyChat() {
       console.error("Survey chat error:", err);
       setError(err.message || "Failed to connect to the survey service.");
       appendSystemMessage(
-        "We couldn’t send that response right now. Please try again."
+        "We couldn’t send that response right now. Please try again.",
       );
     } finally {
       setLoading(false);
@@ -225,7 +231,11 @@ function SurveyChat() {
     sendToAI();
   }, [survey]);
 
-  const submitResponse = ({ text = "", imageFile = null, displayText } = {}) => {
+  const submitResponse = ({
+    text = "",
+    imageFile = null,
+    displayText,
+  } = {}) => {
     if (!text.trim() && !imageFile) return;
 
     // When the user sends a message, return to stick-to-bottom behavior.
@@ -247,7 +257,8 @@ function SurveyChat() {
     submitResponse({
       text: inputValue,
       imageFile: selectedImage,
-      displayText: inputValue.trim() || (selectedImage ? "[Photo uploaded]" : ""),
+      displayText:
+        inputValue.trim() || (selectedImage ? "[Photo uploaded]" : ""),
     });
   };
 
@@ -307,7 +318,11 @@ function SurveyChat() {
               </div>
             </header>
 
-            <main className="messages-container" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
+            <main
+              className="messages-container"
+              ref={messagesContainerRef}
+              onScroll={handleMessagesScroll}
+            >
               <div className="message-wrapper message-wrapper-bot">
                 <div className="message-bubble message-bubble-bot">
                   <p className="message-text">
@@ -336,45 +351,69 @@ function SurveyChat() {
                 <ArrowLeft className="back-icon" />
               </button>
               <div className="header-info">
-                  <img
-                    alt="Tipping Point"
-                    className="header-logo"
-                    src={imgImageTippingPoint}
-                  />
-                  <div>
-                    <h1 className="header-title">COMMUNITY PULSE</h1>
-                    <p className="header-subtitle">{questionLabel}</p>
-                    <div className="voice-status-row">
-                      <span className={`voice-status-pill ${isListening ? "listening" : isSpeaking ? "speaking" : "idle"}`}>
-                        {isListening
-                          ? "Listening"
-                          : isSpeaking
-                            ? "Assistant speaking"
-                            : "Voice idle"}
+                <img
+                  alt="Tipping Point"
+                  className="header-logo"
+                  src={imgImageTippingPoint}
+                />
+                <div>
+                  <h1 className="header-title">COMMUNITY PULSE</h1>
+                  <p className="header-subtitle">{questionLabel}</p>
+                  <div className="voice-status-row">
+                    <span
+                      className={`voice-status-pill ${isListening ? "listening" : isSpeaking ? "speaking" : "idle"}`}
+                    >
+                      {isListening
+                        ? "Listening"
+                        : isSpeaking
+                          ? "Assistant speaking"
+                          : "Voice idle"}
+                    </span>
+                    {!recognitionSupported ? (
+                      <span className="voice-support-note">
+                        Voice input unavailable in this browser
                       </span>
-                      {!recognitionSupported ? (
-                        <span className="voice-support-note">Voice input unavailable in this browser</span>
-                      ) : null}
-                    </div>
+                    ) : null}
                   </div>
                 </div>
+              </div>
               <button
                 type="button"
                 className={`voice-toggle-button ${voiceEnabled ? "" : "muted"}`}
                 onClick={toggleVoiceEnabled}
-                aria-label={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
-                title={voiceEnabled ? "Mute assistant voice" : "Unmute assistant voice"}
+                aria-label={
+                  voiceEnabled
+                    ? "Mute assistant voice"
+                    : "Unmute assistant voice"
+                }
+                title={
+                  voiceEnabled
+                    ? "Mute assistant voice"
+                    : "Unmute assistant voice"
+                }
               >
                 {voiceEnabled ? (
-                  <Volume2 className="voice-toggle-icon" size={46} strokeWidth={3.2} />
+                  <Volume2
+                    className="voice-toggle-icon"
+                    size={46}
+                    strokeWidth={3.2}
+                  />
                 ) : (
-                  <VolumeX className="voice-toggle-icon" size={46} strokeWidth={3.2} />
+                  <VolumeX
+                    className="voice-toggle-icon"
+                    size={46}
+                    strokeWidth={3.2}
+                  />
                 )}
               </button>
             </div>
           </header>
 
-          <main className="messages-container" ref={messagesContainerRef} onScroll={handleMessagesScroll}>
+          <main
+            className="messages-container"
+            ref={messagesContainerRef}
+            onScroll={handleMessagesScroll}
+          >
             <div className="messages-inner">
               {messages.map((message) => (
                 <div
@@ -404,7 +443,9 @@ function SurveyChat() {
                     ) : null}
                     <p
                       className={`message-timestamp ${
-                        message.sender === "user" ? "timestamp-user" : "timestamp-bot"
+                        message.sender === "user"
+                          ? "timestamp-user"
+                          : "timestamp-bot"
                       }`}
                     >
                       {message.timestamp.toLocaleTimeString([], {
@@ -435,14 +476,20 @@ function SurveyChat() {
                 value={inputValue}
                 onChange={(event) => setInputValue(event.target.value)}
                 onKeyDown={(event) => event.key === "Enter" && handleSend()}
-                placeholder={isListening ? "Listening..." : "Type your answer..."}
+                placeholder={
+                  isListening ? "Listening..." : "Type your answer..."
+                }
                 className="text-input"
                 disabled={loading || surveyComplete}
               />
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={(!inputValue.trim() && !selectedImage) || loading || surveyComplete}
+                disabled={
+                  (!inputValue.trim() && !selectedImage) ||
+                  loading ||
+                  surveyComplete
+                }
                 className="action-button send-button"
               >
                 <Send className="button-icon" />
@@ -472,7 +519,9 @@ function SurveyChat() {
               />
             </div>
             {selectedImage ? (
-              <p className="privacy-notice">Image attached. Add a note or press send.</p>
+              <p className="privacy-notice">
+                Image attached. Add a note or press send.
+              </p>
             ) : null}
             {error ? <p className="privacy-notice">{error}</p> : null}
             {!error && !selectedImage ? (
