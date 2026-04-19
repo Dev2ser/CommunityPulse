@@ -44,7 +44,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
         const response = await fetch(`${API_BASE}/surveys`);
         const data = await response.json();
         const titles = (data.surveys || []).map((survey) =>
-          String(survey.surveyTitle || survey.title || "").trim().toLowerCase()
+          String(survey.surveyTitle || survey.title || "")
+            .trim()
+            .toLowerCase(),
         );
         setExistingTitles(titles);
       } catch (err) {
@@ -62,7 +64,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
     setSurveyDescription(editSurvey.description || "");
     setTargetNeighborhood(editSurvey.targetNeighborhood || "all");
     setStatus(editSurvey.status || "draft");
-    setQuestions((editSurvey.questions || []).map((question) => toQuestionDraft(question)));
+    setQuestions(
+      (editSurvey.questions || []).map((question) => toQuestionDraft(question)),
+    );
   }, [editSurvey, isEditMode]);
 
   const normalizedTitle = surveyTitle.trim().toLowerCase();
@@ -110,8 +114,8 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
   const updateQuestion = (id, updates) => {
     setQuestions((prev) =>
       prev.map((question) =>
-        question.id === id ? { ...question, ...updates } : question
-      )
+        question.id === id ? { ...question, ...updates } : question,
+      ),
     );
     setQuestionErrors((prev) => {
       if (!prev[id]) return prev;
@@ -138,7 +142,7 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
           questionType,
           options: existingOptions,
         };
-      })
+      }),
     );
     setQuestionErrors((prev) => {
       if (!prev[id]) return prev;
@@ -163,8 +167,8 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
       prev.map((question) =>
         question.id === id
           ? { ...question, options: [...(question.options || []), ""] }
-          : question
-      )
+          : question,
+      ),
     );
   };
 
@@ -175,7 +179,7 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
         const nextOptions = [...(question.options || [])];
         nextOptions[optionIndex] = value;
         return { ...question, options: nextOptions };
-      })
+      }),
     );
   };
 
@@ -184,10 +188,10 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
       prev.map((question) => {
         if (question.id !== id) return question;
         const nextOptions = (question.options || []).filter(
-          (_, index) => index !== optionIndex
+          (_, index) => index !== optionIndex,
         );
         return { ...question, options: nextOptions };
-      })
+      }),
     );
   };
 
@@ -356,7 +360,7 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
           method: isEditMode ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       );
 
       const data = await res.json().catch(() => ({}));
@@ -366,7 +370,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
       }
 
       setSaveSuccess(
-        isEditMode ? "Survey updated successfully." : "Survey created successfully."
+        isEditMode
+          ? "Survey updated successfully."
+          : "Survey created successfully.",
       );
 
       if (typeof onSaved === "function") {
@@ -400,7 +406,11 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
           </p>
         </div>
         <div className="create-survey-actions">
-          <button className="btn btn-cancel" type="button" onClick={handleCancel}>
+          <button
+            className="btn btn-cancel"
+            type="button"
+            onClick={handleCancel}
+          >
             Cancel
           </button>
           <button
@@ -430,7 +440,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                   placeholder="Community priorities survey"
                 />
                 {isDuplicate ? (
-                  <span className="error-text">Survey title already exists.</span>
+                  <span className="error-text">
+                    Survey title already exists.
+                  </span>
                 ) : null}
               </div>
 
@@ -484,13 +496,20 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
               <div>
                 <h3 className="questions-title">Questions</h3>
                 <p className="questions-helper">
-                  Build questions manually or import them from a CSV or JSON file.
+                  Build questions manually or import them from a CSV or JSON
+                  file.
                 </p>
               </div>
-              <span className="questions-count">{questions.length} questions</span>
+              <span className="questions-count">
+                {questions.length} questions
+              </span>
             </div>
 
-            <div className="question-mode-switch" role="tablist" aria-label="Question input modes">
+            <div
+              className="question-mode-switch"
+              role="tablist"
+              aria-label="Question input modes"
+            >
               <button
                 type="button"
                 className={`mode-tab ${questionMode === "manual" ? "active" : ""}`}
@@ -513,8 +532,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                   <div className="import-uploader-copy">
                     <h4>Upload survey questions</h4>
                     <p>
-                      Supported file types: <strong>.csv</strong> and <strong>.json</strong>.
-                      Imported questions populate the same question list and can be edited before saving.
+                      Supported file types: <strong>.csv</strong> and{" "}
+                      <strong>.json</strong>. Imported questions populate the
+                      same question list and can be edited before saving.
                     </p>
                   </div>
 
@@ -551,9 +571,10 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                       </div>
                     </div>
                     <p className="sample-helper">
-                      Columns: <code>questionText</code>, <code>questionType</code>,{" "}
-                      <code>required</code>, <code>options</code>. Use <code>|</code> to
-                      separate options.
+                      Columns: <code>questionText</code>,{" "}
+                      <code>questionType</code>, <code>required</code>,{" "}
+                      <code>options</code>. Use <code>|</code> to separate
+                      options.
                     </p>
                     <pre className="sample-code">{CSV_SAMPLE}</pre>
                   </div>
@@ -579,9 +600,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                       </div>
                     </div>
                     <p className="sample-helper">
-                      Upload an array of question objects with <code>questionText</code>,{" "}
-                      <code>questionType</code>, <code>required</code>, and optional{" "}
-                      <code>options</code>.
+                      Upload an array of question objects with{" "}
+                      <code>questionText</code>, <code>questionType</code>,{" "}
+                      <code>required</code>, and optional <code>options</code>.
                     </p>
                     <pre className="sample-code">{JSON_SAMPLE}</pre>
                   </div>
@@ -619,13 +640,18 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                           <div className="import-preview-meta">
                             <span>Question {index + 1}</span>
                             <span>{question.questionType}</span>
-                            <span>{question.required ? "Required" : "Optional"}</span>
+                            <span>
+                              {question.required ? "Required" : "Optional"}
+                            </span>
                           </div>
                           <p>{question.questionText}</p>
                           {supportsOptions(question.questionType) ? (
                             <div className="preview-options">
                               {question.options.map((option) => (
-                                <span key={`${question.id}-${option}`} className="preview-option-chip">
+                                <span
+                                  key={`${question.id}-${option}`}
+                                  className="preview-option-chip"
+                                >
                                   {option}
                                 </span>
                               ))}
@@ -667,8 +693,8 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                   <div className="empty-questions-state">
                     <h4>No questions yet</h4>
                     <p>
-                      Start by adding a question manually or switch to Import File
-                      to bring in a CSV or JSON template.
+                      Start by adding a question manually or switch to Import
+                      File to bring in a CSV or JSON template.
                     </p>
                   </div>
                 ) : (
@@ -680,7 +706,10 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                             <span className="question-number">{index + 1}</span>
                             <div>
                               <h4>Question {index + 1}</h4>
-                              <p>Define the prompt, type, requirement, and options.</p>
+                              <p>
+                                Define the prompt, type, requirement, and
+                                options.
+                              </p>
                             </div>
                           </div>
 
@@ -716,7 +745,10 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                               <select
                                 value={question.questionType}
                                 onChange={(e) =>
-                                  updateQuestionType(question.id, e.target.value)
+                                  updateQuestionType(
+                                    question.id,
+                                    e.target.value,
+                                  )
                                 }
                               >
                                 {QUESTION_TYPE_OPTIONS.map((type) => (
@@ -740,7 +772,9 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                                   }
                                 />
                                 <span>
-                                  {question.required ? "Required response" : "Optional question"}
+                                  {question.required
+                                    ? "Required response"
+                                    : "Optional question"}
                                 </span>
                               </label>
                             </div>
@@ -765,33 +799,37 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
                                 </p>
                               ) : null}
 
-                              {(question.options || []).map((option, optionIndex) => (
-                                <div
-                                  key={`${question.id}-${optionIndex}`}
-                                  className="option-row"
-                                >
-                                  <input
-                                    className="text-input option-input"
-                                    type="text"
-                                    placeholder={`Option ${optionIndex + 1}`}
-                                    value={option}
-                                    onChange={(e) =>
-                                      updateOption(
-                                        question.id,
-                                        optionIndex,
-                                        e.target.value
-                                      )
-                                    }
-                                  />
-                                  <button
-                                    type="button"
-                                    className="btn btn-delete option-delete"
-                                    onClick={() => removeOption(question.id, optionIndex)}
+                              {(question.options || []).map(
+                                (option, optionIndex) => (
+                                  <div
+                                    key={`${question.id}-${optionIndex}`}
+                                    className="option-row"
                                   >
-                                    Remove
-                                  </button>
-                                </div>
-                              ))}
+                                    <input
+                                      className="text-input option-input"
+                                      type="text"
+                                      placeholder={`Option ${optionIndex + 1}`}
+                                      value={option}
+                                      onChange={(e) =>
+                                        updateOption(
+                                          question.id,
+                                          optionIndex,
+                                          e.target.value,
+                                        )
+                                      }
+                                    />
+                                    <button
+                                      type="button"
+                                      className="btn btn-delete option-delete"
+                                      onClick={() =>
+                                        removeOption(question.id, optionIndex)
+                                      }
+                                    >
+                                      Remove
+                                    </button>
+                                  </div>
+                                ),
+                              )}
                             </div>
                           ) : null}
 

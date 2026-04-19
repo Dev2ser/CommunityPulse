@@ -5,13 +5,11 @@ import { buildApiUrl } from "../utils/api";
 import brandLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
 import { ChevronRight } from "lucide-react";
 
-
 function AvailableSurveys() {
   const navigate = useNavigate();
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
 
   // Fetch surveys from backend
   useEffect(() => {
@@ -37,7 +35,7 @@ function AvailableSurveys() {
   }, []);
 
   const openSurvey = (survey) => {
-    console.log("Selected survey object:", survey); 
+    console.log("Selected survey object:", survey);
     // Navigate to SurveyChat and pass the full survey object
     navigate("/survey-chat", { state: { survey } });
   };
@@ -56,7 +54,9 @@ function AvailableSurveys() {
             onClick={goBack}
             aria-label="Go back"
           >
-            <span className="surveys-back-glyph" aria-hidden="true">&larr;</span>
+            <span className="surveys-back-glyph" aria-hidden="true">
+              &larr;
+            </span>
           </button>
 
           <img
@@ -73,13 +73,16 @@ function AvailableSurveys() {
         <section className="surveys-intro">
           <h2 className="surveys-title">CHOOSE A SURVEY TO BEGIN</h2>
           <p className="surveys-subtitle">
-            These surveys are part of ongoing community projects. Select the one for your area.
+            These surveys are part of ongoing community projects. Select the one
+            for your area.
           </p>
         </section>
 
         <section className="surveys-cards-section">
           {loading && <p className="surveys-state">Loading surveys...</p>}
-          {error && <p className="surveys-state surveys-state-error">Error: {error}</p>}
+          {error && (
+            <p className="surveys-state surveys-state-error">Error: {error}</p>
+          )}
           {!loading && !error && surveys.length === 0 && (
             <p className="surveys-state">No surveys found.</p>
           )}
@@ -94,7 +97,9 @@ function AvailableSurveys() {
                 >
                   <div className="survey-text">
                     <div className="survey-title">{s.surveyTitle}</div>
-                    <div className="survey-location">{s.targetNeighborhood || "All"}</div>
+                    <div className="survey-location">
+                      {s.targetNeighborhood || "All"}
+                    </div>
                   </div>
                   <div className="survey-arrow" aria-hidden="true">
                     <ChevronRight size={19} strokeWidth={2.2} />
@@ -110,5 +115,3 @@ function AvailableSurveys() {
 }
 
 export default AvailableSurveys;
-
-
