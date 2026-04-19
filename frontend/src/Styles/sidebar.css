@@ -144,6 +144,18 @@
   height: 18px;
 }
 
+.sidebar-icon-mask {
+  background-color: currentColor;
+  -webkit-mask-image: var(--sidebar-icon-mask);
+  mask-image: var(--sidebar-icon-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 .sidebar-item-button:hover {
   background: #eff3ef;
   color: var(--sidebar-text);

@@ -1,7 +1,7 @@
 import "../Styles/sidebar.css";
 import React from "react";
 import {
-  ChartColumn,
+  LayoutDashboard,
   ClipboardList,
   BarChart3,
   Download,
@@ -35,7 +35,7 @@ export default function Sidebar({
   const userInitials = getInitials(storedName);
 
   const menuItems = [
-    { name: "Dashboard", icon: ChartColumn, page: "dashboard" },
+    { name: "Dashboard", icon: LayoutDashboard, page: "dashboard" },
     { name: "Surveys", icon: ClipboardList, page: "adminSurveys" },
     { name: "Results", icon: BarChart3, page: "results" },
     { name: "Exports", icon: Download, page: "exports" },
