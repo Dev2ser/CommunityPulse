@@ -1,7 +1,8 @@
 import tippingPointIcon from "../assets/TP_Stacked_BlackGreen.png";
 import tippingPointLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
 import tippingPointHorizontal from "../assets/TP_Wide_BlackGreen_ST2.png";
-import { CheckCircle2, Clock3, Shield } from "lucide-react";
+import { CheckCircle2, Clock3, Shield, Users, TrendingUp, Smile} from "lucide-react";
+
 import "../Styles/WelcomePage.css";
 
 function WelcomePage({ onStart }) {
@@ -56,49 +57,44 @@ function WelcomePage({ onStart }) {
       </section>
 
       <section className="welcome-why-section">
-        <div className="welcome-why-content">
-          <h2 className="welcome-section-title">Why Your Voice Matters</h2>
-
-          <p className="welcome-section-subtitle">
-            Your feedback shapes the future of your neighborhood
-          </p>
-
-          <div className="welcome-why-grid">
-            <div className="welcome-why-block">
-              <div className="welcome-why-icon">
-                <div className="welcome-icon-circle" aria-hidden="true" />
+        <div className="welcome-why-grid">
+          <div className="welcome-why-block">
+            <div className="welcome-why-icon">
+              <div className="welcome-icon-circle">
+                <Users className="welcome-icon-white" />
               </div>
-              <h3 className="welcome-why-heading">Resident-Centered</h3>
-              <p className="welcome-why-text">
-                Community development works best when it reflects the real needs
-                and priorities of the people who live here. Your perspective
-                matters.
-              </p>
             </div>
+            <h3 className="welcome-why-heading">Resident-Centered</h3>
+            <p className="welcome-why-text">
+              Community development works best when it reflects the real needs
+              and priorities of the people who live here. Your perspective matters.
+            </p>
+          </div>
 
-            <div className="welcome-why-block">
-              <div className="welcome-why-icon">
-                <div className="welcome-icon-circle" aria-hidden="true" />
+          <div className="welcome-why-block">
+            <div className="welcome-why-icon">
+              <div className="welcome-icon-circle">
+                <TrendingUp className="welcome-icon-white" />
               </div>
-              <h3 className="welcome-why-heading">Guides Investment</h3>
-              <p className="welcome-why-text">
-                Survey results directly inform where and how Tipping Point
-                allocates resources for housing, services, and neighborhood
-                improvements.
-              </p>
             </div>
+            <h3 className="welcome-why-heading">Guides Investment</h3>
+            <p className="welcome-why-text">
+              Survey results directly inform where and how Tipping Point allocates
+              resources for housing, services, and neighborhood improvements.
+            </p>
+          </div>
 
-            <div className="welcome-why-block">
-              <div className="welcome-why-icon">
-                <div className="welcome-icon-circle" aria-hidden="true" />
+          <div className="welcome-why-block">
+            <div className="welcome-why-icon">
+              <div className="welcome-icon-circle">
+                <Smile className="welcome-icon-white" />
               </div>
-              <h3 className="welcome-why-heading">Simple &amp; Respectful</h3>
-              <p className="welcome-why-text">
-                We designed this experience to be easy, accessible, and
-                respectful of your time. No jargon, no pressure, just honest
-                questions.
-              </p>
             </div>
+            <h3 className="welcome-why-heading">Simple &amp; Respectful</h3>
+            <p className="welcome-why-text">
+              We designed this experience to be easy, accessible, and respectful
+              of your time. No jargon, no pressure, just honest questions.
+            </p>
           </div>
         </div>
       </section>
