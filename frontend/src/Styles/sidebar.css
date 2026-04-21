@@ -181,11 +181,18 @@
   padding: 18px 18px 16px;
 }
 
+.sidebar-user-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 .sidebar-user-chip {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 14px;
+  flex: 1;
 }
 
 .sidebar-user-initials {
@@ -218,6 +225,35 @@
   font-size: 11px;
   line-height: 1.2;
   font-weight: 500;
+}
+
+.sidebar-settings-button {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e4e5e7;
+  border-radius: 8px;
+  background: white;
+  color: #7d8592;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.sidebar-settings-button svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+}
+
+.sidebar-settings-button:hover {
+  background: #f7f7f8;
+  border-color: #7fc66a;
+  color: #7fc66a;
 }
 
 .sidebar-signout {
