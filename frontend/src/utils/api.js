@@ -1,8 +1,10 @@
 import axios from "axios";
 
 const configuredApiOrigin = import.meta.env.VITE_API_ORIGIN;
+const primaryApiOrigin = "https://communitypulse-omny.onrender.com";
+export const FALLBACK_API_ORIGIN = "http://localhost:5001";
 
-export const API_ORIGIN = configuredApiOrigin || "http://localhost:5001";
+export const API_ORIGIN = configuredApiOrigin || primaryApiOrigin;
 export const API_BASE = `${API_ORIGIN}/api`;
 
 export const apiClient = axios.create({
