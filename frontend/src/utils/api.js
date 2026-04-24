@@ -1,10 +1,30 @@
 import axios from "axios";
 
 const configuredApiOrigin = import.meta.env.VITE_API_ORIGIN;
-const primaryApiOrigin = "https://communitypulse-omny.onrender.com";
-export const FALLBACK_API_ORIGIN = "http://localhost:5001";
+const localApiOrigin = "http://localhost:5001";
+const productionApiOrigin = "https://communitypulse-omny.onrender.com";
 
-export const API_ORIGIN = configuredApiOrigin || primaryApiOrigin;
+const browserHostname =
+  typeof window !== "undefined" ? window.location.hostname : "";
+const browserProtocol =
+  typeof window !== "undefined" ? window.location.protocol : "http:";
+
+const isLoopbackHost = ["localhost", "127.0.0.1", "::1"].includes(
+  browserHostname
+);
+
+const inferredDevApiOrigin = browserHostname
+  ? `${browserProtocol}//${browserHostname}:5001`
+  : null;
+
+// Keep env override highest priority. In dev, avoid loopback calls from non-loopback origins.
+export const API_ORIGIN = configuredApiOrigin
+  ? configuredApiOrigin
+  : import.meta.env.DEV
+  ? isLoopbackHost
+    ? localApiOrigin
+    : inferredDevApiOrigin || localApiOrigin
+  : productionApiOrigin;
 export const API_BASE = `${API_ORIGIN}/api`;
 
 export const apiClient = axios.create({
