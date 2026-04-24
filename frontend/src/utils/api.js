@@ -10,7 +10,7 @@ const browserProtocol =
   typeof window !== "undefined" ? window.location.protocol : "http:";
 
 const isLoopbackHost = ["localhost", "127.0.0.1", "::1"].includes(
-  browserHostname
+  browserHostname,
 );
 
 const inferredDevApiOrigin = browserHostname
@@ -21,10 +21,10 @@ const inferredDevApiOrigin = browserHostname
 export const API_ORIGIN = configuredApiOrigin
   ? configuredApiOrigin
   : import.meta.env.DEV
-  ? isLoopbackHost
-    ? localApiOrigin
-    : inferredDevApiOrigin || localApiOrigin
-  : productionApiOrigin;
+    ? isLoopbackHost
+      ? localApiOrigin
+      : inferredDevApiOrigin || localApiOrigin
+    : productionApiOrigin;
 export const API_BASE = `${API_ORIGIN}/api`;
 
 export const apiClient = axios.create({
