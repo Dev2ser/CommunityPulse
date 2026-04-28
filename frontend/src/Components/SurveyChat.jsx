@@ -212,6 +212,17 @@ function SurveyChat() {
 
       if (data.surveyComplete) {
         setSurveyComplete(true);
+      
+        const finalMessages = [...messages];
+        console.log(finalMessages);
+
+navigate("/transcript", {
+  state: {
+    survey,
+    messages: finalMessages,
+    progress,
+  },
+});
       }
     } catch (err) {
       console.error("Survey chat error:", err);
