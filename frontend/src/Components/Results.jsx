@@ -316,6 +316,7 @@ const Results = () => {
   ) : (
     <div className="results-page" ref={resultsReportRef}>
       <header className="results-header">
+  
         <h1 className="results-title">
           <div className="dropdown-wrapper" ref={dropdownRef}>
             <button
@@ -328,6 +329,7 @@ const Results = () => {
               <span className="title-dropdown-text">
                 {selectedSurvey?.surveyTitle || "Select Survey"}
               </span>
+  
               <span
                 className={`dropdown-arrow ${isSurveyDropdownOpen ? "open" : ""}`}
                 aria-hidden="true"
@@ -335,7 +337,7 @@ const Results = () => {
                 <ChevronDown size={16} strokeWidth={2.5} />
               </span>
             </button>
-
+  
             {isSurveyDropdownOpen && (
               <div className="survey-options-panel" role="listbox">
                 {surveys.map((survey) => (
@@ -352,12 +354,17 @@ const Results = () => {
                     {survey.surveyTitle}
                   </button>
                 ))}
-              </select>
-              <span className="dropdown-arrow">▼</span>
-            </div>
-          </h1>
-          <p className="results-subtitle">Tipping Point – Real Estate Development</p>
-        </header>
+              </div>
+            )}
+          </div>
+        </h1>
+  
+        <p className="results-subtitle">
+          Tipping Point – Real Estate Development
+        </p>
+  
+      </header>
+    
     
         {/* Metrics Section */}
         <section className="results-metrics">
