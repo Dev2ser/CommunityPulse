@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from "react";
 import "../Styles/AdminSettings.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faPen,
+  faTrash,
+  faFloppyDisk,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import { buildApiUrl } from "../utils/api";
 import { showToast } from "../utils/toast";
 
 export default function AdminSettings() {
-  const [activeTab, setActiveTab] = useState("admins");
   const [admins, setAdmins] = useState([]);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [newAdminName, setNewAdminName] = useState("");
   const [newAdminEmail, setNewAdminEmail] = useState("");
   const [newAdminRole, setNewAdminRole] = useState("Admin");
-
-  const [profileName, setProfileName] = useState("Admin User");
-  const [profileEmail, setProfileEmail] = useState("admin@tippingpoint.com");
-  const [profilePassword, setProfilePassword] = useState("");
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [responseNotifications, setResponseNotifications] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState("");
   const [editRole, setEditRole] = useState("");
@@ -162,45 +161,6 @@ export default function AdminSettings() {
     }
   };
 
-  const handleEditAdmin = async () => {
-    const updates = {};
-
-    if (profileName.trim()) updates.username = profileName;
-    if (profileEmail.trim()) updates.email = profileEmail;
-    if (profilePassword.trim()) updates.password = profilePassword;
-
-    if (Object.keys(updates).length === 0) {
-      showToast("Nothing to update", "info");
-      return;
-    }
-
-    const currentUsername = localStorage.getItem("username");
-
-    try {
-      const res = await fetch(buildApiUrl("/api/admin/updateAdmin"), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          currentUsername,
-          ...updates,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
-
-      // Update localStorage if name changed
-      if (updates.username) {
-        localStorage.setItem("username", updates.username);
-      }
-
-      showToast("Profile updated!", "success");
-      setProfilePassword("");
-    } catch (err) {
-      showToast(err.message, "error");
-    }
-  };
-
   const getRoleBadge = (role) => {
     const base = "badge";
     if (role === "Super Admin")
@@ -228,340 +188,197 @@ export default function AdminSettings() {
             <h2 className="admin-settings-title">
               Settings &amp; Administration
             </h2>
-            <p className="admin-settings-subtitle">
-              Manage administrators and account preferences
-            </p>
           </div>
 
-          <div className="admin-settings-tabs">
-            <div className="admin-settings-tabs-list">
+          <div className="admin-list-card">
+            <div className="admin-list-header">
+              <div>
+                <h3 className="admin-list-title">Administrator List</h3>
+                <p className="admin-list-subtitle">
+                  Manage and control administrator access to the platform
+                </p>
+              </div>
               <button
-                className={`admin-settings-tab-trigger ${
-                  activeTab === "admins" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("admins")}
+                className="add-admin-button"
+                onClick={() => setIsInviteOpen(true)}
               >
-                Admin Management
-              </button>
-              <button
-                className={`admin-settings-tab-trigger ${
-                  activeTab === "profile" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("profile")}
-              >
-                Profile Settings
+                + Add New Admin
               </button>
             </div>
 
-            {activeTab === "admins" && (
-              <div className="admin-list-card">
-                <div className="admin-list-header">
-                  <div>
-                    <h3 className="admin-list-title">Administrator List</h3>
-                    <p className="admin-list-subtitle">
-                      Manage staff access to the portal
-                    </p>
+            {isInviteOpen && (
+              <div className="dialog-card">
+                <div className="dialog-form">
+                  <div className="dialog-field">
+                    <label htmlFor="invite-name">Full Name</label>
+                    <input
+                      id="invite-name"
+                      placeholder="Enter full name"
+                      value={newAdminName}
+                      onChange={(e) => setNewAdminName(e.target.value)}
+                    />
                   </div>
-                  <button
-                    className="add-admin-button"
-                    onClick={() => setIsInviteOpen(true)}
-                  >
-                    + Add New Admin
-                  </button>
-                </div>
-
-                {isInviteOpen && (
-                  <div className="dialog-card">
-                    <div className="dialog-form">
-                      <div className="dialog-field">
-                        <label htmlFor="invite-name">Full Name</label>
-                        <input
-                          id="invite-name"
-                          placeholder="Enter full name"
-                          value={newAdminName}
-                          onChange={(e) => setNewAdminName(e.target.value)}
-                        />
-                      </div>
-                      <div className="dialog-field">
-                        <label htmlFor="invite-email">Email Address</label>
-                        <input
-                          id="invite-email"
-                          type="email"
-                          placeholder="email@tippingpoint.com"
-                          value={newAdminEmail}
-                          onChange={(e) => setNewAdminEmail(e.target.value)}
-                        />
-                      </div>
-
-                      <div className="dialog-field">
-                        <label htmlFor="invite-role">Role</label>
-                        <select
-                          id="invite-role"
-                          value={newAdminRole}
-                          onChange={(e) => setNewAdminRole(e.target.value)}
-                        >
-                          <option value="Super Admin">Super Admin</option>
-                          <option value="Admin">Admin</option>
-                          <option value="Editor">Editor</option>
-                          <option value="Viewer">Viewer</option>
-                        </select>
-                      </div>
-                      <div className="dialog-actions">
-                        <button
-                          className="dialog-cancel"
-                          onClick={() => setIsInviteOpen(false)}
-                        >
-                          Cancel
-                        </button>
-                        <button className="dialog-submit" onClick={addAdmin}>
-                          Send Invitation
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="table-wrapper">
-                  <table className="admin-table">
-                    <thead>
-                      <tr className="table-header-row">
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Status</th>
-                        <th className="text-center">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {admins.map((admin, index) => (
-                        <tr
-                          key={admin.id}
-                          className={
-                            index % 2 === 0 ? "table-row-even" : "table-row-odd"
-                          }
-                        >
-                          <td className="table-cell-name">
-                            {editingId === admin.id ? (
-                              <input
-                                value={editName}
-                                onChange={(e) => setEditName(e.target.value)}
-                                className="edit-input"
-                              />
-                            ) : (
-                              admin.name
-                            )}
-                          </td>
-
-                          <td className="table-cell-email">
-                            {editingId === admin.id ? (
-                              <input
-                                value={editEmail}
-                                onChange={(e) => setEditEmail(e.target.value)}
-                                className="edit-input"
-                                type="email"
-                              />
-                            ) : (
-                              admin.email || "N/A"
-                            )}
-                          </td>
-
-                          <td>
-                            {editingId === admin.id ? (
-                              <select
-                                value={editRole}
-                                onChange={(e) => setEditRole(e.target.value)}
-                                className="edit-select"
-                              >
-                                <option value="Super Admin">Super Admin</option>
-                                <option value="Admin">Admin</option>
-                                <option value="Editor">Editor</option>
-                                <option value="Viewer">Viewer</option>
-                              </select>
-                            ) : (
-                              getRoleBadge(admin.role)
-                            )}
-                          </td>
-                          <td>{getStatusBadge(admin.status)}</td>
-                          <td className="table-actions centered">
-                            {editingId === admin.id ? (
-                              <>
-                                <button
-                                  className="action-button action-button-save"
-                                  onClick={() => handleSaveAdmin(admin.id)}
-                                >
-                                  Save
-                                </button>
-                                <button
-                                  className="action-button action-button-cancel"
-                                  onClick={() => setEditingId(null)}
-                                >
-                                  Cancel
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <button
-                                  className="action-button action-button-edit"
-                                  onClick={() => {
-                                    setEditingId(admin.id);
-                                    setEditName(admin.name);
-                                    setEditRole(admin.role);
-                                    setEditEmail(admin.email);
-                                  }}
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  className="action-button action-button-delete"
-                                  onClick={() => handleDeleteAdmin(admin.id)}
-                                >
-                                  Delete
-                                </button>
-                              </>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-
-                      {admins.length === 0 && (
-                        <tr>
-                          <td colSpan={6} className="table-cell-empty">
-                            No admins found. Create one to get started.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {activeTab === "profile" && (
-              <div className="profile-grid">
-                <div className="profile-card">
-                  <div className="profile-card-header">
-                    <div className="profile-icon-wrapper">
-                      <span className="profile-icon">👤</span>
-                    </div>
-                    <div>
-                      <h3 className="profile-card-title">
-                        Profile Information
-                      </h3>
-                      <p className="profile-card-subtitle">
-                        Update your name, email, and password
-                      </p>
-                    </div>
+                  <div className="dialog-field">
+                    <label htmlFor="invite-email">Email Address</label>
+                    <input
+                      id="invite-email"
+                      type="email"
+                      placeholder="email@tippingpoint.com"
+                      value={newAdminEmail}
+                      onChange={(e) => setNewAdminEmail(e.target.value)}
+                    />
                   </div>
 
-                  <form className="profile-form">
-                    <label>
-                      Full Name
-                      <input
-                        type="text"
-                        value={profileName}
-                        onChange={(e) => setProfileName(e.target.value)}
-                        placeholder="Full Name"
-                      />
-                    </label>
-
-                    <label>
-                      Email Address
-                      <input
-                        type="email"
-                        value={profileEmail}
-                        onChange={(e) => setProfileEmail(e.target.value)}
-                        placeholder="email@tippingpoint.com"
-                      />
-                    </label>
-
-                    <label>
-                      New Password
-                      <input
-                        type="password"
-                        value={profilePassword}
-                        onChange={(e) => setProfilePassword(e.target.value)}
-                        placeholder="New Password"
-                      />
-                    </label>
-
-                    <button
-                      type="button"
-                      className="update-profile-button"
-                      onClick={handleEditAdmin}
+                  <div className="dialog-field">
+                    <label htmlFor="invite-role">Role</label>
+                    <select
+                      id="invite-role"
+                      value={newAdminRole}
+                      onChange={(e) => setNewAdminRole(e.target.value)}
                     >
-                      Save Changes
+                      <option value="Super Admin">Super Admin</option>
+                      <option value="Admin">Admin</option>
+                      <option value="Editor">Editor</option>
+                      <option value="Viewer">Viewer</option>
+                    </select>
+                  </div>
+                  <div className="dialog-actions">
+                    <button
+                      className="dialog-cancel"
+                      onClick={() => setIsInviteOpen(false)}
+                    >
+                      Cancel
                     </button>
-                  </form>
-                </div>
-
-                <div className="notification-card">
-                  <div className="notification-card-header">
-                    <div className="notification-icon-wrapper">
-                      <span className="notification-icon">🔔</span>
-                    </div>
-                    <div>
-                      <h3 className="notification-card-title">Notifications</h3>
-                      <p className="notification-card-subtitle">
-                        Choose when we email you
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="notification-settings">
-                    <div className="notification-item">
-                      <div>
-                        <div className="notification-label">Email Alerts</div>
-                        <div className="notification-description">
-                          Receive email about account activity
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={emailNotifications}
-                        onChange={(e) =>
-                          setEmailNotifications(e.target.checked)
-                        }
-                      />
-                    </div>
-                    <div className="notification-item">
-                      <div>
-                        <div className="notification-label">
-                          Response Updates
-                        </div>
-                        <div className="notification-description">
-                          Notify me when responses increase
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={responseNotifications}
-                        onChange={(e) =>
-                          setResponseNotifications(e.target.checked)
-                        }
-                      />
-                    </div>
-                    <div className="notification-item">
-                      <div>
-                        <div className="notification-label">Weekly Reports</div>
-                        <div className="notification-description">
-                          Send a digest of weekly stats
-                        </div>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={weeklyReports}
-                        onChange={(e) => setWeeklyReports(e.target.checked)}
-                      />
-                    </div>
-                  </div>
-                  <div className="notification-save">
-                    <button type="button" className="save-notification-button">
-                      Save Preferences
+                    <button className="dialog-submit" onClick={addAdmin}>
+                      Send Invitation
                     </button>
                   </div>
                 </div>
               </div>
             )}
+
+            <div className="table-wrapper">
+              <table className="admin-table">
+                <thead>
+                  <tr className="table-header-row">
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th className="text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {admins.map((admin, index) => (
+                    <tr
+                      key={admin.id}
+                      className={
+                        index % 2 === 0 ? "table-row-even" : "table-row-odd"
+                      }
+                    >
+                      <td className="table-cell-name">
+                        {editingId === admin.id ? (
+                          <input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="edit-input"
+                          />
+                        ) : (
+                          admin.name
+                        )}
+                      </td>
+
+                      <td className="table-cell-email">
+                        {editingId === admin.id ? (
+                          <input
+                            value={editEmail}
+                            onChange={(e) => setEditEmail(e.target.value)}
+                            className="edit-input"
+                            type="email"
+                          />
+                        ) : (
+                          admin.email || "N/A"
+                        )}
+                      </td>
+
+                      <td>
+                        {editingId === admin.id ? (
+                          <select
+                            value={editRole}
+                            onChange={(e) => setEditRole(e.target.value)}
+                            className="edit-select"
+                          >
+                            <option value="Super Admin">Super Admin</option>
+                            <option value="Admin">Admin</option>
+                            <option value="Editor">Editor</option>
+                            <option value="Viewer">Viewer</option>
+                          </select>
+                        ) : (
+                          getRoleBadge(admin.role)
+                        )}
+                      </td>
+                      <td>{getStatusBadge(admin.status)}</td>
+                      <td className="action-cell">
+                        <div className="table-actions">
+                          {editingId === admin.id ? (
+                            <>
+                              <button
+                                className="action-button action-button-save"
+                                onClick={() => handleSaveAdmin(admin.id)}
+                                aria-label="Save changes"
+                                title="Save"
+                              >
+                                <FontAwesomeIcon icon={faFloppyDisk} />
+                              </button>
+                              <button
+                                className="action-button action-button-cancel"
+                                onClick={() => setEditingId(null)}
+                                aria-label="Cancel editing"
+                                title="Cancel"
+                              >
+                                <FontAwesomeIcon icon={faXmark} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                className="action-button action-button-edit"
+                                onClick={() => {
+                                  setEditingId(admin.id);
+                                  setEditName(admin.name);
+                                  setEditRole(admin.role);
+                                  setEditEmail(admin.email);
+                                }}
+                                aria-label="Edit administrator"
+                                title="Edit"
+                              >
+                                <FontAwesomeIcon icon={faPen} />
+                              </button>
+                              <button
+                                className="action-button action-button-delete"
+                                onClick={() => handleDeleteAdmin(admin.id)}
+                                aria-label="Delete administrator"
+                                title="Delete"
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+
+                  {admins.length === 0 && (
+                    <tr>
+                      <td colSpan={6} className="table-cell-empty">
+                        No admins found. Create one to get started.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
