@@ -2,12 +2,12 @@ import React, { useEffect, useMemo, useState } from "react";
 import "../Styles/AdminSurveys.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faEye,
   faPen,
-  faCopy,
   faTrash,
   faBoxArchive,
   faUpload,
+  faCircleXmark,
+  faCirclePlay,
 } from "@fortawesome/free-solid-svg-icons";
 import { API_BASE } from "../utils/api";
 import { showToast } from "../utils/toast";
@@ -17,6 +17,7 @@ export default function AdminSurveys({ onNavigate }) {
   const [filter, setFilter] = useState("All");
   const [surveys, setSurveys] = useState([]);
   const [surveyToDelete, setSurveyToDelete] = useState(null);
+  const [surveyToArchive, setSurveyToArchive] = useState(null);
   const [surveyResponseCount, setSurveyResponseCount] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -126,10 +127,11 @@ export default function AdminSurveys({ onNavigate }) {
         const status = (survey.status || "draft").toLowerCase();
         if (status === "published") acc.published += 1;
         else if (status === "archived") acc.archived += 1;
+        else if (status === "closed") acc.closed += 1;
         else acc.draft += 1;
         return acc;
       },
-      { published: 0, archived: 0, draft: 0 },
+      { published: 0, archived: 0, draft: 0, closed: 0 },
     );
   }, [surveys]);
 
@@ -141,11 +143,12 @@ export default function AdminSurveys({ onNavigate }) {
     return d.toLocaleDateString();
   };
 
-  const handleArchiveSurvey = async (survey) => {
+  const handleArchiveSurvey = async () => {
+    if (!surveyToArchive) return;
     try {
-      console.log("Archiving survey:", survey);
+      console.log("Archiving survey:", surveyToArchive);
 
-      const res = await fetch(`${API_BASE}/surveys/${survey._id}/archive`, {
+      const res = await fetch(`${API_BASE}/surveys/${surveyToArchive._id}/archive`, {
         method: "POST",
       });
 
@@ -157,11 +160,15 @@ export default function AdminSurveys({ onNavigate }) {
       // Update local state after successful archive
       setSurveys((prev) =>
         prev.map((s) =>
-          s._id === survey._id ? { ...s, status: "archived" } : s,
+          s._id === surveyToArchive._id ? { ...s, status: "archived" } : s,
         ),
       );
+
+      setSurveyToArchive(null);
+      showToast("Survey archived successfully", "success");
     } catch (err) {
       console.error("Failed to archive survey:", err);
+      showToast(err.message || "Failed to archive survey", "error");
     }
   };
 
@@ -186,6 +193,56 @@ export default function AdminSurveys({ onNavigate }) {
       );
     } catch (err) {
       console.error("Failed to publish survey:", err);
+    }
+  };
+
+  const handleCloseSurvey = async (survey) => {
+    try {
+      console.log("Closing survey:", survey);
+
+      const res = await fetch(`${API_BASE}/surveys/${survey._id}/close`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to close survey");
+      }
+
+      // Update local state after successful close
+      setSurveys((prev) =>
+        prev.map((s) =>
+          s._id === survey._id ? { ...s, status: "closed" } : s,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to close survey:", err);
+      showToast(err.message || "Failed to close survey", "error");
+    }
+  };
+
+  const handleOpenSurvey = async (survey) => {
+    try {
+      console.log("Opening survey:", survey);
+
+      const res = await fetch(`${API_BASE}/surveys/${survey._id}/open`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Failed to open survey");
+      }
+
+      // Update local state after successful open
+      setSurveys((prev) =>
+        prev.map((s) =>
+          s._id === survey._id ? { ...s, status: "published" } : s,
+        ),
+      );
+    } catch (err) {
+      console.error("Failed to open survey:", err);
+      showToast(err.message || "Failed to open survey", "error");
     }
   };
 
@@ -218,6 +275,7 @@ export default function AdminSurveys({ onNavigate }) {
             <option value="draft">Draft</option>
             <option value="published">Published</option>
             <option value="archived">Archived</option>
+            <option value="closed">Closed</option>
           </select>
         </div>
 
@@ -265,10 +323,6 @@ export default function AdminSurveys({ onNavigate }) {
                   {formatDate(survey.updatedAt || survey.updated)}
                 </td>
                 <td className="action-cell" data-label="Actions">
-                  <button className="icon-button view" title="View Survey">
-                    <FontAwesomeIcon icon={faEye} />
-                  </button>
-
                   <button
                     className="icon-button edit"
                     title="Edit Survey"
@@ -277,10 +331,6 @@ export default function AdminSurveys({ onNavigate }) {
                     }
                   >
                     <FontAwesomeIcon icon={faPen} />
-                  </button>
-
-                  <button className="icon-button copy" title="Copy Survey">
-                    <FontAwesomeIcon icon={faCopy} />
                   </button>
 
                   <button
@@ -292,18 +342,35 @@ export default function AdminSurveys({ onNavigate }) {
                   </button>
 
                   {survey.status.toLowerCase() === "published" && (
+                    <>
+                      <button
+                        className="icon-button close"
+                        title="Close Survey"
+                        onClick={() => handleCloseSurvey(survey)}
+                      >
+                        <FontAwesomeIcon icon={faCircleXmark} />
+                      </button>
+                      <button
+                        className="icon-button archive"
+                        title="Archive Survey"
+                        onClick={() => setSurveyToArchive(survey)}
+                      >
+                        <FontAwesomeIcon icon={faBoxArchive} />
+                      </button>
+                    </>
+                  )}
+
+                  {survey.status.toLowerCase() === "closed" && (
                     <button
-                      className="icon-button archive"
-                      title="Archive Survey"
-                      onClick={() => handleArchiveSurvey(survey)}
+                      className="icon-button open"
+                      title="Reopen Survey"
+                      onClick={() => handleOpenSurvey(survey)}
                     >
-                      <FontAwesomeIcon icon={faBoxArchive} />
+                      <FontAwesomeIcon icon={faCirclePlay} />
                     </button>
                   )}
 
-                  {["draft", "archived"].includes(
-                    survey.status.toLowerCase(),
-                  ) && (
+                  {survey.status.toLowerCase() === "draft" && (
                     <button
                       className="icon-button publish"
                       title="Publish Survey"
@@ -322,6 +389,9 @@ export default function AdminSurveys({ onNavigate }) {
       <div className="survey-status-summary">
         <span className="summary-chip published">
           {summaryCounts.published} Published
+        </span>
+        <span className="summary-chip closed">
+          {summaryCounts.closed} Closed
         </span>
         <span className="summary-chip archived">
           {summaryCounts.archived} Archived
@@ -350,6 +420,33 @@ export default function AdminSurveys({ onNavigate }) {
               </button>
               <button className="btn danger" onClick={handleDeleteSurvey}>
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {surveyToArchive && (
+        <div className="survey-modal-overlay">
+          <div className="survey-modal">
+            <h3>Archive Survey</h3>
+            <p>
+              Are you sure you want to archive{" "}
+              <strong>
+                {surveyToArchive.title || surveyToArchive.surveyTitle}
+              </strong>
+              ? This action cannot be undone.
+            </p>
+
+            <div className="survey-modal-actions">
+              <button
+                className="btn cancel"
+                onClick={() => setSurveyToArchive(null)}
+              >
+                Cancel
+              </button>
+              <button className="btn danger" onClick={handleArchiveSurvey}>
+                Archive
               </button>
             </div>
           </div>

@@ -235,6 +235,11 @@
   background: #f8f1e5;
 }
 
+.status-badge.closed {
+  color: #ef4444;
+  background: #fee2e2;
+}
+
 .info-banner {
   padding: 0.85rem 1rem;
   border: 1px solid #e0f2fe;
@@ -301,7 +306,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -374,6 +380,10 @@
 
 .summary-chip.draft {
   color: #d3922f;
+}
+
+.summary-chip.closed {
+  color: #ef4444;
 }
 
 @media (max-width: 767px) {
