@@ -55,7 +55,11 @@ function WelcomePage({ onStart }) {
               className="welcome-logo-image"
             />
           </div>
-          <button type="button" className="welcome-header-cta" onClick={onStart}>
+          <button
+            type="button"
+            className="welcome-header-cta"
+            onClick={onStart}
+          >
             Start Survey
           </button>
         </div>
@@ -105,7 +109,8 @@ function WelcomePage({ onStart }) {
             <h3 className="welcome-why-heading">Resident-Centered</h3>
             <p className="welcome-why-text">
               Community development works best when it reflects the real needs
-              and priorities of the people who live here. Your perspective matters.
+              and priorities of the people who live here. Your perspective
+              matters.
             </p>
           </div>
 
@@ -117,8 +122,9 @@ function WelcomePage({ onStart }) {
             </div>
             <h3 className="welcome-why-heading">Guides Investment</h3>
             <p className="welcome-why-text">
-              Survey results directly inform where and how Tipping Point allocates
-              resources for housing, services, and neighborhood improvements.
+              Survey results directly inform where and how Tipping Point
+              allocates resources for housing, services, and neighborhood
+              improvements.
             </p>
           </div>
 
@@ -258,7 +264,8 @@ function WelcomePage({ onStart }) {
             />
           </div>
           <div className="welcome-footer-text">
-            © 2026 Tipping Point Management Company LLC • CommunityPulse Platform
+            © 2026 Tipping Point Management Company LLC • CommunityPulse
+            Platform
           </div>
         </div>
       </footer>
