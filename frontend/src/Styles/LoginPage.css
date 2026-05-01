@@ -96,6 +96,19 @@
   color: #a2a8b2;
 }
 
+.input-wrap input[type="email"]:-webkit-autofill,
+.input-wrap input[type="email"]:-webkit-autofill:hover,
+.input-wrap input[type="email"]:-webkit-autofill:focus,
+.input-wrap input[type="password"]:-webkit-autofill,
+.input-wrap input[type="password"]:-webkit-autofill:hover,
+.input-wrap input[type="password"]:-webkit-autofill:focus {
+  -webkit-text-fill-color: #2f3440;
+  caret-color: #2f3440;
+  box-shadow: 0 0 0px 1000px #fbfcfd inset;
+  -webkit-box-shadow: 0 0 0px 1000px #fbfcfd inset;
+  transition: background-color 9999s ease-out 0s;
+}
+
 .login-btn {
   margin-top: 14px;
   width: 100%;
