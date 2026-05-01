@@ -177,12 +177,18 @@ ${parsedMessages
       /thank you.*survey/i.test(cleanReply);
 
     // --- Store in DB ---
-    if (surveyComplete) {
-      console.log(" Survey complete. Saving to DB...");
+    if (finalSurveyResult !== null) {
+      const dbTitle = survey.surveyTitle || survey.title || "unknown";
+      console.log("📝 Survey complete. Saving to DB...");
+      console.log("   Survey object keys:", Object.keys(survey));
+      console.log("   Using surveyTitle:", dbTitle);
+      console.log("   Response count:", finalSurveyResult?.responses?.length || 0);
+      
       await db.collection("SurveyResponse").insertOne({
-        surveyTitle:
-          finalSurveyResult.surveyTitle || survey.title || "unknown",
-        responses: finalSurveyResult.responses,
+        surveyTitle: dbTitle,
+        responses: Array.isArray(finalSurveyResult?.responses)
+          ? finalSurveyResult.responses
+          : [],
         progress,
         createdAt: new Date()
       });

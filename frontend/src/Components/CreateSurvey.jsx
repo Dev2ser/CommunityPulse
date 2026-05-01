@@ -18,7 +18,7 @@ import {
 function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
   const [surveyTitle, setSurveyTitle] = useState("");
   const [surveyDescription, setSurveyDescription] = useState("");
-  const [targetNeighborhood, setTargetNeighborhood] = useState("all");
+  const [targetNeighborhood, setTargetNeighborhood] = useState("All");
   const [status, setStatus] = useState("draft");
   const [saveSuccess, setSaveSuccess] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -460,18 +460,14 @@ function CreateSurvey({ mode, surveyToEdit, onSaved, setPage }) {
 
               <div className="form-group">
                 <label htmlFor="neighborhood">Target Neighborhood</label>
-                <select
+                <input
                   id="neighborhood"
                   className="text-input"
+                  type="text"
                   value={targetNeighborhood}
                   onChange={(e) => setTargetNeighborhood(e.target.value)}
-                >
-                  <option value="all">All Communities</option>
-                  <option value="riverside">Riverside Commons</option>
-                  <option value="oakmont">Oakmont Heights</option>
-                  <option value="parkside">Parkside Village</option>
-                  <option value="downtown">Downtown Lofts</option>
-                </select>
+                  placeholder="Enter a neighborhood or area name"
+                />
               </div>
 
               <div className="form-group">

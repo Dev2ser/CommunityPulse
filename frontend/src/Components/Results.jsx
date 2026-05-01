@@ -232,7 +232,7 @@ const Results = () => {
       setExportingCsv(true);
       const res = await fetch(
         buildApiUrl(
-          `/api/survey/responsesandfollowups/${encodeURIComponent(
+          `/api/survey/responsesAndFollowups/${encodeURIComponent(
             selectedSurvey.surveyTitle,
           )}`,
         ),
@@ -393,8 +393,12 @@ const Results = () => {
           </div>
     
           <div className="metric-card export-buttons">
-            <button className="export-btn">Export CSV</button>
-            <button className="export-btn">Export PDF</button>
+            <button className="export-btn" onClick={handleExportCSV} disabled={exportingCsv}>
+              {exportingCsv ? "Exporting..." : "Export CSV"}
+            </button>
+            <button className="export-btn" onClick={handleExportPDF} disabled={exportingPdf}>
+              {exportingPdf ? "Exporting..." : "Export PDF"}
+            </button>
           </div>
         </section>
     

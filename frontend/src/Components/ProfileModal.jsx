@@ -10,9 +10,6 @@ export default function ProfileModal({ isOpen, onClose }) {
   );
   const [profileEmail, setProfileEmail] = useState("admin@tippingpoint.com");
   const [profilePassword, setProfilePassword] = useState("");
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [responseNotifications, setResponseNotifications] = useState(true);
-  const [weeklyReports, setWeeklyReports] = useState(false);
 
   const handleEditAdmin = async () => {
     const updates = {};
@@ -30,7 +27,7 @@ export default function ProfileModal({ isOpen, onClose }) {
 
     try {
       const res = await fetch(buildApiUrl("/api/admin/updateAdmin"), {
-        method: "PATCH",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           currentUsername,
@@ -48,6 +45,7 @@ export default function ProfileModal({ isOpen, onClose }) {
 
       showToast("Profile updated!", "success");
       setProfilePassword("");
+      onClose();
     } catch (err) {
       showToast(err.message, "error");
     }
@@ -107,42 +105,6 @@ export default function ProfileModal({ isOpen, onClose }) {
                 onChange={(e) => setProfilePassword(e.target.value)}
                 placeholder="Leave blank to keep current password"
               />
-            </div>
-          </div>
-
-          <div className="profile-section">
-            <h3>Notification Preferences</h3>
-            <div className="checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={emailNotifications}
-                  onChange={(e) => setEmailNotifications(e.target.checked)}
-                />
-                <span>Email Notifications</span>
-              </label>
-            </div>
-
-            <div className="checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={responseNotifications}
-                  onChange={(e) => setResponseNotifications(e.target.checked)}
-                />
-                <span>Response Notifications</span>
-              </label>
-            </div>
-
-            <div className="checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={weeklyReports}
-                  onChange={(e) => setWeeklyReports(e.target.checked)}
-                />
-                <span>Weekly Reports</span>
-              </label>
             </div>
           </div>
         </div>
