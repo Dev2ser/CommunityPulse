@@ -2,11 +2,22 @@ import React from "react";
 import "../Styles/SurveyCompletePage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const TRANSCRIPT_SESSION_KEY = "communityPulseTranscript";
+
 function SurveyComplete() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const messages = location.state?.messages || [];
+  let persistedState = null;
+  try {
+    const raw = sessionStorage.getItem(TRANSCRIPT_SESSION_KEY);
+    persistedState = raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn("Failed to read persisted transcript payload", err);
+  }
+
+  const transcriptState = location.state || persistedState || {};
+  const messages = transcriptState.messages || [];
   const hasMessages = messages.length > 0;
 
   const handleReturn = () => {
@@ -14,8 +25,7 @@ function SurveyComplete() {
   };
 
   // ✅ FIX: adapt to your actual message structure
-  const isAssistant = (msg) =>
-    msg.sender?.toLowerCase() === "bot";
+  const isAssistant = (msg) => msg.sender?.toLowerCase() === "bot";
 
   const groupedBlocks = [];
   let currentBlock = null;
@@ -24,15 +34,12 @@ function SurveyComplete() {
     const text = msg.text || "";
 
     const isQuestionOpener =
-      isAssistant(msg) &&
-      /question\s+\d+\s+of\s+\d+/i.test(text);
+      isAssistant(msg) && /question\s+\d+\s+of\s+\d+/i.test(text);
 
     if (isQuestionOpener) {
       if (currentBlock) groupedBlocks.push(currentBlock);
 
-      const match = text.match(
-        /(question\s+\d+\s+of\s+\d+)[:\s]*(.*)/is
-      );
+      const match = text.match(/(question\s+\d+\s+of\s+\d+)[:\s]*(.*)/is);
 
       currentBlock = {
         label: match ? match[1] : "Question",
@@ -51,7 +58,6 @@ function SurveyComplete() {
   return (
     <div className="survey-complete-page">
       <div className="survey-complete-container">
-
         <header className="survey-complete-header">
           <div>
             <span className="survey-complete-brand">
@@ -61,9 +67,7 @@ function SurveyComplete() {
               Powered by Tipping Point
             </span>
           </div>
-          <span className="survey-complete-badge">
-            Survey Complete
-          </span>
+          <span className="survey-complete-badge">Survey Complete</span>
         </header>
 
         <section className="survey-complete-banner">
@@ -72,22 +76,20 @@ function SurveyComplete() {
               Thank you for your feedback
             </h2>
             <p className="survey-complete-subtitle">
-              Your responses have been recorded. We really appreciate your ideas and perspective.
+              Your responses have been recorded. We really appreciate your ideas
+              and perspective.
             </p>
           </div>
         </section>
 
         {hasMessages && (
           <section aria-label="Survey conversation transcript">
-            <p className="survey-complete-section-label">
-              Transcript
-            </p>
+            <p className="survey-complete-section-label">Transcript</p>
 
             {!useFlatTranscript ? (
               <div className="survey-complete-blocks">
                 {groupedBlocks.map((block, bi) => (
                   <div key={bi} className="survey-complete-question-block">
-
                     <div className="survey-complete-question-header">
                       <span className="survey-complete-question-num">
                         {block.label}
@@ -134,7 +136,6 @@ function SurveyComplete() {
                         );
                       })}
                     </div>
-
                   </div>
                 ))}
               </div>
@@ -171,10 +172,7 @@ function SurveyComplete() {
         )}
 
         <footer className="survey-complete-footer">
-          <button
-            className="survey-complete-return-btn"
-            onClick={handleReturn}
-          >
+          <button className="survey-complete-return-btn" onClick={handleReturn}>
             ← Return to surveys
           </button>
 
@@ -184,7 +182,6 @@ function SurveyComplete() {
             </span>
           )}
         </footer>
-
       </div>
     </div>
   );
