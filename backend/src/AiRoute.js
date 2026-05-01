@@ -178,7 +178,7 @@ ${parsedMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
       // Find the opening brace before "surveyResult"
       let braceStartIndex = -1;
       for (let i = surveyResultIndex; i >= 0; i--) {
-        if (cleanReply[i] === '{') {
+        if (cleanReply[i] === "{") {
           braceStartIndex = i;
           break;
         }
@@ -189,8 +189,8 @@ ${parsedMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
         let braceCount = 0;
         let braceEndIndex = -1;
         for (let i = braceStartIndex; i < cleanReply.length; i++) {
-          if (cleanReply[i] === '{') braceCount++;
-          if (cleanReply[i] === '}') braceCount--;
+          if (cleanReply[i] === "{") braceCount++;
+          if (cleanReply[i] === "}") braceCount--;
           if (braceCount === 0) {
             braceEndIndex = i;
             break;
@@ -198,22 +198,32 @@ ${parsedMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
         }
 
         if (braceEndIndex !== -1) {
-          finalSurveyMatch = cleanReply.substring(braceStartIndex, braceEndIndex + 1);
+          finalSurveyMatch = cleanReply.substring(
+            braceStartIndex,
+            braceEndIndex + 1,
+          );
           try {
             finalSurveyResult = JSON.parse(finalSurveyMatch).surveyResult;
             console.log("✅ Successfully parsed final survey JSON");
           } catch (err) {
             console.warn("Failed to parse final survey JSON:", err.message);
-            console.log("RAW JSON:", finalSurveyMatch.substring(0, 200) + "...");
+            console.log(
+              "RAW JSON:",
+              finalSurveyMatch.substring(0, 200) + "...",
+            );
           }
         }
       }
     }
 
-    const surveyComplete =
-      finalSurveyResult !== null;
+    const surveyComplete = finalSurveyResult !== null;
 
-    console.log("Survey complete flag:", surveyComplete, "Result:", !!finalSurveyResult);
+    console.log(
+      "Survey complete flag:",
+      surveyComplete,
+      "Result:",
+      !!finalSurveyResult,
+    );
 
     // --- Store in DB ---
     if (finalSurveyResult !== null) {

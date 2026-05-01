@@ -262,7 +262,8 @@ function SurveyChat() {
 
   // Navigate to transcript when survey is complete
   useEffect(() => {
-    if (!surveyComplete || !survey || hasNavigatedToTranscriptRef.current) return;
+    if (!surveyComplete || !survey || hasNavigatedToTranscriptRef.current)
+      return;
 
     hasNavigatedToTranscriptRef.current = true;
     stopSpeaking();
@@ -298,7 +299,9 @@ function SurveyChat() {
 
     if (lastBotIndex <= 0) return;
 
-    const shouldDisable = messages.some((m, idx) => m.options && idx < lastBotIndex);
+    const shouldDisable = messages.some(
+      (m, idx) => m.options && idx < lastBotIndex,
+    );
     if (!shouldDisable) return;
 
     setMessages((prev) =>
@@ -374,7 +377,14 @@ function SurveyChat() {
   // Find the most recent bot message that has options or a selected answer
   const activeOptionsMessage = [...messages]
     .reverse()
-    .find((m) => m.sender === "bot" && (m.options || m.selectedOption || m.selectedOptions || m.optionsDisabled));
+    .find(
+      (m) =>
+        m.sender === "bot" &&
+        (m.options ||
+          m.selectedOption ||
+          m.selectedOptions ||
+          m.optionsDisabled),
+    );
 
   if (!survey) {
     return (
@@ -521,13 +531,20 @@ function SurveyChat() {
                       <p className="message-text">{message.text}</p>
                     ) : null}
                     {message.options && message.sender === "bot" ? (
-                      <div className={`message-options ${isCheckboxQuestion(message) ? "message-options-checkbox" : ""}`}>
+                      <div
+                        className={`message-options ${isCheckboxQuestion(message) ? "message-options-checkbox" : ""}`}
+                      >
                         {isCheckboxQuestion(message) ? (
                           <>
                             {message.options.map((opt, i) => {
-                              const selected = (message.selectedOptions || []).includes(opt);
+                              const selected = (
+                                message.selectedOptions || []
+                              ).includes(opt);
                               return (
-                                <div key={`${message.id}-opt-${i}`} className="checkbox-wrapper">
+                                <div
+                                  key={`${message.id}-opt-${i}`}
+                                  className="checkbox-wrapper"
+                                >
                                   <input
                                     id={`${message.id}-opt-${i}`}
                                     type="checkbox"
@@ -541,15 +558,24 @@ function SurveyChat() {
                                             ? {
                                                 ...m,
                                                 selectedOptions: isChecked
-                                                  ? [...(m.selectedOptions || []), opt]
-                                                  : (m.selectedOptions || []).filter((o) => o !== opt),
+                                                  ? [
+                                                      ...(m.selectedOptions ||
+                                                        []),
+                                                      opt,
+                                                    ]
+                                                  : (
+                                                      m.selectedOptions || []
+                                                    ).filter((o) => o !== opt),
                                               }
                                             : m,
                                         ),
                                       );
                                     }}
                                   />
-                                  <label htmlFor={`${message.id}-opt-${i}`} className="checkbox-label-text">
+                                  <label
+                                    htmlFor={`${message.id}-opt-${i}`}
+                                    className="checkbox-label-text"
+                                  >
                                     {opt}
                                   </label>
                                 </div>
@@ -561,7 +587,8 @@ function SurveyChat() {
                                 type="button"
                                 className="btn btn-publish"
                                 onClick={() => {
-                                  const selected = message.selectedOptions || [];
+                                  const selected =
+                                    message.selectedOptions || [];
                                   setMessages((prev) =>
                                     prev.map((m) =>
                                       m.id === message.id
@@ -570,24 +597,37 @@ function SurveyChat() {
                                     ),
                                   );
 
-                                  submitResponse({ text: selected.join("; "), displayText: selected.join("; ") });
+                                  submitResponse({
+                                    text: selected.join("; "),
+                                    displayText: selected.join("; "),
+                                  });
                                 }}
                                 disabled={
-                                  Boolean(message.optionsDisabled) || !(message.selectedOptions && message.selectedOptions.length)
+                                  Boolean(message.optionsDisabled) ||
+                                  !(
+                                    message.selectedOptions &&
+                                    message.selectedOptions.length
+                                  )
                                 }
                               >
                                 Submit
                               </button>
                             </div>
                           </>
-                        ) : ((message.questionType || "").toLowerCase().includes("dropdown")) ? (
+                        ) : (message.questionType || "")
+                            .toLowerCase()
+                            .includes("dropdown") ? (
                           <div className="dropdown-submit-container">
                             <select
                               value={message.selectedOption || ""}
                               onChange={(e) => {
                                 const val = e.target.value;
                                 setMessages((prev) =>
-                                  prev.map((m) => (m.id === message.id ? { ...m, selectedOption: val } : m)),
+                                  prev.map((m) =>
+                                    m.id === message.id
+                                      ? { ...m, selectedOption: val }
+                                      : m,
+                                  ),
                                 );
                               }}
                               disabled={Boolean(message.optionsDisabled)}
@@ -595,7 +635,10 @@ function SurveyChat() {
                             >
                               <option value="">Choose...</option>
                               {message.options.map((opt, i) => (
-                                <option key={`${message.id}-opt-${i}`} value={opt}>
+                                <option
+                                  key={`${message.id}-opt-${i}`}
+                                  value={opt}
+                                >
                                   {opt}
                                 </option>
                               ))}
@@ -604,10 +647,22 @@ function SurveyChat() {
                               type="button"
                               className="btn btn-publish"
                               onClick={() => {
-                                setMessages((prev) => prev.map((m) => (m.id === message.id ? { ...m, optionsDisabled: true } : m)));
-                                submitResponse({ text: message.selectedOption || "", displayText: message.selectedOption || "" });
+                                setMessages((prev) =>
+                                  prev.map((m) =>
+                                    m.id === message.id
+                                      ? { ...m, optionsDisabled: true }
+                                      : m,
+                                  ),
+                                );
+                                submitResponse({
+                                  text: message.selectedOption || "",
+                                  displayText: message.selectedOption || "",
+                                });
                               }}
-                              disabled={Boolean(message.optionsDisabled) || !message.selectedOption}
+                              disabled={
+                                Boolean(message.optionsDisabled) ||
+                                !message.selectedOption
+                              }
                             >
                               Submit
                             </button>
@@ -619,13 +674,20 @@ function SurveyChat() {
                               key={`${message.id}-opt-${i}`}
                               type="button"
                               className={`option-button ${message.selectedOption === opt ? "selected" : ""}`}
-                              disabled={Boolean(message.optionsDisabled || message.selectedOption)}
+                              disabled={Boolean(
+                                message.optionsDisabled ||
+                                message.selectedOption,
+                              )}
                               onClick={() => {
                                 // mark this option as selected and disable options for this message
                                 setMessages((prev) =>
                                   prev.map((m) =>
                                     m.id === message.id
-                                      ? { ...m, selectedOption: opt, optionsDisabled: true }
+                                      ? {
+                                          ...m,
+                                          selectedOption: opt,
+                                          optionsDisabled: true,
+                                        }
                                       : m,
                                   ),
                                 );
@@ -686,7 +748,14 @@ function SurveyChat() {
                   isListening ? "Listening..." : "Type your answer..."
                 }
                 className="text-input"
-                disabled={loading || surveyComplete || Boolean(activeOptionsMessage && !activeOptionsMessage.optionsDisabled)}
+                disabled={
+                  loading ||
+                  surveyComplete ||
+                  Boolean(
+                    activeOptionsMessage &&
+                    !activeOptionsMessage.optionsDisabled,
+                  )
+                }
               />
               <button
                 type="button"
@@ -695,7 +764,10 @@ function SurveyChat() {
                   (!inputValue.trim() && !selectedImage) ||
                   loading ||
                   surveyComplete ||
-                  Boolean(activeOptionsMessage && !activeOptionsMessage.optionsDisabled)
+                  Boolean(
+                    activeOptionsMessage &&
+                    !activeOptionsMessage.optionsDisabled,
+                  )
                 }
                 className="action-button send-button"
               >
