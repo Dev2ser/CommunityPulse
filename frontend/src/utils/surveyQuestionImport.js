@@ -2,7 +2,6 @@ import Papa from "papaparse";
 
 export const QUESTION_TYPE_OPTIONS = [
   { value: "text", label: "Text" },
-  { value: "textarea", label: "Textarea" },
   { value: "multiple_choice", label: "Multiple Choice" },
   { value: "checkbox", label: "Checkboxes" },
   { value: "dropdown", label: "Dropdown" },

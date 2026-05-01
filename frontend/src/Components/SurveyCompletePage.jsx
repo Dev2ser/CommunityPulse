@@ -2,11 +2,22 @@ import React from "react";
 import "../Styles/SurveyCompletePage.css";
 import { useNavigate, useLocation } from "react-router-dom";
 
+const TRANSCRIPT_SESSION_KEY = "communityPulseTranscript";
+
 function SurveyComplete() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const messages = location.state?.messages || [];
+  let persistedState = null;
+  try {
+    const raw = sessionStorage.getItem(TRANSCRIPT_SESSION_KEY);
+    persistedState = raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    console.warn("Failed to read persisted transcript payload", err);
+  }
+
+  const transcriptState = location.state || persistedState || {};
+  const messages = transcriptState.messages || [];
   const hasMessages = messages.length > 0;
 
   const handleReturn = () => {

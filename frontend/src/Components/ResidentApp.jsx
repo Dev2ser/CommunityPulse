@@ -11,10 +11,10 @@ function WelcomeWrapper() {
 function ResidentApp() {
   return (
     <Routes>
-      <Route path="/" element={<WelcomeWrapper />} />
-      <Route path="/surveys" element={<AvailableSurvey />} />
-      <Route path="/survey-chat" element={<SurveyChat />} />
-      <Route path="/transcript" element={<SurveyComplete />} />
+      <Route index element={<WelcomeWrapper />} />
+      <Route path="surveys" element={<AvailableSurvey />} />
+      <Route path="survey-chat" element={<SurveyChat />} />
+      <Route path="transcript" element={<SurveyComplete />} />
     </Routes>
   );
 }
