@@ -403,29 +403,51 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
         .json({ message: "No responses found for this survey" });
     }
 
-    // Flatten the responses
+    // Flatten the responses, including nested chat follow-up questions/answers.
     const flattenedRows = surveyResponses.flatMap((responseDoc) => {
       const responseId = responseDoc._id.toString();
+      const responseDate = responseDoc.createdAt
+        ? new Date(responseDoc.createdAt).toISOString()
+        : null;
 
-      const topResponses = (responseDoc.responses || []).map((r) => ({
+      const topResponses = (responseDoc.responses || []).map((response) => ({
         surveyTitle,
         responseId,
-        question: r.question,
-        answer: r.answer,
-        questionType: r.questionType,
+        responseDate,
+        question: response.question,
+        answer: response.answer,
       }));
 
-      const followUpRows = (responseDoc.followUps || []).flatMap((fu) =>
+      const nestedFollowUpRows = (responseDoc.responses || []).flatMap(
+        (response) => {
+          const followUps = Array.isArray(response.followUps)
+            ? response.followUps
+            : [];
+          const followUpAnswers = Array.isArray(response.followUpAnswers)
+            ? response.followUpAnswers
+            : [];
+
+          return followUps.map((followUpQuestion, followUpIndex) => ({
+            surveyTitle,
+            responseId,
+            responseDate,
+            question: followUpQuestion,
+            answer: followUpAnswers[followUpIndex] ?? null,
+          }));
+        },
+      );
+
+      const legacyFollowUpRows = (responseDoc.followUps || []).flatMap((fu) =>
         (fu.followUpAnswers || []).map((fua) => ({
           surveyTitle,
           responseId,
+          responseDate,
           question: fua.question,
           answer: fua.answer,
-          questionType: fua.questionType,
         })),
       );
 
-      return [...topResponses, ...followUpRows];
+      return [...topResponses, ...nestedFollowUpRows, ...legacyFollowUpRows];
     });
 
     res.json({ surveyTitle, rows: flattenedRows });

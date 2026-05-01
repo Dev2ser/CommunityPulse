@@ -9,7 +9,7 @@ import multer from "multer";
 const router = express.Router();
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const imageUpload = multer({ storage: multer.memoryStorage() });
@@ -47,7 +47,7 @@ router.post("/survey-chat", imageUpload.single("image"), async (req, res) => {
 
       parsedMessages.push({
         role: "user",
-        content: `[IMAGE: data:${req.file.mimetype};base64,${base64}]`
+        content: `[IMAGE: data:${req.file.mimetype};base64,${base64}]`,
       });
     }
 
@@ -113,9 +113,7 @@ Survey:
 ${JSON.stringify(survey, null, 2)}
 
 Conversation:
-${parsedMessages
-  .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-  .join("\n")}
+${parsedMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 `.trim();
 
     // --- Call OpenAI ---
@@ -123,7 +121,7 @@ ${parsedMessages
       model: "gpt-4.1-mini",
       input: prompt,
       temperature: 0.3,
-      max_output_tokens: 2000
+      max_output_tokens: 2000,
     });
 
     // --- Extract response text ---
@@ -139,27 +137,27 @@ ${parsedMessages
 
     // --- Extract progress ---
     const progressMatch = rawReply.match(
-      /\[PROGRESS question=(\d+) total=(\d+)\]/
+      /\[PROGRESS question=(\d+) total=(\d+)\]/,
     );
 
     const progress = progressMatch
       ? {
           current: Number(progressMatch[1]),
-          total: Number(progressMatch[2])
+          total: Number(progressMatch[2]),
         }
       : null;
 
     // --- Remove metadata line ---
     const cleanReply = rawReply.replace(
       /\[PROGRESS question=\d+ total=\d+\]\n?/,
-      ""
+      "",
     );
 
     // --- Extract FINAL survey JSON (FIXED NON-GREEDY) ---
     let finalSurveyResult = null;
 
     const finalSurveyMatch = cleanReply.match(
-      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*?\}\s*\}/
+      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*?\}\s*\}/,
     );
 
     if (finalSurveyMatch) {
@@ -171,20 +169,27 @@ ${parsedMessages
       }
     }
 
-
     const surveyComplete =
-      finalSurveyResult !== null &&
-      /thank you.*survey/i.test(cleanReply);
+      finalSurveyResult !== null && /thank you.*survey/i.test(cleanReply);
 
     // --- Store in DB ---
-    if (surveyComplete) {
-      console.log(" Survey complete. Saving to DB...");
+    if (finalSurveyResult !== null) {
+      const dbTitle = survey.surveyTitle || survey.title || "unknown";
+      console.log("📝 Survey complete. Saving to DB...");
+      console.log("   Survey object keys:", Object.keys(survey));
+      console.log("   Using surveyTitle:", dbTitle);
+      console.log(
+        "   Response count:",
+        finalSurveyResult?.responses?.length || 0,
+      );
+
       await db.collection("SurveyResponse").insertOne({
-        surveyTitle:
-          finalSurveyResult.surveyTitle || survey.title || "unknown",
-        responses: finalSurveyResult.responses,
+        surveyTitle: dbTitle,
+        responses: Array.isArray(finalSurveyResult?.responses)
+          ? finalSurveyResult.responses
+          : [],
         progress,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
     }
 
@@ -204,9 +209,8 @@ ${parsedMessages
       progress,
       surveyComplete,
       questionType: aiData?.questionType || "text",
-      options: aiData?.options || null
+      options: aiData?.options || null,
     });
-
   } catch (err) {
     console.error(" Survey chat error:", err);
     res.status(500).json({ message: "AI chat error" });
