@@ -316,7 +316,6 @@ const Results = () => {
   ) : (
     <div className="results-page" ref={resultsReportRef}>
       <header className="results-header">
-  
         <h1 className="results-title">
           <div className="dropdown-wrapper" ref={dropdownRef}>
             <button
@@ -329,7 +328,7 @@ const Results = () => {
               <span className="title-dropdown-text">
                 {selectedSurvey?.surveyTitle || "Select Survey"}
               </span>
-  
+
               <span
                 className={`dropdown-arrow ${isSurveyDropdownOpen ? "open" : ""}`}
                 aria-hidden="true"
@@ -337,7 +336,7 @@ const Results = () => {
                 <ChevronDown size={16} strokeWidth={2.5} />
               </span>
             </button>
-  
+
             {isSurveyDropdownOpen && (
               <div className="survey-options-panel" role="listbox">
                 {surveys.map((survey) => (
@@ -358,62 +357,69 @@ const Results = () => {
             )}
           </div>
         </h1>
-  
+
         <p className="results-subtitle">
           Tipping Point – Real Estate Development
         </p>
-  
       </header>
-    
-    
-        {/* Metrics Section */}
-        <section className="results-metrics">
-          <div className="metric-card">
-            <h2>{totalResponses}</h2>
-            <p>Total Responses</p>
-            <span className="metric-note">AI analyzed</span>
-          </div>
-    
-          <div className="metric-card">
-            <h2>84%</h2>
-            <p>Completion Rate</p>
-            <span className="metric-note">Above average</span>
-          </div>
-    
-          <div className="metric-card">
-            <h2>{sentimentScore}</h2>
-            <p>Overall Sentiment</p>
-            <span className="metric-note">{sentimentLabel}</span>
-          </div>
-    
-          <div className="metric-card">
-            <h2>{themes.length}</h2>
-            <p>Most Mentioned Themes</p>
-            <span className="metric-note">AI analyzed</span>
-          </div>
-    
-          <div className="metric-card export-buttons">
-            <button className="export-btn" onClick={handleExportCSV} disabled={exportingCsv}>
-              {exportingCsv ? "Exporting..." : "Export CSV"}
+
+      {/* Metrics Section */}
+      <section className="results-metrics">
+        <div className="metric-card">
+          <h2>{totalResponses}</h2>
+          <p>Total Responses</p>
+          <span className="metric-note">AI analyzed</span>
+        </div>
+
+        <div className="metric-card">
+          <h2>84%</h2>
+          <p>Completion Rate</p>
+          <span className="metric-note">Above average</span>
+        </div>
+
+        <div className="metric-card">
+          <h2>{sentimentScore}</h2>
+          <p>Overall Sentiment</p>
+          <span className="metric-note">{sentimentLabel}</span>
+        </div>
+
+        <div className="metric-card">
+          <h2>{themes.length}</h2>
+          <p>Most Mentioned Themes</p>
+          <span className="metric-note">AI analyzed</span>
+        </div>
+
+        <div className="metric-card export-buttons">
+          <button
+            className="export-btn"
+            onClick={handleExportCSV}
+            disabled={exportingCsv}
+          >
+            {exportingCsv ? "Exporting..." : "Export CSV"}
+          </button>
+          <button
+            className="export-btn"
+            onClick={handleExportPDF}
+            disabled={exportingPdf}
+          >
+            {exportingPdf ? "Exporting..." : "Export PDF"}
+          </button>
+        </div>
+      </section>
+
+      {/* Bar Graph Section */}
+      <section className="results-graph-section">
+        <div className="heading-container">
+          {/* TOP TABS */}
+          <div className="response-tabs">
+            <button
+              className={
+                responseType === "Multiple Choice Responses" ? "active" : ""
+              }
+              onClick={() => setResponseType("Multiple Choice Responses")}
+            >
+              Multiple Choice
             </button>
-            <button className="export-btn" onClick={handleExportPDF} disabled={exportingPdf}>
-              {exportingPdf ? "Exporting..." : "Export PDF"}
-            </button>
-          </div>
-        </section>
-    
-        {/* Bar Graph Section */}
-        <section className="results-graph-section">
-    <div className="heading-container">
-      
-      {/* TOP TABS */}
-      <div className="response-tabs">
-        <button
-          className={responseType === "Multiple Choice Responses" ? "active" : ""}
-          onClick={() => setResponseType("Multiple Choice Responses")}
-        >
-          Multiple Choice
-        </button>
 
             <button
               className={

@@ -420,7 +420,9 @@ router.get("/survey/responsesAndFollowups/:surveyTitle", async (req, res) => {
 
       const nestedFollowUpRows = (responseDoc.responses || []).flatMap(
         (response) => {
-          const followUps = Array.isArray(response.followUps) ? response.followUps : [];
+          const followUps = Array.isArray(response.followUps)
+            ? response.followUps
+            : [];
           const followUpAnswers = Array.isArray(response.followUpAnswers)
             ? response.followUpAnswers
             : [];
