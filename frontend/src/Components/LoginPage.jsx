@@ -38,6 +38,7 @@ function LoginPage({ onLogin }) {
 
       localStorage.setItem("userRole", data.role);
       localStorage.setItem("username", data.username);
+      localStorage.setItem("email", data.email || email.trim().toLowerCase());
 
       onLogin();
     } catch (err) {

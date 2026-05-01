@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import "../Styles/ProfileModal.css";
 import { buildApiUrl } from "../utils/api";
@@ -8,8 +8,48 @@ export default function ProfileModal({ isOpen, onClose }) {
   const [profileName, setProfileName] = useState(
     localStorage.getItem("username") || "Admin User",
   );
-  const [profileEmail, setProfileEmail] = useState("admin@tippingpoint.com");
+  const [profileEmail, setProfileEmail] = useState(
+    localStorage.getItem("email") || "",
+  );
   const [profilePassword, setProfilePassword] = useState("");
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const currentUsername = localStorage.getItem("username");
+    const storedEmail = localStorage.getItem("email") || "";
+
+    if (currentUsername) setProfileName(currentUsername);
+    if (storedEmail) setProfileEmail(storedEmail);
+
+    if (!currentUsername) return;
+
+    const fetchCurrentAdmin = async () => {
+      try {
+        const res = await fetch(buildApiUrl("/api/admin/getTable"));
+        if (!res.ok) return;
+
+        const admins = await res.json();
+        const currentAdmin = (admins || []).find(
+          (a) => a.username === currentUsername,
+        );
+
+        if (!currentAdmin) return;
+
+        const nextName = currentAdmin.username || currentUsername;
+        const nextEmail = currentAdmin.email || "";
+
+        setProfileName(nextName);
+        setProfileEmail(nextEmail);
+        localStorage.setItem("username", nextName);
+        if (nextEmail) localStorage.setItem("email", nextEmail);
+      } catch {
+        // Keep local values if fetch fails.
+      }
+    };
+
+    fetchCurrentAdmin();
+  }, [isOpen]);
 
   const handleEditAdmin = async () => {
     const updates = {};
@@ -41,6 +81,9 @@ export default function ProfileModal({ isOpen, onClose }) {
       // Update localStorage if name changed
       if (updates.username) {
         localStorage.setItem("username", updates.username);
+      }
+      if (updates.email) {
+        localStorage.setItem("email", updates.email);
       }
 
       showToast("Profile updated!", "success");
@@ -101,6 +144,9 @@ export default function ProfileModal({ isOpen, onClose }) {
               <input
                 id="profile-password"
                 type="password"
+                name="new-password"
+                autoComplete="new-password"
+                data-lpignore="true"
                 value={profilePassword}
                 onChange={(e) => setProfilePassword(e.target.value)}
                 placeholder="Leave blank to keep current password"
