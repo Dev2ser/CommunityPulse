@@ -1,13 +1,51 @@
+import { useEffect, useRef } from "react";
 import tippingPointIcon from "../assets/TP_Stacked_BlackGreen.png";
 import tippingPointLogo from "../assets/TP_Wide_BlackGreen_NoST.png";
 import tippingPointHorizontal from "../assets/TP_Wide_BlackGreen_ST2.png";
-import { CheckCircle2, Clock3, Shield, Users, TrendingUp, Smile} from "lucide-react";
+import {
+  CheckCircle2,
+  Clock3,
+  Shield,
+  Users,
+  TrendingUp,
+  Smile,
+} from "lucide-react";
 
 import "../Styles/WelcomePage.css";
 
 function WelcomePage({ onStart }) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return undefined;
+
+    const revealElements = container.querySelectorAll(".welcome-reveal");
+
+    if (!revealElements.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      (entries, currentObserver) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            currentObserver.unobserve(entry.target);
+          }
+        });
+      },
+      {
+        threshold: 0.18,
+        rootMargin: "0px 0px -8% 0px",
+      },
+    );
+
+    revealElements.forEach((element) => observer.observe(element));
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <div className="welcome-container">
+    <div className="welcome-container" ref={containerRef}>
       <header className="welcome-header">
         <div className="welcome-header-content">
           <div className="welcome-header-logo">
@@ -24,7 +62,7 @@ function WelcomePage({ onStart }) {
       </header>
 
       <section className="welcome-hero">
-        <div className="welcome-hero-content">
+        <div className="welcome-hero-content welcome-reveal">
           <div className="welcome-hero-icon">
             <img
               src={tippingPointIcon}
@@ -58,7 +96,7 @@ function WelcomePage({ onStart }) {
 
       <section className="welcome-why-section">
         <div className="welcome-why-grid">
-          <div className="welcome-why-block">
+          <div className="welcome-why-block welcome-reveal">
             <div className="welcome-why-icon">
               <div className="welcome-icon-circle">
                 <Users className="welcome-icon-white" />
@@ -71,7 +109,7 @@ function WelcomePage({ onStart }) {
             </p>
           </div>
 
-          <div className="welcome-why-block">
+          <div className="welcome-why-block welcome-reveal">
             <div className="welcome-why-icon">
               <div className="welcome-icon-circle">
                 <TrendingUp className="welcome-icon-white" />
@@ -84,7 +122,7 @@ function WelcomePage({ onStart }) {
             </p>
           </div>
 
-          <div className="welcome-why-block">
+          <div className="welcome-why-block welcome-reveal">
             <div className="welcome-why-icon">
               <div className="welcome-icon-circle">
                 <Smile className="welcome-icon-white" />
@@ -101,7 +139,7 @@ function WelcomePage({ onStart }) {
 
       <section id="transparency" className="welcome-trust-section">
         <div className="welcome-trust-content">
-          <div className="welcome-trust-header">
+          <div className="welcome-trust-header welcome-reveal">
             <h2 className="welcome-section-title">Built on Trust</h2>
             <p className="welcome-section-subtitle">
               Your privacy and peace of mind come first.
@@ -109,7 +147,7 @@ function WelcomePage({ onStart }) {
           </div>
 
           <div className="welcome-trust-grid">
-            <div className="welcome-trust-card">
+            <div className="welcome-trust-card welcome-reveal">
               <div className="welcome-trust-card-content">
                 <div className="welcome-trust-icon" aria-hidden="true">
                   <Shield />
@@ -126,7 +164,7 @@ function WelcomePage({ onStart }) {
               </div>
             </div>
 
-            <div className="welcome-trust-card">
+            <div className="welcome-trust-card welcome-reveal">
               <div className="welcome-trust-card-content">
                 <div className="welcome-trust-icon" aria-hidden="true">
                   <CheckCircle2 />
@@ -143,7 +181,7 @@ function WelcomePage({ onStart }) {
               </div>
             </div>
 
-            <div className="welcome-trust-card">
+            <div className="welcome-trust-card welcome-reveal">
               <div className="welcome-trust-card-content">
                 <div className="welcome-trust-icon" aria-hidden="true">
                   <Clock3 />
@@ -160,7 +198,7 @@ function WelcomePage({ onStart }) {
               </div>
             </div>
 
-            <div className="welcome-trust-card-featured">
+            <div className="welcome-trust-card-featured welcome-reveal">
               <div className="welcome-trust-card-content">
                 <div className="welcome-trust-icon">
                   <img
@@ -186,7 +224,7 @@ function WelcomePage({ onStart }) {
       </section>
 
       <section className="welcome-cta-section">
-        <div className="welcome-cta-content">
+        <div className="welcome-cta-content welcome-reveal">
           <h2 className="welcome-cta-title">
             Ready to Share Your Perspective?
           </h2>

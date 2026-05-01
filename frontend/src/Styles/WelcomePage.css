@@ -47,6 +47,68 @@
   font-family: "Gotham:Bold", sans-serif;
 }
 
+.welcome-reveal {
+  opacity: 0;
+  transform: translate3d(0, 24px, 0);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s ease;
+  will-change: opacity, transform;
+}
+
+.welcome-reveal.is-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.welcome-hero-content.welcome-reveal {
+  transition-delay: 0.05s;
+}
+
+.welcome-why-block.welcome-reveal:nth-child(1) {
+  transition-delay: 0.05s;
+}
+
+.welcome-why-block.welcome-reveal:nth-child(2) {
+  transition-delay: 0.15s;
+}
+
+.welcome-why-block.welcome-reveal:nth-child(3) {
+  transition-delay: 0.25s;
+}
+
+.welcome-trust-header.welcome-reveal {
+  transition-delay: 0.05s;
+}
+
+.welcome-trust-card.welcome-reveal:nth-child(1) {
+  transition-delay: 0.05s;
+}
+
+.welcome-trust-card.welcome-reveal:nth-child(2) {
+  transition-delay: 0.15s;
+}
+
+.welcome-trust-card.welcome-reveal:nth-child(3) {
+  transition-delay: 0.25s;
+}
+
+.welcome-trust-card-featured.welcome-reveal {
+  transition-delay: 0.35s;
+}
+
+.welcome-cta-content.welcome-reveal {
+  transition-delay: 0.05s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .welcome-container {
   min-height: 100vh;
   background-color: white;
@@ -112,6 +174,24 @@
   .welcome-header-cta {
     width: 100%;
     text-align: center;
+  }
+}
+
+/* Make the top-right header CTA smaller on typical mobile widths */
+@media (max-width: 640px) {
+  .welcome-header-cta {
+    padding: 0.35rem 0.9rem;
+    font-size: 13px;
+    line-height: 18px;
+    border-radius: 0.3125rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-header-cta {
+    padding: 0.3rem 0.75rem;
+    font-size: 12px;
+    line-height: 16px;
   }
 }
 
