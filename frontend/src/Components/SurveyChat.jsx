@@ -395,7 +395,7 @@ function SurveyChat() {
               <div className="header-content">
                 <button
                   type="button"
-                  onClick={() => navigate("/surveys")}
+                  onClick={() => window.location.replace("/surveys")}
                   className="back-button"
                 >
                   <ArrowLeft className="back-icon" />
@@ -441,7 +441,7 @@ function SurveyChat() {
             <div className="header-content">
               <button
                 type="button"
-                onClick={() => navigate("/surveys")}
+                onClick={() => window.location.replace("/surveys")}
                 className="back-button"
               >
                 <ArrowLeft className="back-icon" />
