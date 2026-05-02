@@ -11,7 +11,7 @@ const firebaseConfig = {
   storageBucket: "community0pulse.firebasestorage.app",
   messagingSenderId: "131658014155",
   appId: "1:131658014155:web:d8c3c4ce8ad6dab7dd2a4e",
-  measurementId: "G-DPHH73F9JZ"
+  measurementId: "G-DPHH73F9JZ",
 };
 
 // Initialize Firebase
