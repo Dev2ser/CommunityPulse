@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "community0pulse",
+    "staging": "community0pulse"
+  },
+  "targets": {},
+  "etags": {}
+}
