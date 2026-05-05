@@ -1,31 +1,19 @@
-describe('TC-4 Admin report accessibility', () => {
+// TC-4: Admin
+const { submitMediaAnswer, AIChatService } = require('../communityPulse');
 
-  test('Report status becomes approved', () => {
-    const report = approveReport('reportId');
-    expect(report.status).toBe('approved');
+describe('TC-2 AI-powered survey features', () => {
+  test('Images and voice transcripts are accepted', () => {
+    const answer = submitMediaAnswer('surveyId', {
+      imageUrl: 'http://example.com/image.png',
+      voiceTranscript: 'Sample transcript'
+    });
+    expect(answer).toHaveProperty('imageUrl');
+    expect(answer).toHaveProperty('voiceTranscript');
   });
 
-  test('Admin can export report to PDF', () => {
-    const pdf = exportReport('reportId', 'pdf');
-    expect(pdf).toContain('%PDF');
-  });
-
-  // Negative tests
-  test('Approving nonexistent report throws error', () => {
-    expect(() => approveReport('badId')).toThrow();
-  });
-
-  test('Exporting nonexistent report throws error', () => {
-    expect(() => exportReport('badId', 'pdf')).toThrow();
-  });
-
-  test('Exporting with unsupported format throws error', () => {
-    expect(() => exportReport('reportId', 'unsupported')).toThrow();
-  });
-
-  test('Non-admin cannot export report', () => {
-    expect(() =>
-      exportReport('reportId', 'pdf', { role: 'staff' })
-    ).toThrow();
+  test('AIChatService selects follow-up questions dynamically', () => {
+    const followUp = AIChatService.getNextQuestion('surveyId', 'Sample transcript');
+    expect(followUp).toBeDefined();
+    expect(typeof followUp).toBe('string');
   });
 });

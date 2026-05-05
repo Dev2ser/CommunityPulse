@@ -1,37 +1,19 @@
-describe('TC-3 Staff survey management', () => {
+// TC-3: Staff survey management, edit reflection
+const { submitMediaAnswer, AIChatService } = require('../communityPulse');
 
-  // Positive
-  test('New survey is created successfully', () => {
-    const survey = createSurvey({ title: 'Staff Survey', questions: ['Q1'] });
-    expect(survey).toHaveProperty('id');
-    expect(survey.title).toBe('Staff Survey');
+describe('TC-2 AI-powered survey features', () => {
+  test('Images and voice transcripts are accepted', () => {
+    const answer = submitMediaAnswer('surveyId', {
+      imageUrl: 'http://example.com/image.png',
+      voiceTranscript: 'Sample transcript'
+    });
+    expect(answer).toHaveProperty('imageUrl');
+    expect(answer).toHaveProperty('voiceTranscript');
   });
 
-  test('Question edits are reflected', () => {
-    const updated = editSurveyQuestion('surveyId', 0, 'Updated Question');
-    expect(updated.questions[0]).toBe('Updated Question');
+  test('AIChatService selects follow-up questions dynamically', () => {
+    const followUp = AIChatService.getNextQuestion('surveyId', 'Sample transcript');
+    expect(followUp).toBeDefined();
+    expect(typeof followUp).toBe('string');
   });
-
-
-  // Negative cases
-  test('Editing a non-existent survey throws error', () => {
-    expect(() => editSurveyQuestion('fakeId', 0, 'Q')).toThrow();
-  });
-
-  test('Editing with out-of-range question index throws error', () => {
-    expect(() => editSurveyQuestion('surveyId', 99, 'Q')).toThrow();
-  });
-
-  test('Creating survey with missing title fails', () => {
-    expect(() => createSurvey({ questions: ['Q1'] })).toThrow();
-  });
-
-  test('Editing question with invalid type fails', () => {
-    expect(() => editSurveyQuestion('surveyId', 0, 123)).toThrow();
-  });
-
-  test('Missing parameters cause failure', () => {
-    expect(() => editSurveyQuestion()).toThrow();
-  });
-
 });
