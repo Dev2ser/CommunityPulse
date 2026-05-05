@@ -2,7 +2,6 @@ import Papa from "papaparse";
 
 export const QUESTION_TYPE_OPTIONS = [
   { value: "text", label: "Text" },
-  { value: "textarea", label: "Textarea" },
   { value: "multiple_choice", label: "Multiple Choice" },
   { value: "checkbox", label: "Checkboxes" },
   { value: "dropdown", label: "Dropdown" },
@@ -37,13 +36,11 @@ const LEGACY_TYPE_MAP = {
   multiple: "multiple_choice",
 };
 
-const OPTION_BASED_TYPES = new Set([
-  "multiple_choice",
-  "checkbox",
-  "dropdown",
-]);
+const OPTION_BASED_TYPES = new Set(["multiple_choice", "checkbox", "dropdown"]);
 
-const SUPPORTED_TYPES = new Set(QUESTION_TYPE_OPTIONS.map((type) => type.value));
+const SUPPORTED_TYPES = new Set(
+  QUESTION_TYPE_OPTIONS.map((type) => type.value),
+);
 
 export const createQuestionId = () =>
   `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
@@ -52,7 +49,9 @@ export const supportsOptions = (questionType) =>
   OPTION_BASED_TYPES.has(normalizeQuestionType(questionType));
 
 export const normalizeQuestionType = (value) => {
-  const raw = String(value || "text").trim().toLowerCase();
+  const raw = String(value || "text")
+    .trim()
+    .toLowerCase();
   return LEGACY_TYPE_MAP[raw] || raw;
 };
 
@@ -60,7 +59,9 @@ export const normalizeRequiredValue = (value) => {
   if (typeof value === "boolean") return value;
   if (typeof value === "number") return value === 1;
 
-  const raw = String(value || "").trim().toLowerCase();
+  const raw = String(value || "")
+    .trim()
+    .toLowerCase();
   if (["true", "yes", "y", "1"].includes(raw)) return true;
   if (["false", "no", "n", "0", ""].includes(raw)) return false;
   return false;
@@ -68,9 +69,7 @@ export const normalizeRequiredValue = (value) => {
 
 const sanitizeOptions = (value) => {
   if (Array.isArray(value)) {
-    return value
-      .map((option) => String(option || "").trim())
-      .filter(Boolean);
+    return value.map((option) => String(option || "").trim()).filter(Boolean);
   }
 
   return String(value || "")
@@ -81,13 +80,15 @@ const sanitizeOptions = (value) => {
 
 export const toQuestionDraft = (question = {}) => {
   const questionType = normalizeQuestionType(
-    question.questionType ?? question.type
+    question.questionType ?? question.type,
   );
 
   return {
     id: question.id || createQuestionId(),
     questionText: String(question.questionText ?? question.text ?? ""),
-    questionType: SUPPORTED_TYPES.has(questionType) ? questionType : questionType || "text",
+    questionType: SUPPORTED_TYPES.has(questionType)
+      ? questionType
+      : questionType || "text",
     required: normalizeRequiredValue(question.required),
     options: supportsOptions(questionType)
       ? sanitizeOptions(question.options)
@@ -182,13 +183,16 @@ export const parseImportedQuestions = async (file) => {
   }
 
   const parserResult =
-    extension === "csv" ? parseCsvQuestions(content) : parseJsonQuestions(content);
+    extension === "csv"
+      ? parseCsvQuestions(content)
+      : parseJsonQuestions(content);
 
   const validQuestions = [];
   const rowErrors = [...parserResult.errors];
 
   parserResult.rows.forEach((row, index) => {
-    const location = extension === "csv" ? `Row ${index + 2}` : `Item ${index + 1}`;
+    const location =
+      extension === "csv" ? `Row ${index + 2}` : `Item ${index + 1}`;
     const draft = toQuestionDraft(row);
     const errors = validateQuestionDraft(draft);
 

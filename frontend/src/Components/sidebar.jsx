@@ -1,5 +1,5 @@
 import "../Styles/sidebar.css";
-import React from "react";
+import React, { useState } from "react";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -9,6 +9,7 @@ import {
   LogOut,
 } from "lucide-react";
 import sidebarLogo from "../assets/TP_Stacked_BlackGreen.png";
+import ProfileModal from "./ProfileModal";
 
 export default function Sidebar({
   currentPage,
@@ -17,6 +18,7 @@ export default function Sidebar({
   onNavigate,
   onLogout,
 }) {
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const storedName = localStorage.getItem("username") || "Administrator";
   const storedRole = localStorage.getItem("userRole") || "Administrator";
 
@@ -105,18 +107,34 @@ export default function Sidebar({
         </div>
 
         <div className="sidebar-footer">
-          <div className="sidebar-user-chip">
-            <span className="sidebar-user-initials">{userInitials}</span>
-            <div>
-              <p className="sidebar-user-name">{storedName}</p>
-              <p className="sidebar-user-role">{storedRole}</p>
+          <div className="sidebar-user-section">
+            <div className="sidebar-user-chip">
+              <span className="sidebar-user-initials">{userInitials}</span>
+              <div>
+                <p className="sidebar-user-name">{storedName}</p>
+                <p className="sidebar-user-role">{storedRole}</p>
+              </div>
             </div>
+            <button
+              type="button"
+              className="sidebar-settings-button"
+              onClick={() => setIsProfileModalOpen(true)}
+              aria-label="Profile settings"
+              title="Profile settings"
+            >
+              <Settings size={18} strokeWidth={2} />
+            </button>
           </div>
 
           <button type="button" className="sidebar-signout" onClick={onLogout}>
             <LogOut size={18} strokeWidth={2} />
             <span>Sign Out</span>
           </button>
+
+          <ProfileModal
+            isOpen={isProfileModalOpen}
+            onClose={() => setIsProfileModalOpen(false)}
+          />
         </div>
       </aside>
     </>

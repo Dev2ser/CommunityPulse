@@ -7,6 +7,8 @@ import useSpeechRecognition from "../hooks/useSpeechRecognition";
 import useSpeechSynthesis from "../hooks/useSpeechSynthesis";
 import { API_BASE } from "../utils/api";
 
+const TRANSCRIPT_SESSION_KEY = "communityPulseTranscript";
+
 function SurveyChat() {
   const navigate = useNavigate();
   const { state } = useLocation();
@@ -29,6 +31,8 @@ function SurveyChat() {
   const voiceSessionRef = useRef(false);
   const lastSpokenMessageIdRef = useRef(null);
   const shouldStickToBottomRef = useRef(true);
+  const progressRef = useRef({ current: 0, total: 1 });
+  const hasNavigatedToTranscriptRef = useRef(false);
 
   const {
     recognitionSupported,
@@ -47,13 +51,35 @@ function SurveyChat() {
     toggleVoiceEnabled,
   } = useSpeechSynthesis();
 
+  const prevMessageCountRef = useRef(0);
+
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
-    if (!shouldStickToBottomRef.current) return;
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    progressRef.current = progress;
+  }, [progress]);
+
+  useEffect(() => {
+    // Only auto-scroll if stick-to-bottom is true AND a new message was actually added
+    if (!shouldStickToBottomRef.current) {
+      prevMessageCountRef.current = messages.length;
+      return;
+    }
+
+    // Check if message count increased (new message arrived)
+    const messageCountIncreased = messages.length > prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+
+    if (!messageCountIncreased && !loading) return;
+
+    // Scroll after a brief delay to ensure DOM is updated
+    const timer = setTimeout(() => {
+      chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, [messages, loading]);
 
   const handleMessagesScroll = () => {
@@ -206,6 +232,9 @@ function SurveyChat() {
           text: data.reply,
           sender: "bot",
           timestamp: new Date(),
+          // Attach any structured data from the AI (multiple choice options)
+          options: data.options || null,
+          questionType: data.questionType || "text",
         };
         setMessages((prev) => [...prev, botMessage]);
       }
@@ -230,6 +259,57 @@ function SurveyChat() {
     startedRef.current = true;
     sendToAI();
   }, [survey]);
+
+  // Navigate to transcript when survey is complete
+  useEffect(() => {
+    if (!surveyComplete || !survey || hasNavigatedToTranscriptRef.current)
+      return;
+
+    hasNavigatedToTranscriptRef.current = true;
+    stopSpeaking();
+
+    const transcriptPayload = {
+      survey,
+      messages: messagesRef.current,
+      progress: progressRef.current,
+      savedAt: Date.now(),
+    };
+
+    try {
+      sessionStorage.setItem(
+        TRANSCRIPT_SESSION_KEY,
+        JSON.stringify(transcriptPayload),
+      );
+    } catch (err) {
+      console.warn("Failed to persist transcript payload", err);
+    }
+
+    // Use a full-page navigation to ensure the UI actually switches routes.
+    window.location.replace("/transcript");
+  }, [surveyComplete, survey, stopSpeaking]);
+
+  // When a new bot message appears, disable options for any older bot messages
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+
+    let lastBotIndex = -1;
+    messages.forEach((m, idx) => {
+      if (m.sender === "bot") lastBotIndex = idx;
+    });
+
+    if (lastBotIndex <= 0) return;
+
+    const shouldDisable = messages.some(
+      (m, idx) => m.options && idx < lastBotIndex,
+    );
+    if (!shouldDisable) return;
+
+    setMessages((prev) =>
+      prev.map((m, idx) =>
+        m.options && idx < lastBotIndex ? { ...m, optionsDisabled: true } : m,
+      ),
+    );
+  }, [messages]);
 
   const submitResponse = ({
     text = "",
@@ -290,6 +370,22 @@ function SurveyChat() {
       ? `Question ${progress.current} of ${Math.max(progress.total, 1)}`
       : "Survey Assistant";
 
+  const isCheckboxQuestion = (message) =>
+    (message.questionType || "").toLowerCase().includes("checkbox") ||
+    (message.questionType || "").toLowerCase() === "checkboxes";
+
+  // Find the most recent bot message that has options or a selected answer
+  const activeOptionsMessage = [...messages]
+    .reverse()
+    .find(
+      (m) =>
+        m.sender === "bot" &&
+        (m.options ||
+          m.selectedOption ||
+          m.selectedOptions ||
+          m.optionsDisabled),
+    );
+
   if (!survey) {
     return (
       <div className="chatbot-page">
@@ -299,7 +395,7 @@ function SurveyChat() {
               <div className="header-content">
                 <button
                   type="button"
-                  onClick={() => navigate("/surveys")}
+                  onClick={() => window.location.replace("/surveys")}
                   className="back-button"
                 >
                   <ArrowLeft className="back-icon" />
@@ -345,7 +441,7 @@ function SurveyChat() {
             <div className="header-content">
               <button
                 type="button"
-                onClick={() => navigate("/surveys")}
+                onClick={() => window.location.replace("/surveys")}
                 className="back-button"
               >
                 <ArrowLeft className="back-icon" />
@@ -434,6 +530,178 @@ function SurveyChat() {
                     {message.text ? (
                       <p className="message-text">{message.text}</p>
                     ) : null}
+                    {message.options && message.sender === "bot" ? (
+                      <div
+                        className={`message-options ${isCheckboxQuestion(message) ? "message-options-checkbox" : ""}`}
+                      >
+                        {isCheckboxQuestion(message) ? (
+                          <>
+                            {message.options.map((opt, i) => {
+                              const selected = (
+                                message.selectedOptions || []
+                              ).includes(opt);
+                              return (
+                                <div
+                                  key={`${message.id}-opt-${i}`}
+                                  className="checkbox-wrapper"
+                                >
+                                  <input
+                                    id={`${message.id}-opt-${i}`}
+                                    type="checkbox"
+                                    checked={selected}
+                                    disabled={Boolean(message.optionsDisabled)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setMessages((prev) =>
+                                        prev.map((m) =>
+                                          m.id === message.id
+                                            ? {
+                                                ...m,
+                                                selectedOptions: isChecked
+                                                  ? [
+                                                      ...(m.selectedOptions ||
+                                                        []),
+                                                      opt,
+                                                    ]
+                                                  : (
+                                                      m.selectedOptions || []
+                                                    ).filter((o) => o !== opt),
+                                              }
+                                            : m,
+                                        ),
+                                      );
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`${message.id}-opt-${i}`}
+                                    className="checkbox-label-text"
+                                  >
+                                    {opt}
+                                  </label>
+                                </div>
+                              );
+                            })}
+
+                            <div className="checkbox-submit-container">
+                              <button
+                                type="button"
+                                className="btn btn-publish"
+                                onClick={() => {
+                                  const selected =
+                                    message.selectedOptions || [];
+                                  setMessages((prev) =>
+                                    prev.map((m) =>
+                                      m.id === message.id
+                                        ? { ...m, optionsDisabled: true }
+                                        : m,
+                                    ),
+                                  );
+
+                                  submitResponse({
+                                    text: selected.join("; "),
+                                    displayText: selected.join("; "),
+                                  });
+                                }}
+                                disabled={
+                                  Boolean(message.optionsDisabled) ||
+                                  !(
+                                    message.selectedOptions &&
+                                    message.selectedOptions.length
+                                  )
+                                }
+                              >
+                                Submit
+                              </button>
+                            </div>
+                          </>
+                        ) : (message.questionType || "")
+                            .toLowerCase()
+                            .includes("dropdown") ? (
+                          <div className="dropdown-submit-container">
+                            <select
+                              value={message.selectedOption || ""}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setMessages((prev) =>
+                                  prev.map((m) =>
+                                    m.id === message.id
+                                      ? { ...m, selectedOption: val }
+                                      : m,
+                                  ),
+                                );
+                              }}
+                              disabled={Boolean(message.optionsDisabled)}
+                              className="text-input"
+                            >
+                              <option value="">Choose...</option>
+                              {message.options.map((opt, i) => (
+                                <option
+                                  key={`${message.id}-opt-${i}`}
+                                  value={opt}
+                                >
+                                  {opt}
+                                </option>
+                              ))}
+                            </select>
+                            <button
+                              type="button"
+                              className="btn btn-publish"
+                              onClick={() => {
+                                setMessages((prev) =>
+                                  prev.map((m) =>
+                                    m.id === message.id
+                                      ? { ...m, optionsDisabled: true }
+                                      : m,
+                                  ),
+                                );
+                                submitResponse({
+                                  text: message.selectedOption || "",
+                                  displayText: message.selectedOption || "",
+                                });
+                              }}
+                              disabled={
+                                Boolean(message.optionsDisabled) ||
+                                !message.selectedOption
+                              }
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        ) : (
+                          // default: single-choice buttons
+                          message.options.map((opt, i) => (
+                            <button
+                              key={`${message.id}-opt-${i}`}
+                              type="button"
+                              className={`option-button ${message.selectedOption === opt ? "selected" : ""}`}
+                              disabled={Boolean(
+                                message.optionsDisabled ||
+                                message.selectedOption,
+                              )}
+                              onClick={() => {
+                                // mark this option as selected and disable options for this message
+                                setMessages((prev) =>
+                                  prev.map((m) =>
+                                    m.id === message.id
+                                      ? {
+                                          ...m,
+                                          selectedOption: opt,
+                                          optionsDisabled: true,
+                                        }
+                                      : m,
+                                  ),
+                                );
+
+                                // submit the chosen option as the user's response
+                                submitResponse({ text: opt, displayText: opt });
+                              }}
+                            >
+                              {opt}
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    ) : null}
                     {message.imageUrl ? (
                       <img
                         className="message-image"
@@ -480,7 +748,14 @@ function SurveyChat() {
                   isListening ? "Listening..." : "Type your answer..."
                 }
                 className="text-input"
-                disabled={loading || surveyComplete}
+                disabled={
+                  loading ||
+                  surveyComplete ||
+                  Boolean(
+                    activeOptionsMessage &&
+                    !activeOptionsMessage.optionsDisabled,
+                  )
+                }
               />
               <button
                 type="button"
@@ -488,7 +763,11 @@ function SurveyChat() {
                 disabled={
                   (!inputValue.trim() && !selectedImage) ||
                   loading ||
-                  surveyComplete
+                  surveyComplete ||
+                  Boolean(
+                    activeOptionsMessage &&
+                    !activeOptionsMessage.optionsDisabled,
+                  )
                 }
                 className="action-button send-button"
               >
@@ -498,7 +777,7 @@ function SurveyChat() {
                 type="button"
                 onClick={handleVoiceInput}
                 disabled={loading || surveyComplete || !recognitionSupported}
-                className={`action-button voice-button ${isListening ? "is-listening" : ""} ${isSpeaking ? "is-speaking" : ""}`}
+                className={`action-button voice-button ${isListening ? "is-listening" : ""}`}
               >
                 <Mic className="button-icon" />
               </button>

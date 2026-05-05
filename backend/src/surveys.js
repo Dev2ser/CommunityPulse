@@ -15,7 +15,7 @@ const OPTION_BASED_TYPES = new Set([
   "checkbox",
   "dropdown",
 ]);
-const VALID_STATUSES = new Set(["draft", "published", "archived"]);
+const VALID_STATUSES = new Set(["draft", "published", "archived", "closed"]);
 const LEGACY_TYPE_MAP = {
   multiple: "multiple_choice",
 };
@@ -270,6 +270,50 @@ router.post("/surveys/:id/archive", async (req, res) => {
   } catch (err) {
     console.error("Archive survey error:", err);
     res.status(500).json({ message: "Server error archiving survey" });
+  }
+});
+
+// Close Survey
+router.post("/surveys/:id/close", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
+
+    const db = getDb();
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
+
+    const result = await db
+      .collection("Surveys")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { status: "closed" } });
+
+    if (result.matchedCount === 0) return res.status(404).json({ message: "Survey not found" });
+
+    res.json({ message: "Survey closed" });
+  } catch (err) {
+    console.error("Close survey error:", err);
+    res.status(500).json({ message: "Server error closing survey" });
+  }
+});
+
+// Open Survey (Reopen closed survey to published)
+router.post("/surveys/:id/open", async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) return res.status(400).json({ message: "Invalid survey id" });
+
+    const db = getDb();
+    if (!db) return res.status(500).json({ message: "Database not initialized" });
+
+    const result = await db
+      .collection("Surveys")
+      .updateOne({ _id: new ObjectId(id) }, { $set: { status: "published" } });
+
+    if (result.matchedCount === 0) return res.status(404).json({ message: "Survey not found" });
+
+    res.json({ message: "Survey reopened" });
+  } catch (err) {
+    console.error("Open survey error:", err);
+    res.status(500).json({ message: "Server error opening survey" });
   }
 });
 

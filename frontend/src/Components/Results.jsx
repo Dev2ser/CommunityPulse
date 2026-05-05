@@ -232,7 +232,7 @@ const Results = () => {
       setExportingCsv(true);
       const res = await fetch(
         buildApiUrl(
-          `/api/survey/responsesandfollowups/${encodeURIComponent(
+          `/api/survey/responsesAndFollowups/${encodeURIComponent(
             selectedSurvey.surveyTitle,
           )}`,
         ),
@@ -328,6 +328,7 @@ const Results = () => {
               <span className="title-dropdown-text">
                 {selectedSurvey?.surveyTitle || "Select Survey"}
               </span>
+
               <span
                 className={`dropdown-arrow ${isSurveyDropdownOpen ? "open" : ""}`}
                 aria-hidden="true"
@@ -356,6 +357,7 @@ const Results = () => {
             )}
           </div>
         </h1>
+
         <p className="results-subtitle">
           Tipping Point – Real Estate Development
         </p>
@@ -370,13 +372,9 @@ const Results = () => {
         </div>
 
         <div className="metric-card">
-          <h2>{`${Number.isFinite(completionRate) ? completionRate : 0}%`}</h2>
+          <h2>84%</h2>
           <p>Completion Rate</p>
-          <span className="metric-note">
-            {Number.isFinite(completionRate) && completionRate >= 80
-              ? "Above average"
-              : "Needs attention"}
-          </span>
+          <span className="metric-note">Above average</span>
         </div>
 
         <div className="metric-card">
@@ -395,14 +393,14 @@ const Results = () => {
           <button
             className="export-btn"
             onClick={handleExportCSV}
-            disabled={exportingCsv || exportingPdf}
+            disabled={exportingCsv}
           >
             {exportingCsv ? "Exporting..." : "Export CSV"}
           </button>
           <button
             className="export-btn"
             onClick={handleExportPDF}
-            disabled={exportingCsv || exportingPdf}
+            disabled={exportingPdf}
           >
             {exportingPdf ? "Exporting..." : "Export PDF"}
           </button>

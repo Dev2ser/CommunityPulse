@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "firebase deploy --only hosting",
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "jest"
@@ -24,6 +26,7 @@
     "recharts": "^3.7.0"
   },
   "devDependencies": {
+    "firebase-tools": "^12.3.0",
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",

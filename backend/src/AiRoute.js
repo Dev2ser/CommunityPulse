@@ -9,7 +9,7 @@ import multer from "multer";
 const router = express.Router();
 
 const client = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const imageUpload = multer({ storage: multer.memoryStorage() });
@@ -47,7 +47,7 @@ router.post("/survey-chat", imageUpload.single("image"), async (req, res) => {
 
       parsedMessages.push({
         role: "user",
-        content: `[IMAGE: data:${req.file.mimetype};base64,${base64}]`
+        content: `[IMAGE: data:${req.file.mimetype};base64,${base64}]`,
       });
     }
 
@@ -65,10 +65,25 @@ RULES:
 5. Always move forward even if user skips.
 6. NEVER answer for the user.
 
-7. Multiple choice format:
+7. Format for different question types:
+- Multiple choice (single select):
 {
-  "questionType": "multiple",
-  "options": ["Option1", "Option2"]
+  "questionType": "multiple_choice",
+  "options": ["Option1", "Option2", "Option3"]
+}
+- Checkboxes (multi-select):
+{
+  "questionType": "checkbox",
+  "options": ["Option1", "Option2", "Option3"]
+}
+- Dropdown (single select):
+{
+  "questionType": "dropdown",
+  "options": ["Option1", "Option2", "Option3"]
+}
+- Text input:
+{
+  "questionType": "text"
 }
 
 8. Start questions with:
@@ -113,9 +128,7 @@ Survey:
 ${JSON.stringify(survey, null, 2)}
 
 Conversation:
-${parsedMessages
-  .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
-  .join("\n")}
+${parsedMessages.map((m) => `${m.role.toUpperCase()}: ${m.content}`).join("\n")}
 `.trim();
 
     // --- Call OpenAI ---
@@ -123,7 +136,7 @@ ${parsedMessages
       model: "gpt-4.1-mini",
       input: prompt,
       temperature: 0.3,
-      max_output_tokens: 2000
+      max_output_tokens: 2000,
     });
 
     // --- Extract response text ---
@@ -139,74 +152,141 @@ ${parsedMessages
 
     // --- Extract progress ---
     const progressMatch = rawReply.match(
-      /\[PROGRESS question=(\d+) total=(\d+)\]/
+      /\[PROGRESS question=(\d+) total=(\d+)\]/,
     );
 
     const progress = progressMatch
       ? {
           current: Number(progressMatch[1]),
-          total: Number(progressMatch[2])
+          total: Number(progressMatch[2]),
         }
       : null;
 
     // --- Remove metadata line ---
     const cleanReply = rawReply.replace(
       /\[PROGRESS question=\d+ total=\d+\]\n?/,
-      ""
+      "",
     );
 
-    // --- Extract FINAL survey JSON (FIXED NON-GREEDY) ---
+    // --- Extract FINAL survey JSON using brace counting ---
     let finalSurveyResult = null;
+    let finalSurveyMatch = null;
 
-    const finalSurveyMatch = cleanReply.match(
-      /\{\s*"surveyResult"\s*:\s*\{[\s\S]*?\}\s*\}/
-    );
+    // Find the position of "surveyResult"
+    const surveyResultIndex = cleanReply.indexOf('"surveyResult"');
+    if (surveyResultIndex !== -1) {
+      // Find the opening brace before "surveyResult"
+      let braceStartIndex = -1;
+      for (let i = surveyResultIndex; i >= 0; i--) {
+        if (cleanReply[i] === "{") {
+          braceStartIndex = i;
+          break;
+        }
+      }
 
-    if (finalSurveyMatch) {
-      try {
-        finalSurveyResult = JSON.parse(finalSurveyMatch[0]).surveyResult;
-      } catch (err) {
-        console.warn("Failed to parse final survey JSON");
-        console.log("RAW JSON:", finalSurveyMatch[0]);
+      if (braceStartIndex !== -1) {
+        // Count braces to find the matching closing brace
+        let braceCount = 0;
+        let braceEndIndex = -1;
+        for (let i = braceStartIndex; i < cleanReply.length; i++) {
+          if (cleanReply[i] === "{") braceCount++;
+          if (cleanReply[i] === "}") braceCount--;
+          if (braceCount === 0) {
+            braceEndIndex = i;
+            break;
+          }
+        }
+
+        if (braceEndIndex !== -1) {
+          finalSurveyMatch = cleanReply.substring(
+            braceStartIndex,
+            braceEndIndex + 1,
+          );
+          try {
+            finalSurveyResult = JSON.parse(finalSurveyMatch).surveyResult;
+            console.log("✅ Successfully parsed final survey JSON");
+          } catch (err) {
+            console.warn("Failed to parse final survey JSON:", err.message);
+            console.log(
+              "RAW JSON:",
+              finalSurveyMatch.substring(0, 200) + "...",
+            );
+          }
+        }
       }
     }
 
+    const surveyComplete = finalSurveyResult !== null;
 
-    const surveyComplete =
-      finalSurveyResult !== null &&
-      /thank you.*survey/i.test(cleanReply);
+    console.log(
+      "Survey complete flag:",
+      surveyComplete,
+      "Result:",
+      !!finalSurveyResult,
+    );
 
     // --- Store in DB ---
-    if (surveyComplete) {
-      console.log(" Survey complete. Saving to DB...");
+    if (finalSurveyResult !== null) {
+      const dbTitle = survey.surveyTitle || survey.title || "unknown";
+      console.log("📝 Survey complete. Saving to DB...");
+      console.log("   Survey object keys:", Object.keys(survey));
+      console.log("   Using surveyTitle:", dbTitle);
+      console.log(
+        "   Response count:",
+        finalSurveyResult?.responses?.length || 0,
+      );
+
       await db.collection("SurveyResponse").insertOne({
-        surveyTitle:
-          finalSurveyResult.surveyTitle || survey.title || "unknown",
-        responses: finalSurveyResult.responses,
+        surveyTitle: dbTitle,
+        responses: Array.isArray(finalSurveyResult?.responses)
+          ? finalSurveyResult.responses
+          : [],
         progress,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
     }
 
-    // --- Extract multiple choice JSON ---
+    // --- Extract question type/options JSON BEFORE cleaning ---
     let aiData = null;
-    const jsonMatch = cleanReply.match(/\{[\s\S]*?\}/);
+    let questionTypeMatch = null;
 
-    if (jsonMatch) {
+    // Find all JSON objects in the reply
+    const allJsonMatches = cleanReply.matchAll(/\{[^}]*(?:\{[^}]*\}[^}]*)*\}/g);
+    for (const match of allJsonMatches) {
       try {
-        aiData = JSON.parse(jsonMatch[0]);
-      } catch {}
+        const parsed = JSON.parse(match[0]);
+        // Check if this is a question type JSON (has questionType or options)
+        if (parsed.questionType || parsed.options) {
+          aiData = parsed;
+          questionTypeMatch = match[0];
+          break;
+        }
+      } catch {
+        // Not valid JSON, skip
+      }
     }
+
+    // --- Clean reply: remove ALL JSON objects ---
+    let replyText = cleanReply;
+    // Remove surveyResult JSON if present
+    if (finalSurveyMatch) {
+      replyText = replyText.replace(finalSurveyMatch, "");
+    }
+    // Remove question type JSON if present
+    if (questionTypeMatch) {
+      replyText = replyText.replace(questionTypeMatch, "");
+    }
+    // Final trim and clean extra whitespace
+    replyText = replyText.replace(/\s+/g, " ").trim();
 
     // --- Send response ---
     res.json({
-      reply: cleanReply.replace(/\{[\s\S]*?\}/g, "").trim(),
+      reply: replyText,
       progress,
       surveyComplete,
       questionType: aiData?.questionType || "text",
-      options: aiData?.options || null
+      options: aiData?.options || null,
     });
-
   } catch (err) {
     console.error(" Survey chat error:", err);
     res.status(500).json({ message: "AI chat error" });
