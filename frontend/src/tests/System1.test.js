@@ -1,16 +1,17 @@
-const request = require('supertest');
-const app = require('../src/frontend/app');
+/**
+ * System Test: Community Pulse Frontend
+ * Simulates answer filtration in the survey results using Jest.
+ */
 
-describe('Basic Sanity Test', () => {
-  test('the test runner is working', () => {
-    expect(1 + 1).toBe(2);
-  });
+const { filterSurveyResults } = require('../communityPulse');
 
-  test('GET / should respond with 200 OK (or at least not crash)', async () => {
-    const res = await request(app)
-      .get('/')
-      .expect(200);
-
-    expect(res.status).toBe(200);
+describe('S-1 Community insights filtration', () => {
+  test('Spam and duplicate answers are removed', () => {
+    const results = filterSurveyResults([
+      { answer: 'Yes' },
+      { answer: 'Yes' },
+      { answer: 'Spam' }
+    ]);
+    expect(results).toEqual([{ answer: 'Yes' }]);
   });
 });

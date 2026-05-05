@@ -1,40 +1,21 @@
 // TC-1: Community resident survey engagement
 // communityPulse.js
 
-const surveys = {
-  openSurveyId: {
-    id: 'openSurveyId',
-    questions: ['Q1', 'Q2', 'Q3']
-  }
-};
+const { submitMediaAnswer, AIChatService } = require('../communityPulse');
 
-function loadSurvey(surveyId) {
-  const survey = surveys[surveyId];
-  if (!survey) {
-    throw new Error('Survey not found');
-  }
-  return survey;
-}
+describe('TC-1 AI-powered survey features', () => {
+  test('Images and voice transcripts are accepted', () => {
+    const answer = submitMediaAnswer('surveyId', {
+      imageUrl: 'http://example.com/image.png',
+      voiceTranscript: 'Sample transcript'
+    });
+    expect(answer).toHaveProperty('imageUrl');
+    expect(answer).toHaveProperty('voiceTranscript');
+  });
 
-function submitSurveyResponse(surveyId, payload) {
-  const survey = surveys[surveyId];
-  if (!survey) {
-    throw new Error('Survey not found');
-  }
-
-  if (!payload || typeof payload.answer === 'undefined') {
-    throw new Error('Answer required');
-  }
-
-  if (typeof payload.answer !== 'string') {
-    throw new Error('Invalid answer type');
-  }
-
-  return {
-    id: 'response-' + Date.now(),
-    surveyId,
-    answer: payload.answer
-  };
-}
-
-module.exports = { loadSurvey, submitSurveyResponse };
+  test('AIChatService selects follow-up questions dynamically', () => {
+    const followUp = AIChatService.getNextQuestion('surveyId', 'Sample transcript');
+    expect(followUp).toBeDefined();
+    expect(typeof followUp).toBe('string');
+  });
+});
